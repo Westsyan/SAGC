@@ -1,0 +1,147 @@
+@()(implicit flash: Flash)
+@main("Search-SAGC") {
+	<style>
+			.button.primary:hover, .button.primary:active, button.primary:hover, button.primary:active, input.primary[type="submit"]:hover, input.primary[type="submit"]:active, input.primary[type="reset"]:hover, input.primary[type="reset"]:active, input.primary[type="button"]:hover, input.primary[type="button"]:active {
+				color: #FFF;
+				background-color: #286090;
+			}
+			.button.primary, button.primary, input.primary[type="submit"], input.primary[type="reset"], input.primary[type="button"] {
+				background-color: #2d6ca2;
+			}
+			.btn-sm, .btn-group-sm > .btn {
+				padding: 5px 10px;
+				font-size: 12px;
+				line-height: 1.5;
+				border-radius: 4px;
+			}
+			.btn {
+				border-radius: 4px;
+			}
+	</style>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title"><span class="glyphicon glyphicon-search"></span> Search</h3>
+		</div>
+		<div class="panel-body"></div>
+		<div class="row">
+			<div class="col-sm-3">
+				<div class="bs-docs-sidebar" role="complementary">
+					<ul class="nav bs-docs-sidenav">
+						<li class="active"><a href="#condition" data-toggle="tab">lnRNA and mRNA</a></li>
+					</ul>
+				</div>
+			</div>
+			<div class="col-sm-8 tab-content myform" >
+				<div class="tab-pane active" id="condition">
+					<form class="form-horizontal" action="selectByPosition" method="get" id="conditionForm">
+						<h4>Required:</h4>
+						<hr>
+						<div class="form-group">
+							<label class="control-label col-sm-3">Gene symbol:</label>
+							<div class="col-sm-8">
+								<textarea class="form-control" name="id" id="gene" rows="5"
+								required></textarea>
+								<span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+									OS01G0100100,OS01G0100200,OS01G0100300</em></a></span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="control-label col-sm-3">Sample name:</label>
+							<div class="col-sm-8">
+								<textarea class="form-control" name="sampleName" id="sample" rows="5"
+								required></textarea>
+								<span class="help-block">e.g.,&nbsp;<a href="#"><em id="egSample">
+									A001,A002,A003</em></a></span>
+							</div>
+						</div>
+						<hr>
+						<div class="form-group">
+							<div class="actions col-sm-offset-4 col-sm-3">
+								<button type="submit" class="btn btn-primary " id="geneSearch" style="width: 90%">search</button>
+							</div>
+							<div class="actions col-sm-3">
+								<button type="reset" class="btn btn-primary" style="width: 90%;
+									margin-left: 10px">reset</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+			$(function () {
+				$('#egGene').click(function () {
+				    //输入的文本去掉两边的空格
+					var eg = $("#egGene").text().trim();
+					$('#gene').val(eg);
+				});
+
+				$('#egSample').click(function () {
+					var eg = $("#egSample").text().trim();
+					$('#sample').val(eg);
+				});
+
+				function extractor(query) {
+					var result = /([^,]+)$/.exec(query);
+					if (result && result[1])
+						return result[1].trim();
+					return '';
+				}
+
+				$.ajax({
+					url: "/SAGC/admin/getAllGeneId",
+					type: "get",
+					success: function (data) {
+						$('#gene').typeahead({
+							source: data,
+							updater: function (item) {
+								return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+							},
+							matcher: function (item) {
+								var tquery = extractor(this.query);
+								if (!tquery) return false;
+								return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+							},
+							highlighter: function (item) {
+								var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+								return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+									return '<strong>' + match + '</strong>'
+								})
+							}
+						})
+					}
+				});
+
+				$.ajax({
+					url: "/SAGC/admin/getAllSampleName",
+					type: "get",
+					success: function (data) {
+						$('#sample').typeahead({
+							source: data,
+							updater: function (item) {
+								return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+							},
+							matcher: function (item) {
+								var tquery = extractor(this.query);
+								if (!tquery) return false;
+								return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+							},
+							highlighter: function (item) {
+								var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+								return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+									return '<strong>' + match + '</strong>'
+								})
+							}
+						})
+					}
+				});
+
+				if(@flash.get("info").nonEmpty){
+				    swal("Waring!", "The information database you entered does not exist!", "error")
+				}
+			})
+	</script>
+
+
+}

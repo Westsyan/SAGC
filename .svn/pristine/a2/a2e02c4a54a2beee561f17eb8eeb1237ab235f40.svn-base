@@ -1,0 +1,22 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET         /                                       controllers.IndexController.toIndex
+GET         /SAGC/search/toIndex                    controllers.SearchController.toIndex
+
+GET         /SAGC/test/insert                       controllers.TestController.insert
+
+GET         /SAGC/admin/toIndex                     controllers.AdminController.toIndex
+GET         /SAGC/admin/loginBefore                 controllers.AdminController.loginBefore()
+GET         /SAGC/admin/login                       controllers.AdminController.login(phone:String,password:String)
+GET         /SAGC/admin/logout                      controllers.AdminController.logout
+GET         /SAGC/admin/changePasswordBefore        controllers.AdminController.changePasswordBefore()
+POST        /SAGC/admin/changePassword              controllers.AdminController.changePassword
+GET         /SAGC/admin/addmRNABefore               controllers.AdminController.addmRNABefore
+POST        /SAGC/admin/addmRNA                     controllers.AdminController.addmRNA
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET         /assets/*file                           controllers.Assets.at(path="/public", file)

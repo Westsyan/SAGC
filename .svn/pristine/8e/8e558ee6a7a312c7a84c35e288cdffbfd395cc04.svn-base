@@ -1,0 +1,11 @@
+package controllers
+
+import play.api.mvc._
+
+class SearchController extends Controller{
+
+  def toIndex = Action {
+    Ok(views.html.search.index())
+  }
+
+}

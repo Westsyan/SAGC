@@ -1,0 +1,37 @@
+package dao
+
+import javax.inject.Inject
+
+import models.Tables._
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import slick.jdbc.JdbcProfile
+
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class MRNAProfileDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider) extends
+  HasDatabaseConfigProvider[JdbcProfile] {
+
+  import profile.api._
+
+  def insertAll(rows: Seq[MrnaprofileRow]): Future[Unit] = {
+    def buildSql(execpre: String, values: String): DBIO[Int] = sqlu"$execpre $values"
+
+    val execpre = "INSERT INTO  mrnaprofile(geneid,samplename,value) VALUES "
+    val valuesStr = rows.map { x => "(" + "'" + x.geneid + "'," + "'" + x.samplename + "'," + x.value + ")" }.mkString(",")
+//    val valueStr = rows.map { x => "('TFF2','N1',0.0)" }.head
+    val valueStr ="(TFF2,N1,0.0)"
+    println(valueStr)
+    val sqlu = DBIO.seq(
+      buildSql(execpre, valueStr)
+    )
+    db.run(sqlu).map(_ => ())
+  }
+
+  def insertOrUpdate(row: MrnaprofileRow): Future[Unit] = db.run(Mrnaprofile
+    .insertOrUpdate(row)).map(_ => ())
+
+  def deleteAll: Future[Unit] = db.run(Mrnaprofile.delete).map(_ => ())
+
+
+}

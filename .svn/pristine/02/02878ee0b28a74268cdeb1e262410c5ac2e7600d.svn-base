@@ -1,0 +1,26 @@
+package controllers
+
+import java.io.File
+import javax.inject.Inject
+
+import play.api.mvc._
+import dao._
+import org.apache.commons.io.FileUtils
+import scala.collection.JavaConverters._
+import models.Tables._
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class TestController @Inject()(geneIdDao: GeneIdDao) extends Controller {
+
+  def insert = Action.async {
+    val newBuffer = FileUtils.readLines(new File("D:\\迅雷下载\\数据更新20170907\\Samples_combined_mRNA_TPM.txt")).asScala
+    val geneIds = newBuffer.drop(1).map(_.split("\t")(0))
+    val rows = geneIds.map { x =>
+      GeneidRow(x)
+    }
+    geneIdDao.insertAll(rows).map { x =>
+      Ok("success!")
+    }
+  }
+
+}

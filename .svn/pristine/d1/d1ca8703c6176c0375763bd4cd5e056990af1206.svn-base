@@ -1,0 +1,44 @@
+package utils
+
+import java.io.{File, FileInputStream}
+import java.text.SimpleDateFormat
+
+import play.api.data.Form
+import play.api.data.Forms._
+import play.api.libs.json.Json
+import models.Tables._
+import org.apache.commons.io.FileUtils
+
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.JavaConverters._
+import scala.collection.mutable
+import scala.sys.process.Process
+
+/**
+  * Created by yz on 2017/6/16.
+  */
+object Utils {
+  def getTime(startTime: Long) = {
+    val endTime = System.currentTimeMillis()
+    (endTime - startTime) / 1000.0
+  }
+
+  def deleteDirectory(direcotry: File) = {
+    try {
+      FileUtils.deleteDirectory(direcotry)
+    } catch {
+      case _ =>
+    }
+  }
+
+  def isDouble(value: String): Boolean = {
+    try {
+      value.toDouble
+    } catch {
+      case _: Exception =>
+        return false
+    }
+    true
+  }
+
+}

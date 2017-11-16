@@ -1,0 +1,154 @@
+package controllers
+
+import java.io.File
+import java.nio.file.Files
+import javax.inject.Inject
+
+import play.api.data.Form
+import play.api.data.Forms._
+import dao._
+import play.api.mvc._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import models.Tables._
+import org.apache.commons.io.FileUtils
+import play.api.libs.json.Json
+import utils.Utils
+
+import scala.collection.JavaConverters._
+import scala.concurrent.Future
+
+case class ChangePasswordData(account: String, password: String, newPassword: String)
+
+class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDao) extends Controller {
+
+  def toIndex = Action {
+    Ok(views.html.admin.index())
+  }
+
+  def loginBefore() = Action { implicit request =>
+    Ok(views.html.admin.login())
+  }
+
+  def login(phone: String, password: String) = Action.async { implicit request =>
+    passwordDao.selectPassword.map { x =>
+      if (phone == "admin" && password == x) {
+        Redirect(routes.AdminController.toIndex()).withSession("phone" -> phone)
+      } else {
+        Redirect(routes.AdminController.loginBefore()).flashing("info" -> "Account or password is wrong!")
+      }
+    }
+  }
+
+  def logout = Action {
+    Redirect(routes.AdminController.loginBefore()).flashing("info" -> "You've been logged out!").withNewSession
+  }
+
+  def changePasswordBefore() = Action { implicit request =>
+    Ok(views.html.admin.changePassword())
+  }
+
+  val form = Form(
+    mapping(
+      "account" -> text,
+      "password" -> text,
+      "newPassword" -> text
+    )(ChangePasswordData.apply)(ChangePasswordData.unapply)
+  )
+
+  def changePassword = Action.async { implicit request =>
+    val data = form.bindFromRequest().get
+    passwordDao.selectPassword.flatMap { x =>
+      if (data.account == "admin" && data.password == x) {
+        val passwordRow = PasswordRow(1, data.newPassword)
+        passwordDao.updatePassword(passwordRow).map { y =>
+          Redirect(routes.AdminController.loginBefore()).flashing("info" -> "Change password successfully!").withNewSession
+        }
+      } else {
+        Future.successful(Redirect(routes.AdminController.changePasswordBefore()).flashing("info" -> "Account or password is wrong!"))
+      }
+    }
+  }
+
+  def addmRNABefore = Action { implicit request =>
+    Ok(views.html.admin.addmRNA())
+  }
+
+  def addmRNA = Action.async(parse.multipartFormData) { implicit request =>
+    val file = request.body.file("file").get
+    val tmpDir = Files.createTempDirectory("tmpDir").toString
+    val tmpTxtFile = new File(tmpDir, "tmp.txt")
+    file.ref.moveTo(tmpTxtFile, true)
+    val bm = checkmRNAFile(tmpTxtFile)
+    if (!bm._1) {
+      Utils.deleteDirectory(new File(tmpDir))
+      Future.successful(Ok(Json.obj("error" -> bm._2)))
+    } else {
+      geneIdDao.selectAll.flatMap { geneIds =>
+        val geneIdMap = geneIds.map(x => (x.id, 1)).toMap
+        val buffer = FileUtils.readLines(tmpTxtFile).asScala
+        val header = buffer.take(1).flatMap(_.split("\t"))
+        val rows = buffer.drop(1).flatMap { x =>
+          val columns = x.split("\t")
+          columns.drop(1).zipWithIndex.map {
+            case (value, index) =>
+              MrnaprofileRow(columns(0), header(index + 1), value.toDouble)
+          }
+        }
+
+        val startTime = System.currentTimeMillis()
+        println("--start--")
+        val finalRows = rows.filter { x => geneIdMap.contains(x.geneid)
+        }
+        println(Utils.getTime(startTime))
+        println(finalRows.size)
+
+       mRNAProfileDao.deleteAll.flatMap(_=>mRNAProfileDao.insertAll(finalRows.take(10000))).map { x =>
+          println(Utils.getTime(startTime))
+          Utils.deleteDirectory(new File(tmpDir))
+          Ok(Json.toJson("success"))
+        }
+      }
+
+    }
+  }
+
+  def checkmRNAFile(file: File): (Boolean, String) = {
+    val newBuffer = FileUtils.readLines(file).asScala
+    val geneIds = newBuffer.drop(1).map(_.split("\t")(0))
+    var error = ""
+    val repeatid = geneIds.diff(geneIds.distinct).distinct.headOption
+    repeatid match {
+      case Some(x) => val nums = geneIds.zipWithIndex.filter(_._1 == x).map(_._2 + 1).mkString("(", "、", ")")
+        error = "Gene ID:" + x + " repeat in " + nums + " row！"
+        return (false, error)
+      case None =>
+    }
+    val headers = newBuffer.head.split("\t")
+    val headersNoHead = headers.drop(1)
+    val repeatElement = headersNoHead.diff(headersNoHead.distinct).distinct.headOption
+    repeatElement match {
+      case Some(x) => val nums = headers.zipWithIndex.filter(_._1 == x).map(_._2 + 1).mkString("(", "、", ")")
+        error = "Sample name " + x + " repeat in" + nums + " row！"
+        return (false, error)
+      case None =>
+    }
+    val headerSize = headers.size
+    for (i <- 1 until newBuffer.size) {
+      val columns = newBuffer(i).split("\t")
+      if (columns.size != headerSize) {
+        error = "The columns number in " + (i + 1) + " row is incorrect!"
+        return (false, error)
+      }
+      for (j <- 1 until columns.size) {
+        val value = columns(j)
+        if (!Utils.isDouble(value)) {
+          error = "The value  in " + (i + 1) + " row " + (j + 2) + " col must is number!"
+          return (false, error)
+        }
+      }
+    }
+    (true, error)
+  }
+
+}
