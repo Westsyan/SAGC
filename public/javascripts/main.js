@@ -215,9 +215,9 @@ function circLinear(url) {
     });
 }
 
-function boxPlot(id, path) {
+function boxPlot(id, group1,group2,path) {
     $("#charts").html("<img src='/assets/images/loading.gif'/>");
-    var url = path + "?id=" + id + "";
+    var url = path + "?id=" + id + "&group1=" + group1 + "&group2=" + group2 + "";
     $.ajax({
         url: url,
         type: "get",
@@ -231,7 +231,9 @@ function boxPlot(id, path) {
                     type: 'boxplot',
                     height: 550,
                     marginTop: 40,
-                    marginBottom: 80
+                    marginBottom: 80,
+                    marginLeft:300,
+                    marginRight:300
                 },
                 title: {
                     text: id
@@ -436,6 +438,137 @@ function heatmap(url) {
     });
 }
 
+function cheatmap(url) {
+    var chart = null;
+    var maxLabelNum = 30;
+    var xLen = 0;
+    var step;
+    $("#charts").html("<img src='/assets/images/loading.gif'/>");
+    $.ajax({
+        //  url: url + "?" + parameter,
+        url: "/SAGC/analyse/heatmap",
+        type: "get",
+        dataType: "json",
+        data: $("#conditionForm").serialize(),
+        success: function (data) {
+            xLen = data[0].treatment.length;
+            step = Math.round(xLen / maxLabelNum) < 1 ? 1 : Math.round(xLen / maxLabelNum);
+            $("#charts").highcharts({
+                plotOptions: {
+                    heatmap: {
+                        turboThreshold: 0 //不限制数据点个数
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                chart: {
+                    zoomType: 'xy',
+                    type: 'heatmap',
+                    height: 750,
+                    marginTop: 65,
+                    marginBottom: 170,
+                    marginLeft: 300,
+                    marginRight: 300,
+                    events: {
+                        //监听图表区域选择事件
+                        selection: function (event) {//动态修改
+                            var len = event.xAxis[0].max - event.xAxis[0].min;
+                            var interval = Math.round(len / maxLabelNum < 1 ? 1 : Math.round(len / maxLabelNum));
+                            DynamicChangeTickInterval(interval);
+                        }
+                    }
+                },
+                title: {
+                    text: null
+                },
+                xAxis: {
+                    categories: data[0].treatment,
+                    labels: {
+                        rotation: -45,
+                        style: {
+                            fontSize: '12px',
+                            fontFamily: 'Arial, sans-serif'
+                        }
+                    },
+                    tickInterval: step,
+                    title: {
+                        text: 'Correlation Heatmap'
+                    }
+                },
+                yAxis: {
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontFamily: 'Arial, sans-serif'
+                        }
+                    },
+                    categories: data[0].gt,
+                    title: "Gene"
+                },
+                labels: {
+                    style: {
+                        color: "black",
+                        fontSize: '16px',
+                        fontWeight: 'normal'
+                    },
+                    items: [{
+                        html: html,
+                        style: {
+                            left: '0px',
+                            top: '425px'
+                        }
+                    }]
+                },
+                colorAxis: {
+                    stops: [
+                        [0.1, '#78b8ed'],
+                        [0.5, '#fffbbc'],
+                        [0.8, '#c4463a'],
+                        [1, '#c4463a']
+                    ],
+                    min: data[0].min,
+                    max: data[0].max
+//                        minColor: '#FFFFFF'
+//                        maxColor: Highcharts.getOptions().colors[0]
+                },
+                legend: {
+                    title: {
+                        style: {
+                            fontWeight: '1',
+                            color: '#555',
+                            fontSize: '12px'
+                        },
+                        text: 'C.C'
+                    },
+                    align: 'right',
+                    layout: 'vertical',
+                    marginTop: 0,
+                    verticalAlign: 'top',
+                    y: 25,
+                    symbolHeight: 505
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>C.C: ' + this.point.value + '</b>';
+                    }
+                },
+                series: [{
+                    borderWidth: '0.2',
+                    color: '#fefefe',
+                    data: data[0].expression,
+                    dataLabels: {
+                        enabled: false
+                    }
+                }]
+            }, function (chartObj) {
+                //获得图表对象
+                chart = chartObj;
+            });
+
+        }
+    });
+}
 function circHeatmap(url) {
     var chart = null;
     var maxLabelNum = 30;

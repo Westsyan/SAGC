@@ -16,7 +16,6 @@ import play.api.libs.json._
 import utils.Utils
 
 import scala.collection.JavaConverters._
-import scala.collection.{immutable, mutable}
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
@@ -95,109 +94,72 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
       Ok(Json.obj("error" -> bm._2))
     } else {
       val buffer = FileUtils.readLines(tmpTxtFile).asScala
-/*      val geneIdRows = buffer.drop(1).map{x=>
-        val columns = x.split("\t")
-        GeneidRow(columns(0))
-      }
-      geneIdDao.insertAll(geneIdRows)*/
+      /*      val geneIdRows = buffer.drop(1).map{x=>
+              val columns = x.split("\t")
+              GeneidRow(columns(0))
+            }
+            geneIdDao.insertAll(geneIdRows)*/
       val geneIds = Await.result(geneIdDao.selectAll, Duration.Inf)
       val geneIdMap = geneIds.map(x => (x.id, 1)).toMap
-/*      val header = buffer.head.split("\t")
-      val sampleNames = header.drop(1)
-      val validBuffer = buffer.drop(1).filter { x =>
-        val geneId = x.split("\t")(0)
-        geneIdMap.contains(geneId)
-      }*/
+      println(geneIdMap.size)
       val sampleNames = buffer.head.split("\t").drop(1)
       val startTime = System.currentTimeMillis()
-      val rowsSize =  geneIds.size*sampleNames.size
+      val rowsSize = geneIds.size * sampleNames.size
       var index = 0
-      println("总长度"+rowsSize)
+      println("总长度" + rowsSize)
       println("--start--")
       //开始时间
       println(Utils.getTime(startTime))
       Await.result(mRNAProfileDao.deleteBySampleName(sampleNames.mkString(",")), Duration.Inf)
       println(Utils.getTime(startTime))
-      sampleNames.zipWithIndex.grouped(2).foreach{x=>
-        val rows=buffer.drop(1).flatMap{y=>
-          val columns=y.split("\t")
-          val indexs=x.map(_._2)
-          indexs.map{index=>
-            MrnaprofileRow(columns(0), sampleNames(index), columns(index+1).toDouble)
+      sampleNames.zipWithIndex.grouped(2).foreach { x =>
+        val rows = buffer.drop(1).flatMap { y =>
+          val columns = y.split("\t")
+          val indexs = x.map(_._2)
+          if (geneIdMap.contains(columns(0))) {
+            indexs.map { index =>
+              MrnaprofileRow(columns(0), sampleNames(index), columns(index + 1).toDouble)
+            }
+          } else {
+            None
           }
         }
         val validGeneIds = buffer.drop(1).map(_.split("\t")(0))
         val invalidGeneIds = geneIds.map(_.id).toBuffer.diff(validGeneIds)
-        val invalidRow = for( geneid  <- invalidGeneIds;sampleName <- x.map(_._1)) yield {MrnaprofileRow(geneid , sampleName , 0)}
+        val invalidRow = for (geneid <- invalidGeneIds; sampleName <- x.map(_._1)) yield {
+          MrnaprofileRow(geneid, sampleName, 0)
+        }
         val finalRows = invalidRow ++ rows
-        index = index + geneIds.size*2
-        finalRows.sortBy(_.samplename).grouped(40000).foreach{x=>
+        index = index + geneIds.size * 2
+        finalRows.sortBy(_.samplename).grouped(40000).foreach { x =>
           Await.result(mRNAProfileDao.insertAll(x), Duration.Inf)
         }
         val percent = if ((index * 100) / rowsSize >= 100) "100%" else (index * 100) / rowsSize + "%"
-        println(percent + "\t"+ Utils.getTime(startTime))
+        println(percent + "\t" + Utils.getTime(startTime))
       }
       println("insert table successfully!" + Utils.getTime(startTime))
-    /*
-      val validGeneIds = validBuffer.map(_.split("\t")(0))
-      val rows = validBuffer.flatMap { x =>
-        val columns = x.split("\t")
-        columns.drop(1).zipWithIndex.map {
-          case (value, index) =>
-            MrnaprofileRow(columns(0), header(index + 1), value.toDouble)
-        }
-      }
-      val invalidGeneIds = geneIds.map(_.id).diff(validGeneIds)
-/*   //   val invalidRow = for (geneId <- invalidGeneIds; sampleName <- sampleNames) yield {
-        MrnaprofileRow(geneId, sampleName, 0)
-      }*/
-   //   val finalRows = invalidRow.toBuffer ++ rows
-      println(9)
-
-      println("--start--")
-      //开始时间
-      println(Utils.getTime(startTime))
-      //计次，计算文本数据的数量
-      println(rows.size)
-      val rowsSize = rows.size
-      val num = 50000
-      var index = 0
-      val headersNoHead = sampleNames.mkString(",")
-      sampleNames.grouped(1).foreach {x=>
-        Await.result(mRNAProfileDao.deleteBySampleName(x.mkString(",")), Duration.Inf)
-      }
-      println(Utils.getTime(startTime))
-
-   //   println(finalRows.head)
-      rows.grouped(num).foreach { x =>
-        val xx =x.sortBy(_.samplename)
-        Await.result(mRNAProfileDao.insertAll(xx), Duration.Inf)
-        index = index + 1
-        val percent = if ((index * num * 100) / rowsSize >= 100) "100%" else (index * num * 100) / rowsSize + "%"
-        println(percent + "\t" + Utils.getTime(startTime))
-      }*/
       Utils.deleteDirectory(new File(tmpDir))
       Redirect(routes.AdminController.addmRNABefore())
     }
   }
 
-/*检查文件，1.检查基因ID在文件中是否重复
-            2.检查样品名在文件中是否重复
-            3.检查表中除了第一行和第一列全是数据
-*/
+  /*检查文件，1.检查基因ID在文件中是否重复
+              2.检查样品名在文件中是否重复
+              3.检查表中除了第一行和第一列全是数据
+  */
   def checkmRNAFile(file: File): (Boolean, String) = {
     //读取文件的文本内容
     val newBuffer = FileUtils.readLines(file).asScala
     //放弃第一行   //以空格分隔，选取第一个字符串
     val geneIds = newBuffer.drop(1).map(_.split("\t")(0))
     var error = ""
-/*    先将geneIds排重，然后用diff和原数组比较，剩下了之前被排重排除掉的元素，
-    然后再次排重， 最后剩下的用headOption验证是否有重复，如果为none，则文
-    件里没有重复，如果不为none，则显示错误*/
+    /*    先将geneIds排重，然后用diff和原数组比较，剩下了之前被排重排除掉的元素，
+        然后再次排重， 最后剩下的用headOption验证是否有重复，如果为none，则文
+        件里没有重复，如果不为none，则显示错误*/
     val repeatid = geneIds.diff(geneIds.distinct).distinct.headOption
     repeatid match {
-                                                      //保留列表中符合条件的列表元素
-                                  //该函数将RDD中的元素和这个元素在RDD中的ID（索引号）组合成键/值对
+      //保留列表中符合条件的列表元素
+      //该函数将RDD中的元素和这个元素在RDD中的ID（索引号）组合成键/值对
       //                                                  筛选出第一个元素等于x的元素，并将第二个元素+1
       case Some(x) => val nums = geneIds.zipWithIndex.filter(_._1 == x).map(_._2 + 1).mkString("(", "、", ")")
         //错误：基因ID在文件中重复
@@ -205,7 +167,7 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
         return (false, error)
       case None =>
     }
-      //head：取得第一个元素，也就是表头，样品名
+    //head：取得第一个元素，也就是表头，样品名
     val headers = newBuffer.head.split("\t")
     val headersNoHead = headers.drop(1)
     val repeatElement = headersNoHead.diff(headersNoHead.distinct).distinct.headOption
@@ -228,7 +190,6 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
         error = "The columns number in " + (i + 1) + " row is incorrect!"
         return (false, error)
       }
-
       for (j <- 1 until columns.size) {
         //循环第i列的值
         val value = columns(j)
@@ -243,30 +204,27 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
   }
 
 
-  def getAllSampleName : Action[AnyContent]= Action.async{ implicit request =>
-    mRNAProfileDao.selectAllSampleName.map{x=>
+  def getAllSampleName: Action[AnyContent] = Action.async { implicit request =>
+    mRNAProfileDao.selectAllSampleName.map { x =>
       Ok(Json.toJson(x))
     }
   }
 
-  def getAllGeneId : Action[AnyContent]= Action.async{ implicit request =>
-    geneIdDao.selectAllGeneId.map{ x=>
+  def getAllGeneId: Action[AnyContent] = Action.async { implicit request =>
+    geneIdDao.selectAllGeneId.map { x =>
       Ok(Json.toJson(x))
     }
   }
 
-  def deletemRNABefore = Action { implicit request =>
+  def deletemRNABefore = Action {
     Ok(views.html.admin.deletemRNA())
   }
 
   //删除基因数据
-  def deletemRNABySamplename(sampleName : String) = Action.async{ implicit request =>
-    val sampleStr = sampleName.split(",").distinct.mkString(",")
-    println(sampleStr)
-        mRNAProfileDao.deleteBySampleName(sampleStr).map(y =>
-          Redirect(routes.AdminController.deletemRNABefore())
-        )
-
+  def deletemRNABySamplename(sampleName: String) = Action.async { implicit request =>
+    mRNAProfileDao.deleteBySampleName(sampleName).map(y =>
+      Redirect(routes.AdminController.deletemRNABefore())
+    )
   }
 }
 

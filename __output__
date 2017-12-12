@@ -1,0 +1,14 @@
+#Term	Database	ID	Input number	Background number	P-Value	Corrected P-Value	Input	Hyperlink
+Sphingolipid metabolism	KEGG PATHWAY	ko00600	1	26	0.0232125483753	0.110782298677	OS01G0100900	http://www.genome.jp/kegg-bin/show_pathway?ko00600/K01634%09red
+Ether lipid metabolism	KEGG PATHWAY	ko00565	1	28	0.0249793183553	0.110782298677	OS01G0102000	http://www.genome.jp/kegg-bin/show_pathway?ko00565/K01114%09red
+Thyroid hormone signaling pathway	KEGG PATHWAY	ko04919	1	33	0.029377022338	0.110782298677	OS01G0102000	http://www.genome.jp/kegg-bin/show_pathway?ko04919/K01114%09red
+Antigen processing and presentation	KEGG PATHWAY	ko04612	1	51	0.0450551111209	0.110782298677	OS01G0102400	http://www.genome.jp/kegg-bin/show_pathway?ko04612/K08066%09red
+Inositol phosphate metabolism	KEGG PATHWAY	ko00562	1	56	0.0493691500841	0.110782298677	OS01G0102000	http://www.genome.jp/kegg-bin/show_pathway?ko00562/K01114%09red
+Sphingolipid signaling pathway	KEGG PATHWAY	ko04071	1	59	0.0519588311435	0.110782298677	OS01G0100900	http://www.genome.jp/kegg-bin/show_pathway?ko04071/K01634%09red
+Nucleotide excision repair	KEGG PATHWAY	ko03420	1	68	0.05965200698	0.110782298677	OS01G0102800	http://www.genome.jp/kegg-bin/show_pathway?ko03420/K10841%09red
+Glycerophospholipid metabolism	KEGG PATHWAY	ko00564	1	96	0.0832513518822	0.135283446809	OS01G0102000	http://www.genome.jp/kegg-bin/show_pathway?ko00564/K01114%09red
+Cysteine and methionine metabolism	KEGG PATHWAY	ko00270	1	110	0.0948448791633	0.136998158791	OS01G0101200	http://www.genome.jp/kegg-bin/show_pathway?ko00270/K16054%09red
+RNA transport	KEGG PATHWAY	ko03013	1	164	0.13829372839	0.179127210613	OS01G0101300	http://www.genome.jp/kegg-bin/show_pathway?ko03013/K13151%09red
+Tuberculosis	KEGG PATHWAY	ko05152	1	181	0.151569178211	0.179127210613	OS01G0102400	http://www.genome.jp/kegg-bin/show_pathway?ko05152/K08066%09red
+Protein processing in endoplasmic reticulum	KEGG PATHWAY	ko04141	1	206	0.17075695977	0.184986706418	OS01G0102700	http://www.genome.jp/kegg-bin/show_pathway?ko04141/K13250%09red
+Ribosome	KEGG PATHWAY	ko03010	1	315	0.249797307452	0.249797307452	OS01G0100700	http://www.genome.jp/kegg-bin/show_pathway?ko03010/K02989%09red

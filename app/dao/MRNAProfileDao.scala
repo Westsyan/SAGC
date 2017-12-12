@@ -32,24 +32,35 @@ class MRNAProfileDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   def selectAllSampleName(): Future[Seq[String]] = db.run(Mrnaprofile.map(_.samplename).distinct.result)
 
   def selectByGeneId(id: String): Future[Seq[Tables.MrnaprofileRow]] = {
-    val geneId = id.split(",").map(_.trim)
+    val geneId = id.split(",").map(_.trim).distinct
     db.run(Mrnaprofile.filter(_.geneid.inSetBind(geneId)).result)
   }
 
   def selectByPosition(id:String , sampleName:String): Future[Seq[Tables.MrnaprofileRow]]={
-    val geneId = id.split(",").map(_.trim)
-    val sample = sampleName.split(",").map(_.trim)
-    db.run(Mrnaprofile.filter(_.geneid.inSetBind(geneId)).filter(_.samplename.inSetBind(sample)).result)
-
+    val geneId = id.split(",").map(_.trim).distinct
+    val sample = sampleName.split(",").map(_.trim).distinct
+    db.run(Mrnaprofile.filter(_.samplename.inSetBind(sample)).filter(_.geneid.inSetBind(geneId)).result)
   }
 
-  def selectBySampleName(sampleName: String): Future[Seq[Tables.MrnaprofileRow]] = {
-    val samples = sampleName.split(",").map(_.trim)
-    db.run(Mrnaprofile.filter(_.samplename.inSetBind(samples)).result)
+  def selectAllBySampleName(sampleName: String) : Future[Seq[Tables.MrnaprofileRow]]={
+    val sample = sampleName.split(",").map(_.trim).distinct
+    db.run(Mrnaprofile.filter(_.samplename.inSetBind(sample)).result)
+  }
+
+  def selectValueByPosition(id:String , sampleName:String): Future[Seq[Double]]={
+    val geneId = id.split(",").map(_.trim).distinct
+    val sample = sampleName.split(",").map(_.trim).distinct
+    db.run(Mrnaprofile.filter(_.samplename.inSetBind(sample)).filter(_.geneid.inSetBind(geneId)).map(_.value).result)
+  }
+
+
+  def selectBySampleName(sampleName: String): Future[Seq[String]] = {
+    val samples = sampleName.split(",").map(_.trim).distinct
+    db.run(Mrnaprofile.filter(_.samplename.inSetBind(samples)).map(_.samplename).distinct.result)
   }
 
   def deleteBySampleName(sampleName: String): Future[Unit] = {
-    val samples = sampleName.split(",").map(_.trim)
+    val samples = sampleName.split(",").map(_.trim).distinct
     db.run(Mrnaprofile.filter(_.samplename.inSetBind(samples)).delete).map(_ => ())
   }
 }

@@ -1,0 +1,216 @@
+@search.mainWithSearch("SAGC-KEGG") {
+
+    <div class="container">
+        <form class="registration-form form-horizontal" id="conditionForm"
+        style="margin: 20px">
+
+            <div class="form-group col-sm-12">
+                <h2 class="page-heading"
+                style="text-align: left;
+                    border-bottom: 5px solid #e9f3f4">Rice KEGG Enrichment Analysis</h2>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px">
+                <label class="control-label col-sm-2 col-sm-offset-1">Gene Symbol:</label>
+                <div class="col-sm-6">
+                    <textarea class="form-control" name="id" id="gene" rows="5"
+                    style="border-radius: 4px;"></textarea>
+                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+                        Example</em></a></span>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px">
+                <label class="control-label col-sm-2 col-sm-offset-1">Test method:</label>
+                <div class="col-sm-6">
+                    <select class="form-control" name="m" style="border-radius: 4px;">
+                        <option value="b">binomial test</option>
+                        <option value="c">chi-square test</option>
+                        <option value="h">hypergeometric test / Fisher's exact test</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px">
+                <label class="control-label col-sm-2 col-sm-offset-1">Error detection rate(FDR)</label>
+                <div class="col-sm-6">
+                    <select class="form-control" name="n" style="border-radius: 4px;">
+                        <option value="BH" selected="selected">Benjamini and Hochberg</option>
+                        <option value="BY">Benjamini and Yekutieli</option>
+                        <option value="QVALUE">QVALUE</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px">
+                <label class="control-label col-sm-2 col-sm-offset-1">Set threshold cuttoff:</label>
+                <div class="col-sm-6">
+                    <input class="form-control" type="text" value="5"
+                    style="border-radius: 4px"
+                    name="c" id="offset"/>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px">
+                <label class="control-label col-sm-2 col-sm-offset-1">Set p-value cuttoff:</label>
+                <div class="col-sm-6">
+                    <input class="form-control" type="text" value="0.05" name="pval"
+                    id="pValueOffset"
+                    style="border-top-left-radius: 4px;
+                        border-bottom-left-radius: 4px;"/>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 25px">
+                <div class="actions col-sm-offset-3 col-sm-3">
+                    <input type="button" id="analyse" value="running"
+                    class="btn btn-primary" onclick="update()" style="width: 80%">
+                </div>
+                <div class="actions col-sm-offset-1/2 col-sm-3">
+                    <button type="reset" class="btn btn-primary" style="width: 80%;
+                        margin-left: 50px">reset</button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <div id="result" style="display: none">
+            <hr>
+            <label style="margin-left: 20px">Select the attributes to display:</label>
+            <div id="checkbox" class="checkbox" style="margin-left: 40px">
+
+            </div>
+            <div id="toolbar">
+                    &nbsp;Keyword：
+            </div>
+            <div class="table-responsive panel-collapse collapse in " >
+                <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+                data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-search-align="left" data-multiple-search="true"
+                data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+                style="word-wrap: break-word">
+                    <thead>
+                        <tr>
+                            <th data-field="term" data-sortable="true">Term</th>
+                            <th data-field="database" data-sortable="true">Database</th>
+                            <th data-field="id" data-sortable="true">ID</th>
+                            <th data-field="input_num" data-sortable="true">Input number</th>
+                            <th data-field="back_num" data-sortable="true">Background number</th>
+                            <th data-field="p-value" data-sortable="true">P-Value</th>
+                            <th data-field="correct_pval" data-sortable="true">Corrected P-Value</th>
+                            <th data-field="input" data-sortable="true">Input</th>
+                            <th data-field="hyperlink" data-sortable="true">Hyperlink</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+            var originalHtml = ""
+
+            $(function () {
+                originalHtml = $("#result").html()
+                $("#egGene").click(function () {
+                    var eg = "OS01G0100100,OS01G0100200,OS01G0100300,OS01G0100400,OS01G0100466,OS01G0100500," +
+                            "OS01G0100600,OS01G0100650,OS01G0100700,OS01G0100800,OS01G0100900,OS01G0101150,OS01G0101200," +
+                            "OS01G0101300,OS01G0101600,OS01G0101700,OS01G0101800,OS01G0101850,OS01G0101900,OS01G0102000," +
+                            "OS01G0102300,OS01G0102400,OS01G0102500,OS01G0102600,OS01G0102700,OS01G0102800,OS01G0102850";
+                    $("#gene").val(eg);
+                });
+
+
+                function extractor(query) {
+                    var result = /([^,]+)$/.exec(query);
+                    if (result && result[1])
+                        return result[1].trim();
+                    return '';
+                }
+
+                $.ajax({
+                    url: "/SAGC/admin/getAllGeneId",
+                    type: "get",
+                    success: function (data) {
+                        $('#gene').typeahead({
+                            source: data,
+                            updater: function (item) {
+                                return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+                            },
+                            matcher: function (item) {
+                                var tquery = extractor(this.query);
+                                if (!tquery) return false;
+                                return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+                            },
+                            highlighter: function (item) {
+                                var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+                                return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                                    return '<strong>' + match + '</strong>'
+                                })
+                            }
+                        })
+                    }
+                });
+            })
+
+            function update() {
+                $.ajax({
+                    url: "@routes.AnalyseController.checkKegg()",
+                    type: "post",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        var index = layer.load(1, {
+                            shade: [0.1, '#fff']
+                        });
+                        if (data.valids == "true") {
+                            layer.close(index)
+                            swal("Error!", data.messages, "error")
+
+                        } else {
+                            $("#analyse").attr("disabled", true).html("Analyse...")
+                            $("#result").empty().append(originalHtml);
+                            var array = ["Database", "ID", "Input number", "Background number", "P-Value", "Corrected P-Value", "Input", "Hyperlink"]
+                            var values = ["database", "id", "input_num", "back_num", "p-value", "correct_pval", "input", "hyperlink"]
+                            var html = ""
+                            $.each(array, function (n, value) {
+                                        html += "<label style='margin-right: 15px'>" +
+                                                "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
+                                                "</label>"
+                                    }
+                            );
+                            $("#checkbox").append(html)
+
+                            $.ajax({
+                                url: "@routes.AnalyseController.keggResult()",
+                                type: "post",
+                                dataType: "json",
+                                data: $("#conditionForm").serialize(),
+                                success: function (data) {
+                                    $('#table').bootstrapTable({data: data});
+                                    $("#analyse").attr("disabled", false).html("To Analyse").blur()
+                                    var hiddenArray = ["correct_pval", "input"]
+                                    $.each(hiddenArray, function (n, value) {
+                                        $('#table').bootstrapTable('hideColumn', value);
+                                        $("input:checkbox[value=" + value + "]").attr("checked", false)
+                                    });
+                                    $("#result").show()
+                                    layer.close(index)
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            function setColumns(value) {
+                var element = $("input:checkbox[value=" + value + "]")
+                if (element.is(":checked")) {
+                    $('#table').bootstrapTable('showColumn', value);
+                } else {
+                    $('#table').bootstrapTable('hideColumn', value);
+                }
+            }
+
+    </script>
+
+}

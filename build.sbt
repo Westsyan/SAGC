@@ -22,6 +22,8 @@ libraryDependencies += "com.github.tototoshi" % "slick-joda-mapper_2.11" % "2.3.
 
 libraryDependencies += "commons-io" % "commons-io" % "2.5"
 
+libraryDependencies += "org.apache.commons" % "commons-math3" % "3.6.1"
+
 
 
       

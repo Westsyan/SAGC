@@ -3,25 +3,62 @@
 # ~~~~
 
 # Home page
-GET         /                                       controllers.IndexController.toIndex
-GET         /SAGC/search/toIndex                    controllers.SearchController.toIndex
-GET         /SAGC/search/linear                     controllers.SearchController.linear(id:String,sampleName:String)
-GET         /SAGC/search/selectByPosition           controllers.SearchController.selectByPosition(id:String,sampleName:String)
-GET         /SAGC/search/heatmap                    controllers.SearchController.heatmap(id:String,sampleName:String)
+GET         /                                         controllers.IndexController.toIndex
+GET         /SAGC/search/toIndex                      controllers.SearchController.toIndex
+GET         /SAGC/search/linear                       controllers.SearchController.linear(id:String,sampleName:String)
+GET         /SAGC/search/selectByPosition             controllers.SearchController.selectByPosition(id:String,sampleName:String)
+GET         /SAGC/search/heatmap                      controllers.SearchController.heatmap(id:String,sampleName:String)
+POST        /SAGC/search/checkPostion                 controllers.SearchController.checkPostion
 
-GET         /SAGC/admin/toIndex                     controllers.AdminController.toIndex
-GET         /SAGC/admin/loginBefore                 controllers.AdminController.loginBefore()
-GET         /SAGC/admin/login                       controllers.AdminController.login(phone:String,password:String)
-GET         /SAGC/admin/logout                      controllers.AdminController.logout
-GET         /SAGC/admin/changePasswordBefore        controllers.AdminController.changePasswordBefore()
-POST        /SAGC/admin/changePassword              controllers.AdminController.changePassword
-GET         /SAGC/admin/addmRNABefore               controllers.AdminController.addmRNABefore
-POST        /SAGC/admin/addmRNA                     controllers.AdminController.addmRNA
-GET         /SAGC/admin/deletemRNABefore            controllers.AdminController.deletemRNABefore
-GET          /SAGC/admin/deletemRNABySamplename     controllers.AdminController.deletemRNABySamplename(sampleName:String)
+GET         /SAGC/search/searchByRegion               controllers.GeneInformationController.regionIndex
+POST        /SAGC/search/searchbr                     controllers.GeneInformationController.searchByRegion
+GET         /SAGC/search/geneInfo                     controllers.GeneInformationController.selectByGeneId(id:String)
+GET         /SAGC/search/getMoreInfo                  controllers.GeneInformationController.getMoreInfo(id:String)
+POST        /SAGC/search/getAllChr                    controllers.GeneInformationController.getAllChr
 
-GET         /SAGC/admin/getAllSampleName            controllers.AdminController.getAllSampleName
-GET         /SAGC/admin/getAllGeneId                controllers.AdminController.getAllGeneId
+GET         /SAGC/download/toIndex                    controllers.DownLoadController.toIndex
+GET         /SAGC/download/getSamplename              controllers.DownLoadController.getName(sampleName:String)
+GET         /SAGC/download/allGene                    controllers.DownLoadController.selectAllgene(id:String,sampleName:String)
+POST        /SAGC/download/checkPostion               controllers.DownLoadController.checkPostion
+
+#GET         /SAGC/save/information/save             controllers.GeneInformationController.save
+
+GET         /SAGC/admin/toIndex                       controllers.AdminController.toIndex
+GET         /SAGC/admin/loginBefore                   controllers.AdminController.loginBefore()
+GET         /SAGC/admin/login                         controllers.AdminController.login(phone:String,password:String)
+GET         /SAGC/admin/logout                        controllers.AdminController.logout
+GET         /SAGC/admin/changePasswordBefore          controllers.AdminController.changePasswordBefore()
+POST        /SAGC/admin/changePassword                controllers.AdminController.changePassword
+GET         /SAGC/admin/addmRNABefore                 controllers.AdminController.addmRNABefore
+POST        /SAGC/admin/addmRNA                       controllers.AdminController.addmRNA
+GET         /SAGC/admin/deletemRNABefore              controllers.AdminController.deletemRNABefore
+GET         /SAGC/admin/deletemRNABySamplename        controllers.AdminController.deletemRNABySamplename(sampleName:String)
+GET         /SAGC/admin/getAllSampleName              controllers.AdminController.getAllSampleName
+GET         /SAGC/admin/getAllGeneId                  controllers.AdminController.getAllGeneId
+
+GET         /SAGC/analyse/Ttest                       controllers.AnalyseController.tTest
+GET         /SAGC/analyse/cHeatmap                    controllers.AnalyseController.cHeatmap
+POST        /SAGC/analyse/checkSamplename             controllers.AnalyseController.checkPostion
+POST        /SAGC/analyse/checkSample                 controllers.AnalyseController.checkSample
+GET         /SAGC/analyse/result                      controllers.AnalyseController.selectAllgene(group1:String,group2:String,c:String,pval:String)
+GET         /SAGC/analyse/heatmap                     controllers.AnalyseController.CorrelationHeatmap(samplename:String,method:String)
+GET         /SAGC/analyse/kegg                        controllers.AnalyseController.kegg
+POST        /SAGC/analyse/checkKegg                   controllers.AnalyseController.checkKegg
+POST        /SAGC/analyse/keggEnrichment              controllers.AnalyseController.keggResult
+GET         /SAGC/analyse/go                          controllers.AnalyseController.go
+POST        /SAGC/analyse/checkGo                     controllers.AnalyseController.checkGo
+POST        /SAGC/analyse/goEnrichment                controllers.AnalyseController.goResult
+GET         /SAGC/analyse/boxMoreInfo                 controllers.GeneInformationController.moreInfoBoxPlot(id:String,group1:String,group2:String)
+GET         /SAGC/analyse/circBoxPlot                 controllers.SearchController.circBoxPlot(id:String,group1:String,group2:String)
+
+GET         /SAGC/tools/seqIndex                      controllers.ToolsController.seqIndex
+POST        /SAGC/tools/seqFetch                      controllers.ToolsController.seqFetch
+GET         /SAGC/tools/regionIndex                   controllers.ToolsController.regionIndex
+POST        /SAGC/tools/seqRegion                     controllers.ToolsController.seqRegion
+GET         /SAGC/tools/geneBlastnIndex               controllers.ToolsController.geneBlastn
+GET         /SAGC/tools/genomeBlastnIndex             controllers.ToolsController.genomeBlastn
+
+
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                           controllers.Assets.at(path="/public", file)
+GET         /assets/*file                             controllers.Assets.at(path="/public", file)

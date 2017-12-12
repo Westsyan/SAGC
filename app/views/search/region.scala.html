@@ -1,0 +1,214 @@
+@search.mainWithSearch("Search By Region") {
+
+    <div class="container">
+        <form class="registration-form form-horizontal" id="conditionForm"
+        style="margin: 20px;" >
+
+            <div class="form-group col-sm-12">
+                <h2 class="page-heading"
+                style="text-align: left;
+                    border-bottom: 5px solid #e9f3f4">Search By Region</h2>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">Chromosome:</label>
+                <div class="col-sm-2">
+                    <select name="chr" id="chr" class="checkbox form-control chr"></select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">Start:</label>
+                <div class="col-sm-2">
+                    <input class="form-control" name="start" id="start">
+                </div>
+                <label class="control-label">e.g., <a href="#"><em id="egStart">15</em></a></label>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">End:</label>
+                <div class="col-sm-2">
+                    <input class="form-control" name="end" id="end">
+                </div>
+                <label class="control-label">e.g., <a href="#"><em id="egEnd">600000</em></a></label>
+            </div>
+
+            <div class="form-group" style="margin-top: 25px">
+                <div class="actions col-sm-offset-2 col-sm-3">
+                    <input type="button" id="search" value="search"
+                    class="btn btn-primary" onclick="mySearch()" style="width: 60%">
+                </div>
+            </div>
+        </form>
+        <br>
+        <div id="result" style="display: none">
+            <hr>
+            <label style="margin-left: 20px">Select the attributes to display:</label>
+            <div id="checkbox" class="checkbox" style="margin-left: 40px">
+
+            </div>
+            <div id="toolbar">
+                    &nbsp;Keyword：
+            </div>
+            <div class="table-responsive panel-collapse collapse in " >
+                <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+                data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-search-align="left" data-multiple-search="true"
+                data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+                style="word-wrap: break-word">
+                    <thead>
+                        <tr>
+                            <th data-field="geneId" data-sortable="true">Gene ID</th>
+                            <th data-field="genename" data-sortable="true">Gene Name</th>
+                            <th data-field="Chromosome" data-sortable="true">Chromosome</th>
+                            <th data-field="Gene_start" data-sortable="true">Start</th>
+                            <th data-field="Gene_end" data-sortable="true">End</th>
+                            <th data-field="Strand" data-sortable="true">Strand</th>
+                            <th data-field="FUNC" data-sortable="true">FUNC</th>
+                            <th data-field="GO" data-sortable="true">GO</th>
+                            <th data-field="KEGG" data-sortable="true">KEGG</th>
+                            <th data-field="IPR_Id" data-sortable="true">IPR ID</th>
+                            <th data-field="IPR_Descrip" data-sortable="true">IPR Descrip</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+
+            var originalHtml = ""
+
+            $(function () {
+                originalHtml = $("#result").html()
+
+                $("#egStart").click(function () {
+                    var eg = $(this).text().trim();
+                    $('#start').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "start")
+                });
+                $("#egEnd").click(function () {
+                    var eg = $(this).text().trim();
+                    $('#end').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "end")
+                });
+
+                $.ajax({
+                    url: "@routes.GeneInformationController.getAllChr()",
+                    type: "post",
+                    success: function (data) {
+                        $(".chr").select2(
+                                {
+                                    data: data,
+                                }
+                        );
+                    }
+                });
+
+                var array = ["Gene Name", "Chromosome", "Start", "End", "Strand", "FUNC", "GO", "KEGG", "IPR ID", "IPR Descrip"]
+                var values = ["genename", "Chromosome", "Gene_Start", "Gene_End", "Strand", "FUNC", "GO", "KEGG", "IPR_Id", "IPR_Descrip"]
+                var html = ""
+                $.each(array, function (n, value) {
+                            html += "<label style='margin-right: 15px'>" +
+                                    "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
+                                    "</label>"
+                        }
+                );
+                $("#checkbox").append(html)
+
+                $('#table').bootstrapTable({});
+                var hiddenArray = ["genename", "GO", "KEGG", "IPR_Id", "IPR_Descrip"]
+                $.each(hiddenArray, function (n, value) {
+                            $('#table').bootstrapTable('hideColumn', value);
+                            $("input:checkbox[value=" + value + "]").attr("checked", false)
+                        }
+                );
+
+                formValidation()
+            })
+
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        chr: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Chromosome is required！'
+                                },
+                            }
+                        },
+                        start: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Start is required！'
+                                },
+                                integer: {
+                                    message: 'Start must be integer！'
+                                },
+                                between: {
+                                    min: '0',
+                                    max: '99999999',
+                                    message: "The start not in range！"
+                                },
+
+                            }
+                        },
+                        end: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'End is required！'
+                                },
+                                integer: {
+                                    message: 'End must be integer！'
+                                },
+                                between: {
+                                    min: 'start',
+                                    max: '99999999',
+                                    message: "The end not in range！"
+                                },
+
+                            }
+                        },
+                    }
+                });
+            }
+
+            function mySearch() {
+                var form = $("#conditionForm")
+                var fv = form.data("formValidation")
+                fv.validate()
+                if (fv.isValid()) {
+                    var index = layer.load(1, {
+                        shade: [0.1, '#fff']
+                    });
+                    $("#search").attr("disabled", true).html("Search...")
+                    $.ajax({
+                        url: "@routes.GeneInformationController.searchByRegion()",
+                        type: "post",
+                        data: $("#conditionForm").serialize(),
+                        success: function (data) {
+                            $('#table').bootstrapTable("load", data);
+                            $("#search").attr("disabled", false).html("Search").blur()
+                            $("#result").show()
+                            layer.close(index)
+                        }
+                    });
+                }
+            }
+
+            function setColumns(value) {
+                var element = $("input:checkbox[value=" + value + "]")
+                if (element.is(":checked")) {
+                    $('#table').bootstrapTable('showColumn', value);
+                } else {
+                    $('#table').bootstrapTable('hideColumn', value);
+                }
+            }
+    </script>
+
+}
