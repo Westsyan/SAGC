@@ -15,13 +15,16 @@ POST        /SAGC/search/searchbr                     controllers.GeneInformatio
 GET         /SAGC/search/geneInfo                     controllers.GeneInformationController.selectByGeneId(id:String)
 GET         /SAGC/search/getMoreInfo                  controllers.GeneInformationController.getMoreInfo(id:String)
 POST        /SAGC/search/getAllChr                    controllers.GeneInformationController.getAllChr
+GET         /SAGC/search/searchBySRegion              controllers.GeneInformationController.searchBySRegion
+GET         /SAGC/search/getSBySRegion                controllers.GeneInformationController.getSBySRegion
+POST        /SAGC/search/checkRegion                  controllers.GeneInformationController.checkRegion
 
 GET         /SAGC/download/toIndex                    controllers.DownLoadController.toIndex
 GET         /SAGC/download/getSamplename              controllers.DownLoadController.getName(sampleName:String)
 GET         /SAGC/download/allGene                    controllers.DownLoadController.selectAllgene(id:String,sampleName:String)
 POST        /SAGC/download/checkPostion               controllers.DownLoadController.checkPostion
 
-#GET         /SAGC/save/information/save             controllers.GeneInformationController.save
+
 
 GET         /SAGC/admin/toIndex                       controllers.AdminController.toIndex
 GET         /SAGC/admin/loginBefore                   controllers.AdminController.loginBefore()
@@ -34,6 +37,7 @@ POST        /SAGC/admin/addmRNA                       controllers.AdminControlle
 GET         /SAGC/admin/deletemRNABefore              controllers.AdminController.deletemRNABefore
 GET         /SAGC/admin/deletemRNABySamplename        controllers.AdminController.deletemRNABySamplename(sampleName:String)
 GET         /SAGC/admin/getAllSampleName              controllers.AdminController.getAllSampleName
+POST        /SAGC/admin/getAllSample                  controllers.AdminController.getAllSample
 GET         /SAGC/admin/getAllGeneId                  controllers.AdminController.getAllGeneId
 
 GET         /SAGC/analyse/Ttest                       controllers.AnalyseController.tTest
@@ -50,15 +54,29 @@ POST        /SAGC/analyse/checkGo                     controllers.AnalyseControl
 POST        /SAGC/analyse/goEnrichment                controllers.AnalyseController.goResult
 GET         /SAGC/analyse/boxMoreInfo                 controllers.GeneInformationController.moreInfoBoxPlot(id:String,group1:String,group2:String)
 GET         /SAGC/analyse/circBoxPlot                 controllers.SearchController.circBoxPlot(id:String,group1:String,group2:String)
+GET         /SAGC/analyse/clusterIndex                controllers.AnalyseController.clusterIndex
+GET         /SAGC/analyse/clusterResult               controllers.AnalyseController.clusterRun(id:String ,sampleName : String)
+GET         /SAGC/analyse/scatterplot                 controllers.AnalyseController.scatterPlot(sample1:String,sample2:String)
+GET         /SAGC/analyse/scatterIndex                controllers.AnalyseController.scatterIndex
 
 GET         /SAGC/tools/seqIndex                      controllers.ToolsController.seqIndex
 POST        /SAGC/tools/seqFetch                      controllers.ToolsController.seqFetch
 GET         /SAGC/tools/regionIndex                   controllers.ToolsController.regionIndex
 POST        /SAGC/tools/seqRegion                     controllers.ToolsController.seqRegion
 GET         /SAGC/tools/geneBlastnIndex               controllers.ToolsController.geneBlastn
+POST        /SAGC/tools/geneBlastnResult              controllers.ToolsController.geneBlastnRun
 GET         /SAGC/tools/genomeBlastnIndex             controllers.ToolsController.genomeBlastn
+POST        /SAGC/tools/genomeBlastnResult            controllers.ToolsController.genomeBlastnRun
+GET         /SAGC/tools/coIndex                       controllers.ToolsController.coIndex
+GET         /SAGC/tools/coResult                      controllers.ToolsController.coResult(id:String,rvalue:String)
+POST        /SAGC/tools/correlation                   controllers.ToolsController.networkResult(id:String,rvalue:String)
+POST        /SAGC/tools/correlationInfo               controllers.ToolsController.correlationInfo(id:String,rvalue:String)
+
+POST        /SAGC/check/checkCo                       controllers.CheckController.checkCo
 
 
+#GET         /SAGC/save/information/save             controllers.SaveDatabase.saveMRNAProfile
+#GET         /SAGC/save/information/correlation             controllers.SaveDatabase.saveCorrelation
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                             controllers.Assets.at(path="/public", file)

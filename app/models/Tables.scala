@@ -13,9 +13,38 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Geneid.schema ++ Geneinformation.schema ++ Mrnaprofile.schema ++ MrnaprofileCopy.schema ++ Password.schema
+  lazy val schema: profile.SchemaDescription = Correlation.schema ++ Geneid.schema ++ Geneinformation.schema ++ Mrnaprofile.schema ++ Password.schema
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
+
+  /** Entity class storing rows of table Correlation
+   *  @param gene1 Database column gene1 SqlType(VARCHAR), Length(255,true)
+   *  @param gene2 Database column gene2 SqlType(VARCHAR), Length(255,true)
+   *  @param correlation Database column correlation SqlType(DOUBLE) */
+  final case class CorrelationRow(gene1: String, gene2: String, correlation: Double)
+  /** GetResult implicit for fetching CorrelationRow objects using plain SQL queries */
+  implicit def GetResultCorrelationRow(implicit e0: GR[String], e1: GR[Double]): GR[CorrelationRow] = GR{
+    prs => import prs._
+    CorrelationRow.tupled((<<[String], <<[String], <<[Double]))
+  }
+  /** Table description of table correlation. Objects of this class serve as prototypes for rows in queries. */
+  class Correlation(_tableTag: Tag) extends profile.api.Table[CorrelationRow](_tableTag, Some("sagc"), "correlation") {
+    def * = (gene1, gene2, correlation) <> (CorrelationRow.tupled, CorrelationRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = (Rep.Some(gene1), Rep.Some(gene2), Rep.Some(correlation)).shaped.<>({r=>import r._; _1.map(_=> CorrelationRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column gene1 SqlType(VARCHAR), Length(255,true) */
+    val gene1: Rep[String] = column[String]("gene1", O.Length(255,varying=true))
+    /** Database column gene2 SqlType(VARCHAR), Length(255,true) */
+    val gene2: Rep[String] = column[String]("gene2", O.Length(255,varying=true))
+    /** Database column correlation SqlType(DOUBLE) */
+    val correlation: Rep[Double] = column[Double]("correlation")
+
+    /** Primary key of Correlation (database name correlation_PK) */
+    val pk = primaryKey("correlation_PK", (gene1, gene2))
+  }
+  /** Collection-like TableQuery object for table Correlation */
+  lazy val Correlation = new TableQuery(tag => new Correlation(tag))
 
   /** Entity class storing rows of table Geneid
    *  @param id Database column id SqlType(VARCHAR), PrimaryKey, Length(255,true) */
@@ -124,35 +153,6 @@ trait Tables {
   }
   /** Collection-like TableQuery object for table Mrnaprofile */
   lazy val Mrnaprofile = new TableQuery(tag => new Mrnaprofile(tag))
-
-  /** Entity class storing rows of table MrnaprofileCopy
-   *  @param geneid Database column geneId SqlType(VARCHAR), Length(255,true)
-   *  @param samplename Database column sampleName SqlType(VARCHAR), Length(255,true)
-   *  @param value Database column value SqlType(DOUBLE) */
-  final case class MrnaprofileCopyRow(geneid: String, samplename: String, value: Double)
-  /** GetResult implicit for fetching MrnaprofileCopyRow objects using plain SQL queries */
-  implicit def GetResultMrnaprofileCopyRow(implicit e0: GR[String], e1: GR[Double]): GR[MrnaprofileCopyRow] = GR{
-    prs => import prs._
-    MrnaprofileCopyRow.tupled((<<[String], <<[String], <<[Double]))
-  }
-  /** Table description of table mrnaprofile_copy. Objects of this class serve as prototypes for rows in queries. */
-  class MrnaprofileCopy(_tableTag: Tag) extends profile.api.Table[MrnaprofileCopyRow](_tableTag, Some("sagc"), "mrnaprofile_copy") {
-    def * = (geneid, samplename, value) <> (MrnaprofileCopyRow.tupled, MrnaprofileCopyRow.unapply)
-    /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(geneid), Rep.Some(samplename), Rep.Some(value)).shaped.<>({r=>import r._; _1.map(_=> MrnaprofileCopyRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
-
-    /** Database column geneId SqlType(VARCHAR), Length(255,true) */
-    val geneid: Rep[String] = column[String]("geneId", O.Length(255,varying=true))
-    /** Database column sampleName SqlType(VARCHAR), Length(255,true) */
-    val samplename: Rep[String] = column[String]("sampleName", O.Length(255,varying=true))
-    /** Database column value SqlType(DOUBLE) */
-    val value: Rep[Double] = column[Double]("value")
-
-    /** Primary key of MrnaprofileCopy (database name mrnaprofile_copy_PK) */
-    val pk = primaryKey("mrnaprofile_copy_PK", (samplename, geneid))
-  }
-  /** Collection-like TableQuery object for table MrnaprofileCopy */
-  lazy val MrnaprofileCopy = new TableQuery(tag => new MrnaprofileCopy(tag))
 
   /** Entity class storing rows of table Password
    *  @param id Database column id SqlType(INT), PrimaryKey

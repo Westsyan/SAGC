@@ -101,7 +101,6 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
             geneIdDao.insertAll(geneIdRows)*/
       val geneIds = Await.result(geneIdDao.selectAll, Duration.Inf)
       val geneIdMap = geneIds.map(x => (x.id, 1)).toMap
-      println(geneIdMap.size)
       val sampleNames = buffer.head.split("\t").drop(1)
       val startTime = System.currentTimeMillis()
       val rowsSize = geneIds.size * sampleNames.size
@@ -206,6 +205,12 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
 
   def getAllSampleName: Action[AnyContent] = Action.async { implicit request =>
     mRNAProfileDao.selectAllSampleName.map { x =>
+      Ok(Json.toJson(x))
+    }
+  }
+  def getAllSample: Action[AnyContent] = Action.async { implicit request =>
+    mRNAProfileDao.selectAllSampleName.map { x =>
+      println(132456)
       Ok(Json.toJson(x))
     }
   }

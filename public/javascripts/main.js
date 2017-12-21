@@ -70,7 +70,7 @@ function linear(url) {
                     },
                     min: 0,
                     title: {
-                        text: 'Expression (TPM)'
+                        text: 'Expression (HKM)'
                     },
                     plotLines: [{
                         value: 0,
@@ -407,7 +407,7 @@ function heatmap(url) {
                             color: '#555',
                             fontSize: '12px'
                         },
-                        text: 'TPM (log2+1)'
+                        text: 'HKM (log2+1)'
                     },
                     align: 'right',
                     layout: 'vertical',
@@ -418,7 +418,7 @@ function heatmap(url) {
                 },
                 tooltip: {
                     formatter: function () {
-                        return '<b>Sample Name:</b>' + this.series.xAxis.categories[this.point.x] + '<br>' + this.series.yAxis.categories[this.point.y] + '<br><b>TPM (log2+1): ' + this.point.value + '</b>';
+                        return '<b>Sample Name:</b>' + this.series.xAxis.categories[this.point.x] + '<br>' + this.series.yAxis.categories[this.point.y] + '<br><b>HKM (log2+1): ' + this.point.value + '</b>';
                     }
                 },
                 series: [{
@@ -564,6 +564,7 @@ function cheatmap(url) {
             }, function (chartObj) {
                 //获得图表对象
                 chart = chartObj;
+                $("#heatmap").attr("disabled", false).html("Running").blur()
             });
 
         }

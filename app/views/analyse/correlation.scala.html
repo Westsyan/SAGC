@@ -36,7 +36,7 @@
             <div class="form-group" style="margin-top: 30px">
                 <div class="actions col-sm-offset-3 col-sm-3">
                     <button type="button" class="btn btn-primary" style="width: 80%;" id="heatmap" onclick="mySearch()">
-                        To analyze</button>
+                        Running</button>
                 </div>
                 <div class="actions col-sm-offset-1/2 col-sm-3">
                     <button type="reset" class="btn btn-primary" style="width: 80%;
@@ -109,6 +109,7 @@
                             swal("Error!", data.messages, "error")
 
                         } else {
+                            $("#heatmap").attr("disabled", true).html("Drawing...")
                             $("#result").empty().append(originalHtml);
                             cheatmap("heatmap")
                             $("#result").show()

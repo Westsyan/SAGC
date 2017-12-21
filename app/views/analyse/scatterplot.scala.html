@@ -1,0 +1,170 @@
+@analyse.highcharts("PCA Scatter Plot") {
+
+    <div class="container">
+        <form class="registration-form form-horizontal" id="conditionForm"
+        style="margin: 20px;">
+
+            <div class="form-group col-sm-12">
+                <h2 class="page-heading"
+                style="text-align: left;
+                    border-bottom: 5px solid #e9f3f4">PCA Scatter Plot</h2>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">Sample1:</label>
+                <div class="col-sm-2">
+                    <select name="sample1" id="sample1" class="checkbox form-control sample1"></select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">Sample2:</label>
+                <div class="col-sm-2">
+                    <select name="sample2" id="sample2" class="checkbox form-control sample2"></select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 25px">
+                <div class="actions col-sm-offset-2 col-sm-3">
+                    <input type="button" id="search" value="search"
+                    class="btn btn-primary" onclick="mySearch()" style="width: 60%">
+                </div>
+            </div>
+            <br>
+            <br>
+            <div id="result" style="display: none;" >
+                <div class="row">
+                    <div class="well" role="alert">
+                        <div id="charts"></div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+            var originalHtml = ""
+
+            $(function () {
+                originalHtml = $("#result").html()
+
+                $.ajax({
+                    url: "@routes.AdminController.getAllSample()",
+                    type: "post",
+                    success: function (data) {
+                        $(".sample1").select2(
+                                {
+                                    data: data,
+                                }
+                        );
+                        $(".sample2").select2(
+                                {
+                                    data: data,
+                                }
+                        );
+                    }
+                });
+
+                function extractor(query) {
+                    var result = /([^,]+)$/.exec(query);
+                    if (result && result[1])
+                        return result[1].trim();
+                    return '';
+                }
+
+            })
+
+            function mySearch() {
+                $.ajax({
+                    url: "/SAGC/analyse/scatterplot",
+                    type: "get",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        $("#search").attr("disabled", true).html("Drawing...")
+                        $("#result").empty().append(originalHtml);
+                        scatterPlot(data)
+                        $("#result").show()
+                    }
+                });
+
+            }
+
+
+            function scatterPlot(data) {
+
+                var data1 = [],
+                        n = data.length,
+                        i;
+                for (i = 0; i < n; i += 1) {
+                    data1.push(
+                            data.series[i]
+                    );
+                }
+                $('#charts').highcharts({
+                    chart: {
+                        type: 'scatter',
+                        zoomType: 'xy',
+                        height: 850,
+                        marginTop: 65,
+                        marginBottom: 100,
+                        marginLeft: 280,
+                        marginRight: 280
+                    },
+                    title: {
+                        text: 'Principal component analysis'
+                    },
+                    subtitle: {
+                        text: 'Correlation:' + data.correlation
+                    },
+                    xAxis: {
+                        title: {
+                            enabled: true,
+                            text: 'PC1(' + data.pc1 + ")"
+                        },
+                        startOnTick: true,
+                        endOnTick: true,
+                        showLastLabel: true
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'PC2(' + data.pc2 + ")"
+                        },
+                        gridLineWidth: 0
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        scatter: {
+                            marker: {
+                                radius: 2,
+                                symbol: 'circle',
+                                states: {
+                                    hover: {
+                                        enabled: true,
+                                        lineColor: 'rgb(100,100,100)'
+                                    }
+                                }
+                            },
+                            states: {
+                                hover: {
+                                    marker: {
+                                        enabled: false
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                headerFormat: '<b>{series.name}</b><br>',
+                                pointFormat: '{point.x} , {point.y} '
+                            }
+                        }
+                    },
+                    series: data1
+                });
+                $("#search").attr("disabled", false).html("Search").blur()
+            }
+
+
+    </script>
+}

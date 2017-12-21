@@ -1,0 +1,194 @@
+@main("Search By Region") {
+
+    <div class="container">
+        <form class="registration-form form-horizontal" action="getSBySRegion" method="get" id="conditionForm"
+        style="margin: 20px;" >
+
+            <div class="form-group col-sm-12">
+                <h2 class="page-heading"
+                style="text-align: left;
+                    border-bottom: 5px solid #e9f3f4">Search By Region</h2>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">Chromosome:</label>
+                <div class="col-sm-2">
+                    <select name="chr" id="chr" class="checkbox form-control chr"></select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">Start:</label>
+                <div class="col-sm-2">
+                    <input class="form-control" name="start" id="start">
+                </div>
+                <label class="control-label">e.g., <a href="#"><em id="egStart">15</em></a></label>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">End:</label>
+                <div class="col-sm-2">
+                    <input class="form-control" name="end" id="end">
+                </div>
+                <label class="control-label">e.g., <a href="#"><em id="egEnd">600000</em></a></label>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">Sample Name:</label>
+                <div class="col-sm-6">
+                    <textarea class="form-control" name="sampleName" id="sample" rows="5"
+                    style="border-radius: 4px;" required></textarea>
+                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egSample">
+                        Example</em></a></span>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 25px">
+                <div class="actions col-sm-offset-2 col-sm-3">
+                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                        Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script>
+
+            $(function () {
+                $("#egStart").click(function () {
+                    var eg = $(this).text().trim();
+                    $('#start').val(eg);
+              //      $("#conditionForm").formValidation("revalidateField", "start")
+                });
+                $("#egEnd").click(function () {
+                    var eg = $(this).text().trim();
+                    $('#end').val(eg);
+                //    $("#conditionForm").formValidation("revalidateField", "end")
+                });
+
+                $('#egSample').click(function () {
+                    var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036";
+                    $('#sample').val(eg);
+                });
+
+                $.ajax({
+                    url: "/SAGC/admin/getAllSampleName",
+                    type: "get",
+                    success: function (data) {
+                        $('#sample').typeahead({
+                            source: data,
+                            updater: function (item) {
+                                return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+                            },
+                            matcher: function (item) {
+                                var tquery = extractor(this.query);
+                                if (!tquery) return false;
+                                return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+                            },
+                            highlighter: function (item) {
+                                var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+                                return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                                    return '<strong>' + match + '</strong>'
+                                })
+                            }
+                        })
+                    }
+                });
+
+                $.ajax({
+                    url: "@routes.GeneInformationController.getAllChr()",
+                    type: "post",
+                    success: function (data) {
+                        $(".chr").select2(
+                                {
+                                    data: data,
+                                }
+                        );
+                    }
+                });
+
+            //    formValidation()
+            })
+
+          /*  function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        chr: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Chromosome is required！'
+                                },
+                            }
+                        },
+                        start: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Start is required！'
+                                },
+                                integer: {
+                                    message: 'Start must be integer！'
+                                },
+                                between: {
+                                    min: '0',
+                                    max: '99999999',
+                                    message: "The start not in range！"
+                                },
+
+                            }
+                        },
+                        end: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'End is required！'
+                                },
+                                integer: {
+                                    message: 'End must be integer！'
+                                },
+                                between: {
+                                    min: 'start',
+                                    max: '99999999',
+                                    message: "The end not in range！"
+                                },
+
+                            }
+                        },
+                        sample:{
+                            validators:{
+                                remote:{
+                                    url: '/SAGC/search/formcheck',
+                                    type: 'post',
+                                    delay: 2000,
+                                    message: "已存在!"
+                                },
+                            }
+                        },
+
+
+                    }
+                });
+            }*/
+
+            function mySearch() {
+                $.ajax({
+                    url: "@routes.GeneInformationController.checkRegion()",
+                    type: "post",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        if (data.valids == "true") {
+                            swal("Error!", data.messages, "error")
+                        } else {
+                            $("#conditionForm").submit()
+                        }
+                    }
+                });
+            }
+
+    </script>
+
+}

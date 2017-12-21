@@ -1,0 +1,177 @@
+@search.mainWithSearch("Culstering Analyse") {
+
+    <div class="container">
+        <form class="registration-form form-horizontal" id="conditionForm"
+        style="margin: 20px">
+
+            <div class="form-group col-sm-12">
+                <h2 class="page-heading"
+                style="text-align: left;
+                    border-bottom: 5px solid #e9f3f4">Clustering analysis</h2>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px">
+                <label class="control-label col-sm-2 col-sm-offset-1">Gene Symbol:</label>
+                <div class="col-sm-6">
+                    <textarea class="form-control" name="id" id="gene" rows="5"
+                    style="border-radius: 4px;"></textarea>
+                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+                        Example</em></a></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2 col-sm-offset-1">Sample Name:</label>
+                <div class="col-sm-6">
+                    <textarea class="form-control" name="sampleName" id="sample" rows="5" style="border-radius: 4px;
+                        margin-top: 10px"
+                    ></textarea>
+                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eSample">
+                        Example</em></a></span>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 30px">
+                <div class="actions col-sm-offset-3 col-sm-3">
+                    <button type="button" class="btn btn-primary" style="width: 80%;" id="heatmap" onclick="mySearch()">
+                        Running</button>
+                </div>
+                <div class="actions col-sm-offset-1/2 col-sm-3">
+                    <button type="reset" class="btn btn-primary" style="width: 80%;
+                        margin-left: 50px">reset</button>
+                </div>
+            </div>
+            <br>
+            <br>
+            <div id="result" style="display: none;" >
+                <div class="row">
+                    <div class="well" role="alert">
+                        <div id="charts"></div>
+                        <div id="download" style="margin-top: 10px">
+                            <button type="button" class="btn btn-primary" onclick="downloadSvg()">
+                                <i class="fa fa-download"></i>&nbsp;下载SVG文件
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+
+            var originalHtml = ""
+            $(function () {
+                originalHtml = $("#result").html()
+
+                $('#egGene').click(function () {
+                    //输入的文本去掉两边的空格
+                    var eg = "OS01G0100100,OS01G0100200,OS01G0100300,OS01G0100400,OS01G0100466,OS01G0100500," +
+                            "OS01G0100600,OS01G0100650,OS01G0100800,OS01G0100900,OS01G0101150";
+                    $('#gene').val(eg);
+                });
+
+                $('#eSample').click(function () {
+                    //输入的文本去掉两边的空格
+                    var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036,B039";
+                    $('#sample').val(eg);
+                });
+
+                function extractor(query) {
+                    var result = /([^,]+)$/.exec(query);
+                    if (result && result[1])
+                        return result[1].trim();
+                    return '';
+                }
+
+                $.ajax({
+                    url: "/SAGC/admin/getAllGeneId",
+                    type: "get",
+                    success: function (data) {
+                        $('#gene').typeahead({
+                            source: data,
+                            updater: function (item) {
+                                return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+                            },
+                            matcher: function (item) {
+                                var tquery = extractor(this.query);
+                                if (!tquery) return false;
+                                return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+                            },
+                            highlighter: function (item) {
+                                var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+                                return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                                    return '<strong>' + match + '</strong>'
+                                })
+                            }
+                        })
+                    }
+                });
+
+                $.ajax({
+                    url: "/SAGC/admin/getAllSampleName",
+                    type: "get",
+                    success: function (data) {
+                        $('#sample').typeahead({
+                            source: data,
+                            updater: function (item) {
+                                return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+                            },
+                            matcher: function (item) {
+                                var tquery = extractor(this.query);
+                                if (!tquery) return false;
+                                return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+                            },
+                            highlighter: function (item) {
+                                var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+                                return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                                    return '<strong>' + match + '</strong>'
+                                })
+                            }
+                        })
+                    }
+                });
+
+            })
+
+            function downloadSvg() {
+                var fileName = "plot.svg"
+                var content = $("svg:first").prop("outerHTML")
+                var blob = new Blob([content], {
+                    type: "image/svg+xml;charset=utf-8"
+                })
+                saveAs(blob, fileName)
+            }
+
+
+            function mySearch() {
+                $.ajax({
+                    url: "@routes.SearchController.checkPostion()",
+                    type: "post",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        if (data.valids == "true") {
+                            swal("Error!", data.messages, "error")
+                        } else {
+                            $.ajax({
+                                url: "/SAGC/analyse/clusterResult",
+                                type: "get",
+                                dataType: "json",
+                                data: $("#conditionForm").serialize(),
+                                success: function (data) {
+                                    $("#heatmap").attr("disabled", true).html("Drawing...")
+                                    $("#result").empty().append(originalHtml);
+                                    $("#charts").html(data.div)
+                                    $("#result").show()
+                                    $("#heatmap").attr("disabled", false).html("Running").blur()
+                                }
+                            });
+                        }
+                    }
+                });
+
+            }
+
+    </script>
+}

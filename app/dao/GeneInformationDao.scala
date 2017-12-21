@@ -2,7 +2,7 @@ package dao
 
 import javax.inject.Inject
 
-import controllers.RegionData
+import controllers.{RegionData, SampleRegionData}
 import models.Tables
 import models.Tables._
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -29,6 +29,17 @@ class GeneInformationDao @Inject()(protected val dbConfigProvider: DatabaseConfi
     db.run(Geneinformation.filter(_.chromosome === data.chr).filter(_.geneStart >= data.start).
       filter(_.geneEnd <= data.end).result)
   }
+
+/*  def selectBySRegion(data: SampleRegionData) : Future[Seq[String]] = {
+    db.run(Geneinformation.filter(_.chromosome === data.chr).filter(_.geneStart >= data.start).
+      filter(_.geneEnd <= data.end).map(_.geneId).result)
+  }*/
+  def selectBySRegion(data: SampleRegionData) : Future[Seq[String]] = {
+    db.run(Geneinformation.filter(_.chromosome === data.chr).filter(_.geneStart >= data.start).
+      filter(_.geneEnd <= data.end).map(_.geneId).result)
+  }
+
+
   def allChr: Future[Seq[Int]] = {db.run(Geneinformation.map(_.chromosome).distinct.result)}
 
 }

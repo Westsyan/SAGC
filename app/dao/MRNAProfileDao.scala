@@ -59,6 +59,11 @@ class MRNAProfileDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     db.run(Mrnaprofile.filter(_.samplename.inSetBind(samples)).map(_.samplename).distinct.result)
   }
 
+  def selectValueByGeneid(geneId : String) : Future[Seq[Double]] = {
+    db.run(Mrnaprofile.filter(_.geneid === geneId).map(_.value).result)
+  }
+
+
   def deleteBySampleName(sampleName: String): Future[Unit] = {
     val samples = sampleName.split(",").map(_.trim).distinct
     db.run(Mrnaprofile.filter(_.samplename.inSetBind(samples)).delete).map(_ => ())

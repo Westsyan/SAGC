@@ -40,9 +40,9 @@ class SearchController  @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao
         val judge = x.size == idStr.length && y.size == samStr.length
         var valids = "false"
         if(judge == false){valids = "true"}
-          val invalidGeneId =  idStr.diff(x).mkString(",")
-          val invalidSampleName = samStr.diff(y).mkString(",")
-          val jsons = "The "+invalidGeneId + " " + invalidSampleName + " not in database!"
+          val invalidGeneId = "Gene Symbol: " + idStr.diff(x).mkString(",")
+          val invalidSampleName = "Sample Name:" + samStr.diff(y).mkString(",")
+          val jsons = "The "+invalidGeneId + " | " + invalidSampleName + " not in database!"
           val json=Json.obj("valids"->valids,"messages"->jsons)
           Ok(json)
         }
@@ -53,16 +53,15 @@ class SearchController  @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao
   def selectByPosition(id: String,sampleName:String) : Action[AnyContent]= Action.async { implicit request =>
     //获得以逗号分隔和除去空格的id
     val idStr = id.split(",").map(_.trim).distinct.mkString(",")
-    val samStr = sampleName.split(",").map(_.trim).distinct.mkString(",")
     geneInformationDao.selectById(idStr).map{x=>
-      Ok(views.html.search.result(idStr, samStr,x))
+      Ok(views.html.search.result(idStr, sampleName,x))
       }
     }
 
   def linear(id: String,sampleName:String): Action[AnyContent] = Action.async { implicit request =>
     //获得以逗号分隔和除去空格的id
-    val genes = id.split(",").map(_.trim)
-    val sams = sampleName.split(",").map(_.trim)
+    val genes = id.split(",").map(_.trim).distinct
+    val sams = sampleName.split(",").map(_.trim).distinct
     //根据id得到信息
     val mRNAProfiles = mRNAProfileDao.selectByPosition(id,sampleName)
   //  println(mRNAProfiles.value)
