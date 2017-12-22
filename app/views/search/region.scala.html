@@ -135,13 +135,6 @@
                         validating: 'glyphicon glyphicon-refresh'
                     },
                     fields: {
-                        chr: {
-                            validators: {
-                                notEmpty: {
-                                    message: 'Chromosome is required！'
-                                },
-                            }
-                        },
                         start: {
                             validators: {
                                 notEmpty: {
@@ -150,12 +143,10 @@
                                 integer: {
                                     message: 'Start must be integer！'
                                 },
-                                between: {
-                                    min: '0',
-                                    max: '99999999',
-                                    message: "The start not in range！"
+                                stringLength: {
+                                    max: 9,
+                                    message:"The number is to big!"
                                 },
-
                             }
                         },
                         end: {
@@ -168,10 +159,13 @@
                                 },
                                 between: {
                                     min: 'start',
-                                    max: '99999999',
-                                    message: "The end not in range！"
+                                    max: 99999999999,
+                                    message: "The end must be larger than the start！"
                                 },
-
+                                stringLength: {
+                                    max: 9,
+                                    message:"The number is to big!"
+                                },
                             }
                         },
                     }

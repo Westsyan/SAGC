@@ -4,50 +4,18 @@ import javax.inject.Inject
 
 import dao.{GeneIdDao, GeneInformationDao, MRNAProfileDao, PasswordDao}
 import org.apache.commons.math3.stat.StatUtils
-import play.api.data.Form
-import play.api.data.Forms._
 import play.api.libs.json.Json
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.math.log10
 
-case class checkPostionData(id:String,sampleName:String)
-
 class SearchController  @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDao,
                                   geneInformationDao : GeneInformationDao)extends Controller {
-
 
   def toIndex = Action {implicit request =>
     Ok(views.html.search.index())
   }
-
-  val form = Form(
-    mapping(
-      "id" -> text,
-      "sampleName" -> text
-    )(checkPostionData.apply)(checkPostionData.unapply)
-  )
-
-  def checkPostion = Action.async { implicit request =>
-    val data = form.bindFromRequest.get
-    val id = data.id
-    val sampleName = data.sampleName
-    val idStr = data.id.split(",").map(_.trim).distinct
-    val samStr = data.sampleName.split(",").map(_.trim).distinct
-    geneIdDao.selectById(id).flatMap{x=>
-      mRNAProfileDao.selectBySampleName(sampleName).map{ y=>
-        val judge = x.size == idStr.length && y.size == samStr.length
-        var valids = "false"
-        if(judge == false){valids = "true"}
-          val invalidGeneId = "Gene Symbol: " + idStr.diff(x).mkString(",")
-          val invalidSampleName = "Sample Name:" + samStr.diff(y).mkString(",")
-          val jsons = "The "+invalidGeneId + " | " + invalidSampleName + " not in database!"
-          val json=Json.obj("valids"->valids,"messages"->jsons)
-          Ok(json)
-        }
-      }
-    }
 
 //得到输入的基因ID
   def selectByPosition(id: String,sampleName:String) : Action[AnyContent]= Action.async { implicit request =>

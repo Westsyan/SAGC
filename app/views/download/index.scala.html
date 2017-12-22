@@ -36,7 +36,7 @@
 
             <div class="form-group" style="margin-top: 30px">
                 <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
                         Search</button>
                 </div>
                 <div class="actions col-sm-3">
@@ -70,8 +70,6 @@
         </div>
     </div>
 
-    </div>
-    </div>
     <script>
 
             var originalHtml = ""
@@ -82,11 +80,13 @@
                     var eg = "OS01G0100100,OS01G0100200,OS01G0100300,OS01G0100400,OS01G0100466,OS01G0100500," +
                             "OS01G0100600,OS01G0100650,OS01G0100800,OS01G0100900,OS01G0101150";
                     $('#gene').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "id")
                 });
 
                 $('#egSample').click(function () {
                     var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036";
                     $('#sample').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "sampleName")
                 });
 
                 function extractor(query) {
@@ -144,57 +144,84 @@
                     }
                 });
 
+                formValidation();
             })
 
-
-            function mySearch() {
-                $.ajax({
-                    url: "@routes.DownLoadController.checkPostion()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        var index = layer.load(1, {
-                            shade: [0.1, '#fff']
-                        });
-                        if (data.valids == "true") {
-                            layer.close(index)
-                            swal("Error!", data.messages, "error")
-                        } else {
-                            $("#search").attr("disabled", true).html("Search...")
-                            $.ajax({
-                                url: "/SAGC/download/getSamplename",
-                                type: "get",
-                                dataType: "json",
-                                data: $("#conditionForm").serialize(),
-                                success: function (data) {
-                                    $("#result").empty().append(originalHtml)
-                                    $.each(data, function (n, value) {
-                                                var html = "<label style='margin-right: 15px'>" +
-                                                        "<input type='checkbox' checked='checked' value='" + value + "' onclick=\"setColumns('" + value + "')\">" + value +
-                                                        "</label>"
-                                                var htm = "<th data-field='" + value + "' data-sortable='true'>" + value + "</th>"
-                                                $(".checkbox").append(html)
-                                                $("#marker").parent().append(htm)
-                                            }
-                                    );
-                                }
-                            });
-                            $.ajax({
-                                url: "/SAGC/download/allGene",
-                                type: "get",
-                                dataType: "json",
-                                data: $("#conditionForm").serialize(),
-                                success: function (data) {
-                                    $('#table').bootstrapTable({data: data.array});
-                                    $("#search").attr("disabled", false).html("Search").blur()
-                                    $("#result").show()
-                                    layer.close(index)
-                                }
-                            });
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        sampleName: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkSample',
+                                    delay: 2000
+                                },
+                            }
+                        },
+                        id: {
+                            validators: {
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkGeneId',
+                                    delay: 2000
+                                },
+                            }
                         }
                     }
                 });
+            }
+
+            function mySearch() {
+                var form = $("#conditionForm")
+                var fv = form.data("formValidation")
+                fv.validate()
+                if (fv.isValid()) {
+                    var index = layer.load(1, {
+                        shade: [0.1, '#fff']
+                    });
+                    $("#search").attr("disabled", true).html("Search...")
+                    $.ajax({
+                        url: "/SAGC/download/getSamplename",
+                        type: "get",
+                        dataType: "json",
+                        data: $("#conditionForm").serialize(),
+                        success: function (data) {
+                            $("#result").empty().append(originalHtml)
+                            $.each(data, function (n, value) {
+                                        var html = "<label style='margin-right: 15px'>" +
+                                                "<input type='checkbox' checked='checked' value='" + value + "' onclick=\"setColumns('" + value + "')\">" + value +
+                                                "</label>"
+                                        var htm = "<th data-field='" + value + "' data-sortable='true'>" + value + "</th>"
+                                        $(".checkbox").append(html)
+                                        $("#marker").parent().append(htm)
+                                    }
+                            );
+                        }
+                    });
+                    $.ajax({
+                        url: "/SAGC/download/allGene",
+                        type: "get",
+                        dataType: "json",
+                        data: $("#conditionForm").serialize(),
+                        success: function (data) {
+                            $('#table').bootstrapTable({data: data.array});
+                            $("#search").attr("disabled", false).html("Search").blur()
+                            $("#result").show()
+                            layer.close(index)
+                        }
+                    });
+                }
+
             }
 
             function setColumns(value) {

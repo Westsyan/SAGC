@@ -30,7 +30,7 @@
 
             <div class="form-group" style="margin-top: 30px">
                 <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="heatmap" onclick="mySearch()">
+                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search">
                         Running</button>
                 </div>
                 <div class="actions col-sm-offset-1/2 col-sm-3">
@@ -50,7 +50,15 @@
                     var eg = "OS01G0100100,OS01G0100200,OS01G0100300,OS01G0100400,OS01G0100466,OS01G0100500," +
                             "OS01G0100600,OS01G0100650,OS01G0100800,OS01G0100900,OS01G0101150";
                     $('#gene').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "id")
                 });
+
+                function extractor(query) {
+                    var result = /([^,]+)$/.exec(query);
+                    if (result && result[1])
+                        return result[1].trim();
+                    return '';
+                }
 
                 $.ajax({
                     url: "/SAGC/admin/getAllGeneId",
@@ -75,26 +83,51 @@
                         })
                     }
                 });
+
+
+                formValidation();
             })
 
-            function mySearch() {
-                $.ajax({
-                    url: "@routes.CheckController.checkCo()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        if (data.valids == "true") {
-                            swal("Error!", data.messages, "error")
-                        } else {
-                            $("#conditionForm").submit()
-                        }
+
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        id: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkGeneId',
+                                    delay: 2000
+                                },
+                            }
+                        },
+                        rvalue: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                number:{
+                                  message: 'Must be a number!'
+                                },
+                                between: {
+                                    min: '0',
+                                    max: '1',
+                                    message: "The r-value not be in range！"
+                                },
+                            }
+                        },
                     }
                 });
             }
-
-
-
 
     </script>
 }

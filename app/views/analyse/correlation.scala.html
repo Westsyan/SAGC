@@ -13,7 +13,7 @@
             <div class="form-group">
                 <label class="control-label col-sm-2 col-sm-offset-1">Sample Name:</label>
                 <div class="col-sm-6">
-                    <textarea class="form-control" name="samplename" id="samplename" rows="5" style="border-radius: 4px;
+                    <textarea class="form-control" name="sampleName" id="sampleName" rows="5" style="border-radius: 4px;
                         margin-top: 10px"
                     ></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eSample">
@@ -35,7 +35,7 @@
 
             <div class="form-group" style="margin-top: 30px">
                 <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="heatmap" onclick="mySearch()">
+                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="heatmap" onclick="mySearch()">
                         Running</button>
                 </div>
                 <div class="actions col-sm-offset-1/2 col-sm-3">
@@ -63,7 +63,8 @@
                 $('#eSample').click(function () {
                     //输入的文本去掉两边的空格
                     var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036,B039";
-                    $('#samplename').val(eg);
+                    $('#sampleName').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "sampleName")
                 });
 
                 function extractor(query) {
@@ -96,26 +97,44 @@
                         })
                     }
                 });
+                formValidation();
             })
 
-            function mySearch() {
-                $.ajax({
-                    url: "@routes.AnalyseController.checkSample()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        if (data.valids == "true") {
-                            swal("Error!", data.messages, "error")
-
-                        } else {
-                            $("#heatmap").attr("disabled", true).html("Drawing...")
-                            $("#result").empty().append(originalHtml);
-                            cheatmap("heatmap")
-                            $("#result").show()
-                        }
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        sampleName: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkSample',
+                                    delay: 2000
+                                },
+                            }
+                        },
                     }
                 });
+            }
+
+            function mySearch() {
+                var form = $("#conditionForm")
+                var fv = form.data("formValidation")
+                fv.validate()
+                if (fv.isValid()) {
+                    $("#heatmap").attr("disabled", true).html("Drawing...")
+                    $("#result").empty().append(originalHtml);
+                    cheatmap("heatmap")
+                    $("#result").show()
+                }
             }
 
     </script>

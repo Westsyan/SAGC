@@ -24,6 +24,7 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
       "end" -> number
     )(RegionData.apply)(RegionData.unapply)
   )
+
   val sampleRegionForm = Form(
     mapping(
       "chr" -> number,
@@ -32,33 +33,6 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
       "sampleName" -> text
     )(SampleRegionData.apply)(SampleRegionData.unapply)
   )
-
-  def checkRegion = Action.async { implicit request =>
-    val data = sampleRegionForm.bindFromRequest.get
-    val sampleName = data.sampleName
-    val start = data.start
-    val end = data.end
-    val samStr = data.sampleName.split(",").map(_.trim).distinct
-    geneInformationDao.selectBySRegion(data).flatMap { idStr =>
-      mRNAProfileDao.selectBySampleName(sampleName).map { y =>
-        val id = idStr.mkString(",")
-        val judge = idStr.size != 0 && y.size == samStr.length && start < end && end < 999999999
-        var valids = "false"
-        if (judge == false) {
-          valids = "true"
-        }
-        val invalidSampleName = "Sample Name:" + samStr.diff(y).mkString(",")
-        var jsons = ""
-        if(idStr.size == 0) {
-          jsons = "There is no value in the range"
-        }else{
-          jsons = "The "+ invalidSampleName + " not in database!"
-        }
-        val json = Json.obj("valids" -> valids, "messages" -> jsons)
-        Ok(json)
-      }
-    }
-  }
 
   def regionIndex = Action {
     Ok(views.html.search.region())
@@ -122,7 +96,6 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
     }
   }
 
-
   def getSBySRegion = Action.async { implicit request =>
     val data = sampleRegionForm.bindFromRequest.get
     val sampleName = data.sampleName
@@ -133,7 +106,6 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
       }
     }
   }
-
 
   def getAllChr = Action.async { implicit request =>
     geneInformationDao.allChr.map { x =>

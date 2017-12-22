@@ -45,7 +45,7 @@
 
             <div class="form-group" style="margin-top: 25px">
                 <div class="actions col-sm-offset-2 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search">
                         Search</button>
                 </div>
             </div>
@@ -57,18 +57,26 @@
                 $("#egStart").click(function () {
                     var eg = $(this).text().trim();
                     $('#start').val(eg);
-              //      $("#conditionForm").formValidation("revalidateField", "start")
+                    $("#conditionForm").formValidation("revalidateField", "start")
                 });
                 $("#egEnd").click(function () {
                     var eg = $(this).text().trim();
                     $('#end').val(eg);
-                //    $("#conditionForm").formValidation("revalidateField", "end")
+                    $("#conditionForm").formValidation("revalidateField", "end")
                 });
 
                 $('#egSample').click(function () {
                     var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036";
                     $('#sample').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "sampleName")
                 });
+
+                function extractor(query) {
+                    var result = /([^,]+)$/.exec(query);
+                    if (result && result[1])
+                        return result[1].trim();
+                    return '';
+                }
 
                 $.ajax({
                     url: "/SAGC/admin/getAllSampleName",
@@ -106,10 +114,10 @@
                     }
                 });
 
-            //    formValidation()
+                formValidation()
             })
 
-          /*  function formValidation() {
+            function formValidation() {
                 $('#conditionForm').formValidation({
                     framework: 'bootstrap',
                     icon: {
@@ -118,13 +126,6 @@
                         validating: 'glyphicon glyphicon-refresh'
                     },
                     fields: {
-                        chr: {
-                            validators: {
-                                notEmpty: {
-                                    message: 'Chromosome is required！'
-                                },
-                            }
-                        },
                         start: {
                             validators: {
                                 notEmpty: {
@@ -133,12 +134,10 @@
                                 integer: {
                                     message: 'Start must be integer！'
                                 },
-                                between: {
-                                    min: '0',
-                                    max: '99999999',
-                                    message: "The start not in range！"
+                                stringLength: {
+                                    max: 9,
+                                    message:"The number is to big!"
                                 },
-
                             }
                         },
                         end: {
@@ -151,43 +150,31 @@
                                 },
                                 between: {
                                     min: 'start',
-                                    max: '99999999',
-                                    message: "The end not in range！"
+                                    max: 99999999999,
+                                    message: "The end must be larger than the start！"
                                 },
-
-                            }
-                        },
-                        sample:{
-                            validators:{
-                                remote:{
-                                    url: '/SAGC/search/formcheck',
-                                    type: 'post',
-                                    delay: 2000,
-                                    message: "已存在!"
+                                stringLength: {
+                                    max: 9,
+                                    message:"The number is to big!"
                                 },
                             }
                         },
-
-
-                    }
-                });
-            }*/
-
-            function mySearch() {
-                $.ajax({
-                    url: "@routes.GeneInformationController.checkRegion()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        if (data.valids == "true") {
-                            swal("Error!", data.messages, "error")
-                        } else {
-                            $("#conditionForm").submit()
-                        }
+                        sampleName: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkSample',
+                                    delay: 2000
+                                },
+                            }
+                        },
                     }
                 });
             }
+
 
     </script>
 

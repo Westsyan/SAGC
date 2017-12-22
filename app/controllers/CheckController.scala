@@ -12,34 +12,106 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDao) extends Controller {
 
-  case class coData(id: String, rvalue: String)
+  case class sampleData(sampleName: String)
 
-  val coForm = Form(
+  val sampleForm = Form(
     mapping(
-      "id" -> text,
-      "rvalue" -> text
-    )(coData.apply)(coData.unapply)
+      "sampleName" -> text
+    )(sampleData.apply)(sampleData.unapply)
   )
 
-  def checkCo = Action.async { implicit request =>
-    val data = coForm.bindFromRequest.get
-    val id = data.id
-    val rvalue = data.rvalue
-    val geneid = id.split(",").map(_.trim).distinct
-    geneIdDao.selectById(id).map{x=>
-      val judge1 = x.size == geneid.size
-      val judge2 = rvalue.toDouble >0 && rvalue.toDouble <1
-      val judge = judge1 && judge2
-      var valids = "false"
-      if(judge == false){valids = "true"}
-      var jsons = ""
-      if(judge1 == false) {
-        jsons = "The Gene Symbol:" + geneid.diff(x).mkString(",") + " not in database!"
-      }else if(judge2 == false){
-        jsons = "The r-value nonconformity"
+  def checkSample = Action.async { implicit request =>
+    val data = sampleForm.bindFromRequest.get
+    val sample = data.sampleName
+    val samplename = sample.split(",").map(_.trim).distinct
+    mRNAProfileDao.selectBySampleName(sample).map { x =>
+      var valid = "true"
+      var message = ""
+      if (x.size != samplename.size) {
+        valid = "false"
+        val invalidSampleName = samplename.diff(x).mkString(",")
+        message = "The " + invalidSampleName + " not in database!"
       }
-        val json=Json.obj("valids"->valids,"messages"->jsons)
-      Ok(json)
+      val json = Json.obj("valid" -> valid, "message" -> message)
+      Ok(Json.toJson(json))
+    }
+  }
+
+  case class geneIdData(id: String)
+
+  val geneIdForm = Form(
+    mapping(
+      "id" -> text
+    )(geneIdData.apply)(geneIdData.unapply)
+  )
+
+  def checkGeneId = Action.async { implicit request =>
+    val data = geneIdForm.bindFromRequest.get
+    val id = data.id
+    val geneId = id.split(",").map(_.trim).distinct
+    geneIdDao.selectById(id).map { x =>
+      var valid = "true"
+      var message = ""
+      if (x.size != geneId.size) {
+        valid = "false"
+        val invalidGeneId = geneId.diff(x).mkString(",")
+        message = "The " + invalidGeneId + " not in database!"
+      }
+      println(valid)
+      println(x.size)
+      println(geneId.size)
+      val json = Json.obj("valid" -> valid, "message" -> message)
+      Ok(Json.toJson(json))
+    }
+  }
+
+  case class groupData1(group1:String)
+
+  val group1Form = Form(
+    mapping(
+      "group1" -> text
+    )(groupData1.apply)(groupData1.unapply)
+  )
+
+  def checkGroup1 = Action.async { implicit request =>
+    val data = group1Form.bindFromRequest.get
+    val sample = data.group1
+    val samplename = sample.split(",").map(_.trim).distinct
+    mRNAProfileDao.selectBySampleName(sample).map { x =>
+      var valid = "true"
+      var message = ""
+      if (x.size != samplename.size) {
+        valid = "false"
+        val invalidSampleName = samplename.diff(x).mkString(",")
+        message = "The " + invalidSampleName + " not in database!"
+      }
+      val json = Json.obj("valid" -> valid, "message" -> message)
+      Ok(Json.toJson(json))
+    }
+  }
+
+  case class groupData2(group2:String)
+
+  val group2Form = Form(
+    mapping(
+      "group2" -> text
+    )(groupData2.apply)(groupData2.unapply)
+  )
+
+  def checkGroup2 = Action.async { implicit request =>
+    val data = group2Form.bindFromRequest.get
+    val sample = data.group2
+    val samplename = sample.split(",").map(_.trim).distinct
+    mRNAProfileDao.selectBySampleName(sample).map { x =>
+      var valid = "true"
+      var message = ""
+      if (x.size != samplename.size) {
+        valid = "false"
+        val invalidSampleName = samplename.diff(x).mkString(",")
+        message = "The " + invalidSampleName + " not in database!"
+      }
+      val json = Json.obj("valid" -> valid, "message" -> message)
+      Ok(Json.toJson(json))
     }
   }
 }

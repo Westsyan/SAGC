@@ -18,6 +18,11 @@ class PasswordDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvid
     db.run(Password.filter(_.id === 1).update(row)).map(_ => ())
   }
 
+  def selectByPassword(password:String) : Future[Seq[PasswordRow]] = {
+    db.run(Password.filter(_.content === password).result)
+  }
+
+
   def selectPassword: Future[String] = {
     val q=Password.filter(_.id === 1).map(_.content).result
     val q1=Password.filter(_.id === 2).map(_.content).result

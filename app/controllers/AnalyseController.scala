@@ -40,22 +40,6 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
     Ok(views.html.analyse.ttest())
   }
 
-  val form = Form(
-    mapping(
-      "group1" -> text,
-      "group2" -> text,
-      "c" -> text,
-      "pval" -> text
-    )(checkGroup.apply)(checkGroup.unapply)
-  )
-
-  val form1 = Form(
-    mapping(
-      "samplename" -> text,
-      "method" -> text
-    )(checkSamplename.apply)(checkSamplename.unapply)
-  )
-
   val keggForm = Form(
     mapping(
       "id" -> text,
@@ -88,108 +72,6 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
 
   def clusterIndex = Action {
     Ok(views.html.analyse.cluster())
-  }
-
-  def checkSample = Action.async { implicit request =>
-    val data = form1.bindFromRequest.get
-    val samplename = data.samplename
-    val method = data.method
-    val samStr = samplename.split(",").map(_.trim).distinct
-    mRNAProfileDao.selectBySampleName(samplename).map { y =>
-      val judge = y.size == samStr.length
-      var valids = "false"
-      if (judge == false) {
-        valids = "true"
-      }
-      val invalidSampleName = samStr.diff(y).mkString(",")
-      val jsons = "The " + invalidSampleName + " not in database!"
-      val json = Json.obj("valids" -> valids, "messages" -> jsons)
-      Ok(json)
-    }
-  }
-
-  def checkPostion = Action.async { implicit request =>
-    val data = form.bindFromRequest.get
-    val gro1 = data.group1
-    val gro2 = data.group2
-    val pValue = data.pval.toDouble
-    val g1 = gro1.split(",").map(_.trim).distinct.size
-    val g2 = gro2.split(",").map(_.trim).distinct.size
-    val group = gro1 + "," + gro2
-    val samStr = group.split(",").map(_.trim).distinct.filter(x => x != "")
-    mRNAProfileDao.selectBySampleName(group).map { y =>
-      val judge = (y.size == samStr.length) && (y.size != 0) && (g1 > 1) && (g2 > 1) && (pValue > 0)
-      var valids = "false"
-      if (judge == false) {
-        valids = "true"
-      }
-      var jsons = ""
-      if (g1 < 2) {
-        jsons = "The group1's length  must be greater than 1"
-      } else if (g2 < 2) {
-        jsons = "The group1's length  must be greater than 1"
-      } else if (pValue < 0) {
-        jsons = "The q-value  must be greater than 0"
-      } else {
-        val invalidSampleName = samStr.diff(y).mkString(",")
-        jsons = "The " + invalidSampleName + " not in database!"
-      }
-      val json = Json.obj("valids" -> valids, "messages" -> jsons)
-      Ok(json)
-    }
-  }
-
-  def checkKegg = Action.async { implicit request =>
-    val data = keggForm.bindFromRequest.get
-    val geneId = data.id
-    val cutoff = data.c.toDouble
-    val pval = data.pval.toDouble
-    val m = data.m
-    val n = data.n
-    // println(geneId, cutoff, pval, m, n)
-    val idStr = geneId.split(",").map(_.trim).distinct
-    geneIdDao.selectById(geneId).map { x =>
-      val judge = (x.size == idStr.length) && (cutoff > 0) && (pval > 0)
-      var valids = "false"
-      if (judge == false) {
-        valids = "true"
-      }
-      var jsons = ""
-      if (cutoff <= 0) {
-        jsons = "The threshold must be  positive number"
-      } else if (pval <= 0) {
-        jsons = "The p-value must be  positive number"
-      } else {
-        val invalidGeneId = idStr.diff(x).mkString(",")
-        jsons = "The " + invalidGeneId + " not in database!"
-      }
-      val json = Json.obj("valids" -> valids, "messages" -> jsons)
-      Ok(json)
-    }
-  }
-
-  def checkGo = Action.async { implicit request =>
-    val data = goForm.bindFromRequest.get
-    val geneId = data.id
-    val alpha = data.alpha
-    val pval = data.pval.toDouble
-    val idStr = geneId.split(",").map(_.trim).distinct
-    geneIdDao.selectById(geneId).map { x =>
-      val judge = (x.size == idStr.length) && (pval > 0)
-      var valids = "false"
-      if (judge == false) {
-        valids = "true"
-      }
-      var jsons = ""
-      if (pval <= 0) {
-        jsons = "The p-value must be  positive number"
-      } else {
-        val invalidGeneId = idStr.diff(x).mkString(",")
-        jsons = "The " + invalidGeneId + " not in database!"
-      }
-      val json = Json.obj("valids" -> valids, "messages" -> jsons)
-      Ok(json)
-    }
   }
 
   def selectAllgene(group1: String, group2: String, c: String, pval: String): Action[AnyContent] = Action { implicit request =>
@@ -347,8 +229,8 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
 
   }
 
-  def correlationMethod(samplename: String, method: String) = {
-    val info = Await.result(mRNAProfileDao.selectAllBySampleName(samplename), Duration.Inf)
+  def correlationMethod(sampleName: String, method: String) = {
+    val info = Await.result(mRNAProfileDao.selectAllBySampleName(sampleName), Duration.Inf)
     val array = getArray(info).toBuffer
     val sam = info.map(_.samplename).distinct.toArray
     val buffer = sam +: array
@@ -364,8 +246,8 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
     //    val exitCode = Process("Rscript "+rFile.getAbsolutePath ).!
   }
 
-  def CorrelationHeatmap(samplename: String, method: String): Action[AnyContent] = Action { implicit request =>
-    correlationMethod(samplename, method)
+  def CorrelationHeatmap(sampleName: String, method: String): Action[AnyContent] = Action { implicit request =>
+    correlationMethod(sampleName, method)
     val correlation = Source.fromFile(Utils.path + "out_matrix.txt").getLines().map(_.split("\t").toBuffer).toBuffer
     val xAxis = correlation.head
     val yAxis = correlation.drop(1).map(_.head)

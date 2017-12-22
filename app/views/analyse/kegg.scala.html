@@ -34,7 +34,7 @@
             <div class="form-group" style="margin-top: 15px">
                 <label class="control-label col-sm-2 col-sm-offset-1">Error detection rate(FDR)</label>
                 <div class="col-sm-6">
-                    <select class="form-control" name="n" style="border-radius: 4px;">
+                    <select class="form-control" name="n" id="n" style="border-radius: 4px;">
                         <option value="BH" selected="selected">Benjamini and Hochberg</option>
                         <option value="BY">Benjamini and Yekutieli</option>
                         <option value="QVALUE">QVALUE</option>
@@ -63,7 +63,7 @@
 
             <div class="form-group" style="margin-top: 25px">
                 <div class="actions col-sm-offset-3 col-sm-3">
-                    <input type="button" id="analyse" value="running"
+                    <input type="submit" id="analyse" value="running"
                     class="btn btn-primary" onclick="update()" style="width: 80%">
                 </div>
                 <div class="actions col-sm-offset-1/2 col-sm-3">
@@ -118,8 +118,16 @@
                             "OS01G0101300,OS01G0101600,OS01G0101700,OS01G0101800,OS01G0101850,OS01G0101900,OS01G0102000," +
                             "OS01G0102300,OS01G0102400,OS01G0102500,OS01G0102600,OS01G0102700,OS01G0102800,OS01G0102850";
                     $("#gene").val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "id")
                 });
 
+                $("#n").click(function () {
+                    $("#conditionForm").formValidation("revalidateField", "n")
+                });
+
+                $("#m").click(function () {
+                    $("#conditionForm").formValidation("revalidateField", "m")
+                });
 
                 function extractor(query) {
                     var result = /([^,]+)$/.exec(query);
@@ -151,56 +159,109 @@
                         })
                     }
                 });
+                formValidation();
             })
 
-            function update() {
-                $.ajax({
-                    url: "@routes.AnalyseController.checkKegg()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        var index = layer.load(1, {
-                            shade: [0.1, '#fff']
-                        });
-                        if (data.valids == "true") {
-                            layer.close(index)
-                            swal("Error!", data.messages, "error")
-
-                        } else {
-                            $("#analyse").attr("disabled", true).html("Analyse...")
-                            $("#result").empty().append(originalHtml);
-                            var array = ["Database", "ID", "Input number", "Background number", "P-Value", "Corrected P-Value", "Input", "Hyperlink"]
-                            var values = ["database", "id", "input_num", "back_num", "p-value", "correct_pval", "input", "hyperlink"]
-                            var html = ""
-                            $.each(array, function (n, value) {
-                                        html += "<label style='margin-right: 15px'>" +
-                                                "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
-                                                "</label>"
-                                    }
-                            );
-                            $("#checkbox").append(html)
-
-                            $.ajax({
-                                url: "@routes.AnalyseController.keggResult()",
-                                type: "post",
-                                dataType: "json",
-                                data: $("#conditionForm").serialize(),
-                                success: function (data) {
-                                    $('#table').bootstrapTable({data: data});
-                                    $("#analyse").attr("disabled", false).html("To Analyse").blur()
-                                    var hiddenArray = ["correct_pval", "input"]
-                                    $.each(hiddenArray, function (n, value) {
-                                        $('#table').bootstrapTable('hideColumn', value);
-                                        $("input:checkbox[value=" + value + "]").attr("checked", false)
-                                    });
-                                    $("#result").show()
-                                    layer.close(index)
-                                }
-                            });
-                        }
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        id: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkGeneId',
+                                    delay: 2000
+                                },
+                            }
+                        },
+                        n: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                            }
+                        },
+                        m: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                            }
+                        },
+                        c: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                numeric: {
+                                    message: 'The cutoff must be a number!'
+                                },
+                            }
+                        },
+                        pval: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                numeric: {
+                                    message: 'The p-value must be a number!'
+                                },
+                            }
+                        },
                     }
                 });
+            }
+
+
+            function update() {
+                var form = $("#conditionForm")
+                var fv = form.data("formValidation")
+                fv.validate()
+                if (fv.isValid()) {
+                    var index = layer.load(1, {
+                        shade: [0.1, '#fff']
+                    });
+                    $("#analyse").attr("disabled", true).html("Analyse...")
+                    $("#result").empty().append(originalHtml);
+                    var array = ["Database", "ID", "Input number", "Background number", "P-Value", "Corrected P-Value", "Input", "Hyperlink"]
+                    var values = ["database", "id", "input_num", "back_num", "p-value", "correct_pval", "input", "hyperlink"]
+                    var html = ""
+                    $.each(array, function (n, value) {
+                                html += "<label style='margin-right: 15px'>" +
+                                        "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
+                                        "</label>"
+                            }
+                    );
+                    $("#checkbox").append(html)
+
+                    $.ajax({
+                        url: "@routes.AnalyseController.keggResult()",
+                        type: "post",
+                        dataType: "json",
+                        data: $("#conditionForm").serialize(),
+                        success: function (data) {
+                            $('#table').bootstrapTable({data: data});
+                            $("#analyse").attr("disabled", false).html("To Analyse").blur()
+                            var hiddenArray = ["correct_pval", "input"]
+                            $.each(hiddenArray, function (n, value) {
+                                $('#table').bootstrapTable('hideColumn', value);
+                                $("input:checkbox[value=" + value + "]").attr("checked", false)
+                            });
+                            $("#result").show()
+                            layer.close(index)
+
+                        }
+                    });
+                }
             }
 
             function setColumns(value) {

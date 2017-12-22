@@ -8,7 +8,6 @@ GET         /SAGC/search/toIndex                      controllers.SearchControll
 GET         /SAGC/search/linear                       controllers.SearchController.linear(id:String,sampleName:String)
 GET         /SAGC/search/selectByPosition             controllers.SearchController.selectByPosition(id:String,sampleName:String)
 GET         /SAGC/search/heatmap                      controllers.SearchController.heatmap(id:String,sampleName:String)
-POST        /SAGC/search/checkPostion                 controllers.SearchController.checkPostion
 
 GET         /SAGC/search/searchByRegion               controllers.GeneInformationController.regionIndex
 POST        /SAGC/search/searchbr                     controllers.GeneInformationController.searchByRegion
@@ -17,14 +16,10 @@ GET         /SAGC/search/getMoreInfo                  controllers.GeneInformatio
 POST        /SAGC/search/getAllChr                    controllers.GeneInformationController.getAllChr
 GET         /SAGC/search/searchBySRegion              controllers.GeneInformationController.searchBySRegion
 GET         /SAGC/search/getSBySRegion                controllers.GeneInformationController.getSBySRegion
-POST        /SAGC/search/checkRegion                  controllers.GeneInformationController.checkRegion
 
 GET         /SAGC/download/toIndex                    controllers.DownLoadController.toIndex
 GET         /SAGC/download/getSamplename              controllers.DownLoadController.getName(sampleName:String)
 GET         /SAGC/download/allGene                    controllers.DownLoadController.selectAllgene(id:String,sampleName:String)
-POST        /SAGC/download/checkPostion               controllers.DownLoadController.checkPostion
-
-
 
 GET         /SAGC/admin/toIndex                       controllers.AdminController.toIndex
 GET         /SAGC/admin/loginBefore                   controllers.AdminController.loginBefore()
@@ -42,15 +37,11 @@ GET         /SAGC/admin/getAllGeneId                  controllers.AdminControlle
 
 GET         /SAGC/analyse/Ttest                       controllers.AnalyseController.tTest
 GET         /SAGC/analyse/cHeatmap                    controllers.AnalyseController.cHeatmap
-POST        /SAGC/analyse/checkSamplename             controllers.AnalyseController.checkPostion
-POST        /SAGC/analyse/checkSample                 controllers.AnalyseController.checkSample
 GET         /SAGC/analyse/result                      controllers.AnalyseController.selectAllgene(group1:String,group2:String,c:String,pval:String)
-GET         /SAGC/analyse/heatmap                     controllers.AnalyseController.CorrelationHeatmap(samplename:String,method:String)
+GET         /SAGC/analyse/heatmap                     controllers.AnalyseController.CorrelationHeatmap(sampleName:String,method:String)
 GET         /SAGC/analyse/kegg                        controllers.AnalyseController.kegg
-POST        /SAGC/analyse/checkKegg                   controllers.AnalyseController.checkKegg
 POST        /SAGC/analyse/keggEnrichment              controllers.AnalyseController.keggResult
 GET         /SAGC/analyse/go                          controllers.AnalyseController.go
-POST        /SAGC/analyse/checkGo                     controllers.AnalyseController.checkGo
 POST        /SAGC/analyse/goEnrichment                controllers.AnalyseController.goResult
 GET         /SAGC/analyse/boxMoreInfo                 controllers.GeneInformationController.moreInfoBoxPlot(id:String,group1:String,group2:String)
 GET         /SAGC/analyse/circBoxPlot                 controllers.SearchController.circBoxPlot(id:String,group1:String,group2:String)
@@ -72,7 +63,10 @@ GET         /SAGC/tools/coResult                      controllers.ToolsControlle
 POST        /SAGC/tools/correlation                   controllers.ToolsController.networkResult(id:String,rvalue:String)
 POST        /SAGC/tools/correlationInfo               controllers.ToolsController.correlationInfo(id:String,rvalue:String)
 
-POST        /SAGC/check/checkCo                       controllers.CheckController.checkCo
+POST        /SAGC/check/checkSample                   controllers.CheckController.checkSample
+POST        /SAGC/check/checkGeneId                   controllers.CheckController.checkGeneId
+POST        /SAGC/check/checkGroup1                   controllers.CheckController.checkGroup1
+POST        /SAGC/check/checkGroup2                   controllers.CheckController.checkGroup2
 
 
 #GET         /SAGC/save/information/save             controllers.SaveDatabase.saveMRNAProfile

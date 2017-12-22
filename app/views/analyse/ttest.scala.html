@@ -50,7 +50,7 @@
 
             <div class="form-group" style="margin-top: 30px">
                 <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
                         To analyze</button>
                 </div>
                 <div class="actions col-sm-3 col-sm-offset-1/2">
@@ -101,11 +101,21 @@
                     //输入的文本去掉两边的空格
                     var eg = "A001,A002,A003,A015,A014,A013,A006,A004,A100,A201,A209,A052,A047";
                     $('#group1').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "group1");
                 });
                 //快速选eg
                 $('#eGroup2').click(function () {
                     var eg = "B001,B002,B003,B015,B014,B108,B208,B032,B050,B060,B075,B086,B095";
                     $('#group2').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "group2");
+                });
+
+                $("#c").click(function () {
+                    $("#conditionForm").formValidation("revalidateField", "c")
+                });
+
+                $("#pval").click(function () {
+                    $("#conditionForm").formValidation("revalidateField", "pval")
                 });
 
                 function extractor(query) {
@@ -162,52 +172,102 @@
                         })
                     }
                 });
-
+                formValidation();
             })
 
 
-            function mySearch() {
-                $.ajax({
-                    url: "@routes.AnalyseController.checkPostion()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        var index = layer.load(1, {
-                            shade: [0.1, '#fff']
-                        });
-                        if (data.valids == "true") {
-                            layer.close(index)
-                            swal("Error!", data.messages, "error")
-                        } else {
-                            $("#search").attr("disabled", true).html("Analyse...")
-                            $("#result").empty().append(originalHtml);
-                            var array = ["mean(group1)", "stderr(group1)", "mean(group2)", "stderr(group2)", "logFC", "p-value"]
-                            var values = ["mean1", "stderr1", "mean2", "stderr2", "logFC", "p-value"]
-                            var html = ""
-                            $.each(array, function (n, value) {
-                                        html += "<label style='margin-right: 15px'>" +
-                                                "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
-                                                "</label>"
-                                    }
-                            );
-                            $("#checkbox").append(html)
-
-                            $.ajax({
-                                url: "/SAGC/analyse/result",
-                                type: "get",
-                                dataType: "json",
-                                data: $("#conditionForm").serialize(),
-                                success: function (data) {
-                                    $('#table').bootstrapTable({data: data});
-                                    $("#search").attr("disabled", false).html("To Analyse").blur()
-                                    $("#result").show()
-                                    layer.close(index)
-                                }
-                            });
-                        }
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        group1: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkGroup1',
+                                    delay: 2000
+                                },
+                            }
+                        },
+                        group2: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkGroup2',
+                                    delay: 2000
+                                },
+                            }
+                        },
+                        c: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                numeric: {
+                                    message: 'The p-value must be a number!'
+                                },
+                            }
+                        },
+                        pval: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                numeric: {
+                                    message: 'The p-value must be a number!'
+                                },
+                            }
+                        },
                     }
                 });
+            }
+
+
+            function mySearch() {
+                var form = $("#conditionForm")
+                var fv = form.data("formValidation")
+                fv.validate()
+                if (fv.isValid()) {
+                    var index = layer.load(1, {
+                        shade: [0.1, '#fff']
+                    });
+                    $("#search").attr("disabled", true).html("Analyse...")
+                    $("#result").empty().append(originalHtml);
+                    var array = ["mean(group1)", "stderr(group1)", "mean(group2)", "stderr(group2)", "logFC", "p-value"]
+                    var values = ["mean1", "stderr1", "mean2", "stderr2", "logFC", "p-value"]
+                    var html = ""
+                    $.each(array, function (n, value) {
+                                html += "<label style='margin-right: 15px'>" +
+                                        "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
+                                        "</label>"
+                            }
+                    );
+                    $("#checkbox").append(html)
+
+                    $.ajax({
+                        url: "/SAGC/analyse/result",
+                        type: "get",
+                        dataType: "json",
+                        data: $("#conditionForm").serialize(),
+                        success: function (data) {
+                            $('#table').bootstrapTable({data: data});
+                            $("#search").attr("disabled", false).html("To Analyse").blur()
+                            $("#result").show()
+                            layer.close(index)
+                        }
+                    });
+                }
             }
 
             function setColumns(value) {
