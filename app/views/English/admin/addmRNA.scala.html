@@ -1,0 +1,147 @@
+@()(implicit flash: Flash)
+    @English.admin.main("Add mRNA info") {
+        <div class="container">
+            <form class="registration-form" id="form"
+            accept-charset="UTF-8" method="post" style="margin: 20px;" enctype="multipart/form-data" action="/SAGC/admin/addmRNA">
+                <div class="col-sm-offset-4">
+                    <span class="error" style="line-height: 35px;">@flash.get("info")</span>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-sm-12">
+                        <h2 class="page-heading"
+                        style="text-align: left;
+                            border-bottom: 5px solid #e9f3f4">Add mRNA info</h2>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-sm-12">
+                        <label>Select data file:</label>
+                        <input id="input-1" type="file" class="file" name="file" data-show-preview="false"
+                        data-show-upload="false">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-sm-12">
+                        <div class="actions">
+                            <input type="submit" id="fileSubmit" value="update database"
+                            class="btn btn-primary btn-lg" onclick="update()" style="width: 100%">
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+            <div style="margin: 20px">
+                <p>Tips：The uploaded data will overwrite  the previous data;</p>
+                <p>After modifying the file,Please refresh  page or reselect the data file！</p>
+                <p>Example:</p>
+                <table id="table" style="width: 500px">
+                    <tr>
+                        <td>geneid</td>
+                        <td>A001</td>
+                        <td>A002</td>
+                        <td>A003</td>
+                        <td>A004</td>
+                    </tr>
+
+                    <tr>
+                        <td>OS01G0100100</td>
+                        <td>3.03214</td>
+                        <td>6.83833</td>
+                        <td>7.57848</td>
+                        <td>8.21034</td>
+                    </tr>
+                    <tr>
+                        <td>OS01G0100200</td>
+                        <td>0.0847799</td>
+                        <td>0.0727184</td>
+                        <td>0.0980874</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>OS01G0100300</td>
+                        <td>0.11307</td>
+                        <td>0</td>
+                        <td>0.271734</td>
+                        <td>0.217751</td>
+                    </tr>
+
+
+                </table>
+            </div>
+        </div>
+
+        <script>
+                $(function () {
+                    formValidation()
+                })
+
+                function update() {
+                    var form = $("#form")
+                    var fv = form.data("formValidation")
+                    fv.validate()
+                    if (fv.isValid()) {
+                        var form = new FormData($("#form")[0]);
+                        var element = "<div id='content'><span id='info'>Uploading</span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+                        var index = layer.alert(element, {
+                            skin: 'layui-layer-molv'
+                            , closeBtn: 0,
+                            btn: []
+                        })
+
+                        $.ajax({
+                            url: "@routes.AdminController.addmRNA()",
+                            type: "post",
+                            data: form,
+                            processData: false,
+                            contentType: false,
+                            success: function (data) {
+                                if (typeof(data.error) === "undefined") {
+                                    layer.close(index)
+                                    layer.alert('Update database successfully！', {
+                                        skin: 'layui-layer-molv'
+                                        , closeBtn: 0
+                                    });
+                                } else {
+                                    layer.close(index)
+                                    swal("error", data.error, "error")
+                                }
+                            }
+                        })
+                    }
+                }
+
+                function formValidation() {
+                    $('#form').formValidation({
+                        framework: 'bootstrap',
+                        icon: {
+                            valid: 'glyphicon glyphicon-ok',
+                            validating: 'glyphicon glyphicon-refresh'
+                        },
+                        fields: {
+                            file: {
+                                validators: {
+                                    notEmpty: {
+                                        message: 'Please choose data file！'
+                                    },
+                                    file: {
+                                        extension: 'txt',
+                                        message: 'Data file must is a txt file！'
+                                    }
+                                }
+                            },
+                        }
+                    });
+                }
+
+
+                $("#input-1").fileinput({
+                    showPreview: false,
+                });
+
+        </script>
+
+
+    }

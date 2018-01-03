@@ -1,0 +1,205 @@
+@Chinese.search.mainWithSearch("DownLoad-SAGC") {
+
+    <div class="container">
+        <form class="registration-form form-horizontal" id="conditionForm" action="getSamplename" method="get"
+        style="margin: 20px;">
+
+            <div class="form-group col-sm-12">
+                <h2 class="page-heading"
+                style="text-align: left;
+                    border-bottom: 5px solid #e9f3f4">下载</h2>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px">
+                <div class="col-sm-2 col-sm-offset-1" align="right">
+                    <label class="control-label">基因id:</label>
+                </div>
+                <div class="col-sm-6">
+                    <textarea class="form-control" name="id" id="gene" placeholder="如果不填写，则选择全部" rows="5"
+                    style="border-radius: 4px;"></textarea>
+                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+                        样例</em></a></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-1" align="right">
+                    <label class="control-label">样品名:</label>
+                </div>
+                <div class="col-sm-6">
+                    <textarea class="form-control" name="sampleName" id="sample" rows="5"
+                    style="border-radius: 4px;" required></textarea>
+                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egSample">
+                        样例</em></a></span>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 30px">
+                <div class="actions col-sm-offset-3 col-sm-3">
+                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                        运行</button>
+                </div>
+                <div class="actions col-sm-3">
+                    <button type="reset" class="btn btn-primary" style="width: 80%;
+                        margin-left: 50px">重置</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="result" style="display: none">
+            <hr>
+            <label style="margin-left: 20px">选择要显示的样品名:</label>
+            <div id="checkbox" class="checkbox" style="margin-left: 40px">
+
+            </div>
+            <div id="toolbar">
+                    &nbsp;关键词：
+            </div>
+            <div class="table-responsive panel-collapse collapse in " >
+                <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+                data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100]" data-search-align="left" data-multiple-search="true"
+                data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+                style="word-wrap: break-word">
+                    <thead>
+                        <tr>
+                            <th data-field="geneId" data-sortable="true" id="marker" title="Gene symbol">Gene symbol</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+            var originalHtml = ""
+            $(function () {
+                originalHtml = $("#result").html()
+                $('#egGene').click(function () {
+                    //输入的文本去掉两边的空格
+                    var eg = "OS01G0100100,OS01G0100200,OS01G0100300,OS01G0100400,OS01G0100466,OS01G0100500," +
+                            "OS01G0100600,OS01G0100650,OS01G0100800,OS01G0100900,OS01G0101150";
+                    $('#gene').val(eg);
+                });
+
+                $('#egSample').click(function () {
+                    var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036";
+                    $('#sample').val(eg);
+                });
+
+                function extractor(query) {
+                    var result = /([^,]+)$/.exec(query);
+                    if (result && result[1])
+                        return result[1].trim();
+                    return '';
+                }
+
+                $.ajax({
+                    url: "/SAGC/admin/getAllGeneId",
+                    type: "get",
+                    success: function (data) {
+                        $('#gene').typeahead({
+                            source: data,
+                            updater: function (item) {
+                                return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+                            },
+                            matcher: function (item) {
+                                var tquery = extractor(this.query);
+                                if (!tquery) return false;
+                                return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+                            },
+                            highlighter: function (item) {
+                                var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+                                return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                                    return '<strong>' + match + '</strong>'
+                                })
+                            }
+                        })
+                    }
+                });
+
+                $.ajax({
+                    url: "/SAGC/admin/getAllSampleName",
+                    type: "get",
+                    success: function (data) {
+                        $('#sample').typeahead({
+                            source: data,
+                            updater: function (item) {
+                                return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+                            },
+                            matcher: function (item) {
+                                var tquery = extractor(this.query);
+                                if (!tquery) return false;
+                                return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+                            },
+                            highlighter: function (item) {
+                                var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+                                return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                                    return '<strong>' + match + '</strong>'
+                                })
+                            }
+                        })
+                    }
+                });
+            })
+
+            function mySearch() {
+                $.ajax({
+                    url: "@routes.CheckController.checkDownload()",
+                    type: "post",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        var index = layer.load(1, {
+                            shade: [0.1, '#fff']
+                        });
+                        if (data.valids == "false") {
+                            layer.close(index)
+                            swal("Error!", data.messages, "error")
+                        } else {
+                            $("#search").attr("disabled", true).html("Search...")
+                            $.ajax({
+                                url: "/SAGC/download/getSamplename",
+                                type: "get",
+                                dataType: "json",
+                                data: $("#conditionForm").serialize(),
+                                success: function (data) {
+                                    $("#result").empty().append(originalHtml)
+                                    $.each(data, function (n, value) {
+                                                var html = "<label style='margin-right: 15px'>" +
+                                                        "<input type='checkbox' checked='checked' value='" + value + "' onclick=\"setColumns('" + value + "')\">" + value +
+                                                        "</label>"
+                                                var htm = "<th data-field='" + value + "' data-sortable='true'>" + value + "</th>"
+                                                $(".checkbox").append(html)
+                                                $("#marker").parent().append(htm)
+                                            }
+                                    );
+                                }
+                            });
+                            $.ajax({
+                                url: "/SAGC/download/allGene",
+                                type: "get",
+                                dataType: "json",
+                                data: $("#conditionForm").serialize(),
+                                success: function (data) {
+                                    $('#table').bootstrapTable({data: data.array});
+                                    $("#search").attr("disabled", false).html("Search").blur()
+                                    $("#result").show()
+                                    layer.close(index)
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            function setColumns(value) {
+                var element = $("input:checkbox[value=" + value + "]")
+                if (element.is(":checked")) {
+                    $('#table').bootstrapTable('showColumn', value);
+                } else {
+                    $('#table').bootstrapTable('hideColumn', value);
+                }
+            }
+    </script>
+}

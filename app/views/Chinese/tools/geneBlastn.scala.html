@@ -1,0 +1,224 @@
+@Chinese.search.mainWithSearch("Blastn Against Gene") {
+    <div class="container">
+        <form class="registration-form form-horizontal" id="conditionForm"
+        style="margin: 20px;">
+
+            <div class="form-group col-sm-12">
+                <h2 class="page-heading"
+                style="text-align: left;
+                    border-bottom: 5px solid #e9f3f4">基因 Blastn</h2>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">输入类型:</label>
+                <div class="col-sm-3">
+                    <select class="form-control" onchange="change(this)" name="method">
+                        <option selected value="text">文本</option>
+                        <option value="file">文件</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" id="queryContent">
+                <label class="control-label col-sm-2">文本:</label>
+                <div class="col-sm-8">
+                    <textarea class="form-control" name="query" id="query" rows="5"></textarea>
+                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egQuery">
+                        样例</em></a></span>
+                </div>
+            </div>
+
+            <div id="queryFile" style="display: none;">
+                <div class="form-group">
+                    <label class="control-label col-sm-2">fasta文件:</label>
+                    <div class="col-sm-8">
+                        <input id="input-1" type="file" class="file control-label" name="file" data-show-preview="false"
+                        data-show-upload="false">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">Evalue:</label>
+                <div class="col-sm-2">
+                    <input class="form-control" name="evalue" id="evalue" value="1e-5">
+                </div>
+
+                <label class="control-label col-sm-2">最大长度:</label>
+                <div class="col-sm-2">
+                    <input class="form-control" name="wordSize" id="mCharacteristic" value="28">
+                </div>
+
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">最大序列目标:</label>
+                <div class="col-sm-2">
+                    <input class="form-control" name="maxTargetSeqs" id="mCharacteristic" value="10">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="actions col-sm-offset-2 col-sm-2">
+                    <button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+                        运行</button>
+                </div>
+                <div class="actions  col-sm-2">
+                    <button type="reset" class="btn btn-primary" style="width: 90%;">
+                        重置</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+    <div id="result" style="display: none">
+        <hr>
+        <h4 style="color: black">结果:</h4>
+        <div id="resultContent">
+
+        </div>
+    </div>
+
+    <script>
+            $(function () {
+                formValidation()
+            })
+
+            function change(element) {
+                var value = $(element).find(">option:selected").val()
+                if (value == "text") {
+                    $("#queryContent").show()
+                    $("#queryFile").hide()
+                } else {
+                    $("#queryContent").hide()
+                    $("#queryFile").show()
+                }
+            }
+
+            $('#egQuery').click(function () {
+                var eg = ">OS01T0100466-00 gene=OS01G0100466\n" +
+                        "ATGCCGCAGTTTGTGCCGCCCACGCCGTCCTGCCAGGGGCTCTTGCGCTGCTGCACCCCGTGCCACGTCAGCAGCAGCGGCTCGTCCAGGCCGTTCCTCACGTTCACCACCAGGTTCCAGTTGGTCGTCACGTTCAGCGC" +
+                        "CGGCCCCGGCAGCTGCCCGTTGATGCCAATCGCCTCCTGCTTCTTCACTCCGCCCAGCGGCGCACCCCACACGTACGATACCTCCCACTCGTAG\n" +
+                        ">OS01T0101900-00 gene=OS01G0101900\n" +
+                        "ATGGGGTCTGGTGATTGGGGTCCAGTGCTGATCGCGTTGGTCTTGTTCGTGCTGCTGACGCCGGGGTTGCTGTGCCAGATCCCCGGGAGCAACGGCCGCGTCGCCGAGTTCCACAGCATGCGCACCAGCGTCGCCTCCATC" +
+                        "TTCGTCCACGCCCTCCTCTTCTTCGCCTTCTGCGCCATCTTCATGGTCGCCGTCGGCCTCCACCTCTACGCCGGCTAG\n";
+                $('#query').val(eg);
+                $("#conditionForm").formValidation("revalidateField", "query")
+            });
+
+            function mySearch() {
+                var form = $("#conditionForm")
+                var fv = form.data("formValidation")
+                fv.validate()
+                if (fv.isValid()) {
+                    var form1 = new FormData($("#conditionForm")[0]);
+                    var index = layer.load(1, {
+                        shade: [0.1, '#fff']
+                    });
+                    $("#search").attr("disabled", true).html("Search...")
+                    $.ajax({
+                        url: "@routes.ToolsController.geneBlastnRun()",
+                        type: "post",
+                        processData: false,
+                        contentType: false,
+                        data: form1,
+                        success: function (data) {
+                            $("#search").attr("disabled", false).html("Search").blur()
+                            if (data.valid == "false") {
+                                swal("Error", data.message, "error")
+                                $("#result").hide()
+                            } else {
+                                $("#resultContent").html(data.html)
+                                $("#result").show()
+                            }
+                            layer.close(index)
+                        }
+                    });
+                }
+            }
+
+            function formValidation() {
+                var infinityNumber = Number.MAX_VALUE
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        queryText: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Query text is required！'
+                                }
+                            }
+                        },
+                        file: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Query file is required！'
+                                },
+                                file: {
+                                    extension: 'txt',
+                                    message: 'Query file must is a txt file！'
+                                }
+                            }
+                        },
+                        evalue: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Evalue is required！'
+                                },
+                                numeric: {
+                                    message: 'Evalue must be number！'
+                                },
+                                between: {
+                                    min: "0",
+                                    max: infinityNumber,
+                                    message: "Evalue must greater than or equal to 0！"
+                                }
+                            }
+                        },
+                        wordSize: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Word size is required！'
+                                },
+                                integer: {
+                                    message: 'Word size must be intger！'
+                                },
+                                between: {
+                                    min: "4",
+                                    max: infinityNumber,
+                                    message: "Word size must greater than or equal to 4！"
+                                }
+                            }
+                        },
+                        maxTargetSeqs: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Max target seqs is required！'
+                                },
+                                integer: {
+                                    message: 'Max target seqs must be integer！'
+                                },
+                                between: {
+                                    min: "0",
+                                    max: infinityNumber,
+                                    message: "Max target seqs must greater than or equal to 0！"
+                                }
+                            }
+                        },
+                    }
+                });
+            }
+
+            $("#input-1").fileinput({
+                showPreview: false,
+            });
+
+    </script>
+
+
+}

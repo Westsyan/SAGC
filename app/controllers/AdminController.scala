@@ -1,6 +1,6 @@
 package controllers
 
-import java.io.File
+import java.io.{File, FileWriter}
 import java.nio.file.Files
 import javax.inject.Inject
 
@@ -18,17 +18,22 @@ import utils.Utils
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
+import scala.sys.process.Process
 
 case class ChangePasswordData(account: String, password: String, newPassword: String)
 
 class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDao) extends Controller {
 
   def toIndex = Action {
-    Ok(views.html.admin.index())
+    Ok(views.html.English.admin.index())
   }
 
   def loginBefore() = Action { implicit request =>
-    Ok(views.html.admin.login())
+    Ok(views.html.English.admin.login())
+  }
+
+  def updateCorrelation = Action{
+    Ok(views.html.English.admin.updatec())
   }
 
   def login(phone: String, password: String) = Action.async { implicit request =>
@@ -46,7 +51,7 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
   }
 
   def changePasswordBefore() = Action { implicit request =>
-    Ok(views.html.admin.changePassword())
+    Ok(views.html.English.admin.changePassword())
   }
 
   val form = Form(
@@ -72,7 +77,7 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
   }
 
   def addmRNABefore = Action { implicit request =>
-    Ok(views.html.admin.addmRNA())
+    Ok(views.html.English.admin.addmRNA())
   }
 
   def addmRNA = Action(parse.multipartFormData) { implicit request =>
@@ -136,10 +141,50 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
         val percent = if ((index * 100) / rowsSize >= 100) "100%" else (index * 100) / rowsSize + "%"
         println(percent + "\t" + Utils.getTime(startTime))
       }
+      saveFile
+      pcaR
       println("insert table successfully!" + Utils.getTime(startTime))
       Utils.deleteDirectory(new File(tmpDir))
       Redirect(routes.AdminController.addmRNABefore())
     }
+  }
+
+  def saveFile = {
+    val fw = new FileWriter(new File(Utils.path,"line.txt"))
+    val sample = Await.result(mRNAProfileDao.selectAllSampleName,Duration.Inf)
+    val gene = Await.result(geneIdDao.selectAllGeneId,Duration.Inf)
+    fw.write(gene.sorted.mkString("\t")+"\n")
+    for(i <- 0 until sample.size){
+      val value = Await.result(mRNAProfileDao.selectAllBySampleName(sample(i)),Duration.Inf)
+      val array = value.sortBy(_.geneid).map(_.value)
+      fw.write(sample(i)+"\t"+array.mkString("\t")+"\n")
+      println(i)
+    }
+    fw.close()
+    new File(Utils.path,"acmd.r")
+    val rStr =
+      s"""
+         |setwd("${Utils.path}")
+         |a <- read.table('line.txt',sep='\t',header=TRUE,fill=TRUE)
+         |out <- t(a)
+         |write.table(out,'column.txt',quote=F,sep='\t')
+      """.stripMargin
+    FileUtils.writeStringToFile(new File(Utils.path,"acmd.r"),rStr)
+    Process("Rscript " + Utils.path + "acmd.r").!
+  }
+
+  def pcaR = {
+    var rStr = s"setwd('${Utils.path}')\n"
+    rStr +=
+      """
+        |a <- read.table('column.txt', sep='\t', header=TRUE,fill=TRUE)
+        |pr <- prcomp(a)
+        |prr <- pr$rotation
+        |prs <- prr[,1:2]
+        |write.table(prs,'pca.txt',quote=F,sep='\t')
+      """.stripMargin
+    FileUtils.writeStringToFile(new File(Utils.path, "cmd.r"), rStr)
+    Process("Rscript " + Utils.path + "cmd.r").!
   }
 
   /*检查文件，1.检查基因ID在文件中是否重复
@@ -202,15 +247,14 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     (true, error)
   }
 
-
   def getAllSampleName: Action[AnyContent] = Action.async { implicit request =>
     mRNAProfileDao.selectAllSampleName.map { x =>
       Ok(Json.toJson(x))
     }
   }
+
   def getAllSample: Action[AnyContent] = Action.async { implicit request =>
     mRNAProfileDao.selectAllSampleName.map { x =>
-      println(132456)
       Ok(Json.toJson(x))
     }
   }
@@ -222,7 +266,7 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
   }
 
   def deletemRNABefore = Action {
-    Ok(views.html.admin.deletemRNA())
+    Ok(views.html.English.admin.deletemRNA())
   }
 
   //删除基因数据

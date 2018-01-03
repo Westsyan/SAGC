@@ -35,11 +35,11 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
   )
 
   def regionIndex = Action {
-    Ok(views.html.search.region())
+    Ok(views.html.English.search.region())
   }
 
   def searchBySRegion = Action { implicit request =>
-    Ok(views.html.search.searchBySampleRegion())
+    Ok(views.html.English.search.searchBySampleRegion())
   }
 
   //处理cds,pep,cdna序列的方法
@@ -74,7 +74,7 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
     val long = geneInformationDao.selectById(id)
     long.map { x =>
       val trueLong = x.head
-      Ok(views.html.search.moreInfo(trueLong))
+      Ok(views.html.English.search.moreInfo(trueLong))
     }
   }
 
@@ -82,7 +82,7 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
     val long = geneInformationDao.selectById(id)
     long.map { x =>
       val trueLong = x.head
-      Ok(views.html.analyse.moreInfo(trueLong, group1, group2))
+      Ok(views.html.English.analyse.moreInfo(trueLong, group1, group2))
     }
   }
 
@@ -102,7 +102,7 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
     geneInformationDao.selectBySRegion(data).flatMap { geneId =>
       val idStr = geneId.mkString(",")
       geneInformationDao.selectById(idStr).map { x =>
-        Ok(views.html.search.result(idStr, sampleName, x))
+        Ok(views.html.English.search.result(idStr, sampleName, x))
       }
     }
   }

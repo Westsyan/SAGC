@@ -1,0 +1,32 @@
+@English.search.mainWithSearch("DownLoad-SAGC") {
+
+
+
+</div>
+
+    <script>
+
+            $(function () {
+
+
+                var index = layer.msg('<div id="t"></div>', {
+                    icon: 16,
+                    shade: 0.01
+                });
+                window.setInterval(function () {
+                    $.ajax({
+                        url: "/SAGC/test",
+                        type: "post",
+                        dataType: "json",
+                        success: function (data) {
+                            $("#t").empty().append(data)
+                        }
+                    });
+                }, 1000);
+
+            })
+
+
+
+    </script>
+}

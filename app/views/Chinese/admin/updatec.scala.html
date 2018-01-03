@@ -1,0 +1,62 @@
+@Chinese.admin.main("") {
+
+    <div class="container">
+        <form class="registration-form" id="form"
+        accept-charset="UTF-8" style="margin: 20px;"
+        enctype="multipart/form-data" >
+
+            <div class="row">
+                <div class="form-group col-sm-12">
+                    <h2 class="page-heading"
+                    style="text-align: left;
+                        border-bottom: 5px solid #e9f3f4">更新相关性信息库</h2>
+                </div>
+            </div>
+
+            <ul>
+                <li><div>注意：更新时间较长！</div></li>
+                <li><div>      请不要随意更新!</div></li>
+            </ul>
+
+            <div class="row">
+                <div class="form-group col-sm-12" style="margin-top: 20px">
+                    <div class="actions">
+                        <input type="button" id="fileSubmit" value="更新数据库"
+                        class="btn btn-primary btn-lg" onclick="update()" style="width: 100%">
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+    <script>
+            function update() {
+
+                swal({
+                            title: "",
+                            text: "你确定要更新相关性信息数据库么？",
+                            type: "warning",
+                            showCancelButton: true,
+                            showConfirmButton: true,
+                            confirmButtonClass: "btn-danger",
+                            confirmButtonText: "确定",
+                            closeOnConfirm: false,
+                            cancelButtonText: "取消"
+                        },
+                        function () {
+                            $.ajax({
+                                url: "@routes.SaveDatabase.saveCor3()",
+                                type: "get",
+                                dataType: "json",
+                                success: function (data) {
+                                    swal("Success！", data.message, "success")
+                                    setSamples()
+                                }
+                            });
+                        });
+            }
+
+
+    </script>
+
+}

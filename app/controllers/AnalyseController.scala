@@ -37,7 +37,7 @@ case class checkGoData(id: String, alpha: String, pval: String)
 class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDao, correlationDao: CorrelationDao) extends Controller {
 
   def tTest = Action {
-    Ok(views.html.analyse.ttest())
+    Ok(views.html.English.analyse.ttest())
   }
 
   val keggForm = Form(
@@ -59,19 +59,19 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
   )
 
   def cHeatmap = Action {
-    Ok(views.html.analyse.correlation())
+    Ok(views.html.English.analyse.correlation())
   }
 
   def kegg = Action {
-    Ok(views.html.analyse.kegg())
+    Ok(views.html.English.analyse.kegg())
   }
 
   def go = Action {
-    Ok(views.html.analyse.go())
+    Ok(views.html.English.analyse.go())
   }
 
   def clusterIndex = Action {
-    Ok(views.html.analyse.cluster())
+    Ok(views.html.English.analyse.cluster())
   }
 
   def selectAllgene(group1: String, group2: String, c: String, pval: String): Action[AnyContent] = Action { implicit request =>
@@ -190,8 +190,7 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
       Json.obj("term" -> all.head, "database" -> all(1), "id" -> all(2), "input_num" -> all(3), "back_num" -> all(4),
         "p-value" -> all(5), "correct_pval" -> all(6), "input" -> all(7), "hyperlink" -> hyper)
     }
-    studies.delete()
-    output.delete()
+    Utils.deleteDirectory(tmpDir)
     Ok(Json.toJson(json))
   }
 
@@ -223,32 +222,31 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
         "p_uncorrected" -> all(5), "p_bonferroni" -> all(6), "p_holm" -> all(7), "p_sidak" -> all(8), "p_fdr" -> all(9),
         "namespace" -> all(10), "genes_in_study" -> all(11))
     }
-    o.delete()
-    studies.delete()
+    Utils.deleteDirectory(tmpDir)
     Ok(Json.toJson(json))
 
   }
 
-  def correlationMethod(sampleName: String, method: String) = {
+  def correlationMethod(sampleName: String, method: String,tmpDir:String) = {
     val info = Await.result(mRNAProfileDao.selectAllBySampleName(sampleName), Duration.Inf)
     val array = getArray(info).toBuffer
     val sam = info.map(_.samplename).distinct.toArray
     val buffer = sam +: array
-    FileUtils.writeLines(new File(Utils.path + "tmp.txt"), buffer.map(_.mkString("\t")).asJava)
-    // val rFile=new File("D:\\workspace\\SAGCRiceDB\\cmd.r")
+    FileUtils.writeLines(new File(tmpDir,"tmp.txt"), buffer.map(_.mkString("\t")).asJava)
     var s = ArrayBuffer[String]()
-    s = s :+ s"setwd('${Utils.path}')"
+    s = s :+ s"setwd('$tmpDir')"
     s = s :+ "a <- read.table('tmp.txt', sep='\t', header=TRUE,fill=TRUE)"
     s = s :+ s"out <- cor(a,  use='pairwise.complete.obs', method='$method')"
     s = s :+ "write.table(out, 'out_matrix.txt', quote=F, sep='\t')"
-    FileUtils.writeLines(new File("cmd.r"), s.asJava)
-    Process("R --restore --no-save -f cmd.r").!
-    //    val exitCode = Process("Rscript "+rFile.getAbsolutePath ).!
+    FileUtils.writeLines(new File(tmpDir,"cmd.r"), s.asJava)
+    Process("Rscript "+ tmpDir+"/cmd.r").!
   }
 
   def CorrelationHeatmap(sampleName: String, method: String): Action[AnyContent] = Action { implicit request =>
-    correlationMethod(sampleName, method)
-    val correlation = Source.fromFile(Utils.path + "out_matrix.txt").getLines().map(_.split("\t").toBuffer).toBuffer
+    val tmpDir = Files.createTempDirectory("tmpDir").toString
+    val path = tmpDir.replaceAll("\\\\", "/")
+    correlationMethod(sampleName, method,path)
+    val correlation = Source.fromFile(tmpDir+"/out_matrix.txt").getLines().map(_.split("\t").toBuffer).toBuffer
     val xAxis = correlation.head
     val yAxis = correlation.drop(1).map(_.head)
     val expressions = for (i <- 1 to xAxis.size; j <- 1 to yAxis.size) yield {
@@ -259,8 +257,7 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
     val max = expressions.toArray.map(x => x(2)).max
     val min = expressions.toArray.map(x => x(2)).min
     val jsons = Array(Json.obj("expression" -> expressions, "treatment" -> xAxis, "gt" -> yAxis, "max" -> max, "min" -> min))
-    new File(Utils.path + "out_matrix.txt").delete()
-    new File("cmd.r").delete()
+    Utils.deleteDirectory(tmpDir)
     Ok(Json.toJson(jsons))
   }
 
@@ -283,14 +280,13 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
     Process("R --restore --no-save -f cmd.r").!
   }
 
-  def clusterRun(id: String, sampleName: String): Action[AnyContent] = Action.async { implicit request =>
+  def clusterRun(sampleName: String): Action[AnyContent] = Action.async { implicit request =>
     val sample = sampleName.split(",").map(_.trim).distinct
-    mRNAProfileDao.selectByPosition(id, sampleName).map { x =>
+    mRNAProfileDao.selectAllBySampleName(sampleName).map { x =>
       val array = getArray(x).toBuffer
       val sam = x.map { y => y.samplename }.distinct.toArray
       val buffer = sam +: array
-      val tmp = Files.createTempDirectory("tmpDir").toFile
-      val tmpDir = tmp.getAbsolutePath
+      val tmpDir = Files.createTempDirectory("tmpDir").toString
       FileUtils.writeLines(new File(tmpDir, "data.txt"), buffer.map(_.mkString("\t")).asJava)
       val output = new File(tmpDir, "output.txt")
       val height = sample.size * 30 + 300
@@ -300,8 +296,7 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
       val div1 = div.replaceAll(" \"text\": null,", "")
       val div2 = div1.replaceAll("\"hoverinfo\": \"text\",", "")
       val json = Json.obj("div" -> div2)
-      println(tmpDir)
-      // FileUtils.deleteDirectory(tmp)
+       Utils.deleteDirectory(tmpDir)
       Ok(Json.toJson(json))
     }
   }
@@ -380,21 +375,93 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
   }
 
   def scatterIndex = Action { implicit request =>
-    Ok(views.html.analyse.scatterplot())
+    Ok(views.html.English.analyse.scatterplot())
   }
 
   def scatterPlot(sample1: String, sample2: String): Action[AnyContent] = Action.async { implicit request =>
-    println(sample1, sample2)
     val sampleName = sample1 + "," + sample2
+    val tmpDir = Files.createTempDirectory("tmpDir").toString
+    val path = tmpDir.replaceAll("\\\\", "/")
     mRNAProfileDao.selectAllBySampleName(sampleName).map { x =>
-      correlationMethod(sampleName, "pearson")
-      val correlation = Source.fromFile(Utils.path + "out_matrix.txt").getLines().map(_.split("\t").toBuffer).toBuffer
+      correlationMethod(sampleName, "pearson",path)
+      val correlation = Source.fromFile(tmpDir + "/out_matrix.txt").getLines().map(_.split("\t").toBuffer).toBuffer
       val value = correlation(1)(2)
       val long = getArray1(x)
-      println(long.size)
       val json = Json.obj("series" -> long, "pc1" -> sample1, "pc2" -> sample2, "length" -> long.size, "correlation" -> value)
+      Utils.deleteDirectory(tmpDir)
       Ok(json)
     }
+  }
+
+  def PCAIndex = Action { implicit request =>
+    Ok(views.html.English.analyse.PCA())
+  }
+
+  def PCA(sampleName: String): Action[AnyContent] = Action { implicit request =>
+    var buffer = mutable.Buffer[String]()
+    val tmpDir = Files.createTempDirectory("tmpDir").toString
+    val path = tmpDir.replaceAll("\\\\", "/")
+    if (sampleName.isEmpty) {
+      buffer = FileUtils.readLines(new File(Utils.path, "pca.txt")).asScala
+    } else{
+      getExpressionFile(sampleName,tmpDir)
+      pcaR(path)
+      buffer = FileUtils.readLines(new File(tmpDir, "pca.txt")).asScala
+    }
+    val value = buffer.drop(1).map(_.split("\t"))
+    val pca = value.map { x =>(x(0), x.drop(1))}
+    covR(pca,path)
+    val buf = pca.map { x =>
+      val data = x._2.map(_.toDouble).toSeq
+      val color = "rgba(30,144,255, .5)"
+      Json.obj("name" -> x._1, "color" -> color, "data" -> Iterable(data))
+    }
+    val b = FileUtils.readLines(new File(tmpDir,"cov.txt")).asScala
+    val pc = b.map(_.split("\t"))
+    val pc1 = pc(1)(1)
+    val pc2 = pc(2)(2)
+    Ok(Json.obj("series" -> buf,"pc1" -> pc1,"pc2" -> pc2))
+  }
+
+  def getExpressionFile(sampleName:String,tmpDir:String) ={
+    val sample = sampleName.split(",").map(_.trim).distinct
+    val express= Await.result(mRNAProfileDao.selectAllBySampleName(sampleName),Duration.Inf)
+    val array = getArray(express).toBuffer
+    val buffer = sample +: array
+    FileUtils.writeLines(new File(tmpDir,"expression.txt"),buffer.map(_.mkString("\t")).asJava)
+  }
+
+  def pcaR(tmpDir:String) = {
+    var rStr = s"setwd('$tmpDir')\n"
+    rStr +=
+      """
+        |a <- read.table('expression.txt', sep='\t', header=TRUE,fill=TRUE)
+        |pr <- prcomp(a)
+        |prr <- pr$rotation
+        |prs <- prr[,1:2]
+        |write.table(prs,'pca.txt',quote=F,sep='\t')
+      """.stripMargin
+    FileUtils.writeStringToFile(new File(tmpDir, "cmd.r"), rStr)
+    Process("Rscript " + tmpDir + "/cmd.r").!
+  }
+
+  def covR(pca:mutable.Buffer[(String,Array[String])],tmpDir:String)={
+    val file = new FileWriter(new File(tmpDir,"covoriginal .txt"))
+    file.write("PCA1\tPCA2\n")
+    pca.foreach{x=>
+      file.write(x._1+"\t"+x._2.mkString("\t")+"\n")
+    }
+    file.close()
+    val newFile = new File(tmpDir,"cov.txt")
+    var rStr =s"setwd('$tmpDir')"
+    rStr +=
+      """
+        |a <- read.table("covoriginal .txt", sep='\t', header=TRUE,fill=TRUE)
+        |cov <- cov(a)
+        |write.table(cov,'cov.txt',quote=F,sep='\t')
+      """.stripMargin
+    FileUtils.writeStringToFile(new File(tmpDir, "covCmd.r"), rStr)
+    Process("Rscript " + tmpDir + "/covCmd.r").!
   }
 
   def log2(x: Double) = log10(x) / log10(2.0)

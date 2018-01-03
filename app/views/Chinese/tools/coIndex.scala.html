@@ -1,0 +1,104 @@
+@Chinese.search.mainWithSearch("Culstering Analyse") {
+
+    <div class="container">
+        <form class="registration-form form-horizontal" id="conditionForm" action="/SAGC/chinese/tools/coResult" method="get"
+        style="margin: 20px">
+
+            <div class="form-group col-sm-12">
+                <h2 class="page-heading"
+                style="text-align: left;
+                    border-bottom: 5px solid #e9f3f4">相关性网络图</h2>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px">
+                <label class="control-label col-sm-2 col-sm-offset-1">基因名:</label>
+                <div class="col-sm-6">
+                    <textarea class="form-control" name="id" id="gene" rows="5"
+                    style="border-radius: 4px;"></textarea>
+                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+                        样例</em></a></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2 col-sm-offset-1">相关性系数(皮尔森):</label>
+                <div class="col-sm-2">
+                    <input class="form-control" name="rvalue" id="rvalue" value="0.92">
+                </div>
+            </div>
+
+
+            <div class="form-group" style="margin-top: 30px">
+                <div class="actions col-sm-offset-3 col-sm-3">
+                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                        运行</button>
+                </div>
+                <div class="actions col-sm-offset-1/2 col-sm-3">
+                    <button type="reset" class="btn btn-primary" style="width: 80%;
+                        margin-left: 50px">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+
+            $(function () {
+
+                $('#egGene').click(function () {
+                    //输入的文本去掉两边的空格
+                    var eg = "OS01G0100100,OS01G0100500";
+                    $('#gene').val(eg);
+                });
+
+                function extractor(query) {
+                    var result = /([^,]+)$/.exec(query);
+                    if (result && result[1])
+                        return result[1].trim();
+                    return '';
+                }
+
+                $.ajax({
+                    url: "/SAGC/admin/getAllGeneId",
+                    type: "get",
+                    success: function (data) {
+                        $('#gene').typeahead({
+                            source: data,
+                            updater: function (item) {
+                                return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+                            },
+                            matcher: function (item) {
+                                var tquery = extractor(this.query);
+                                if (!tquery) return false;
+                                return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+                            },
+                            highlighter: function (item) {
+                                var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+                                return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                                    return '<strong>' + match + '</strong>'
+                                })
+                            }
+                        })
+                    }
+                });
+            })
+
+            function mySearch() {
+                $("#search").attr("disabled", true).html("搜索...");
+                $.ajax({
+                    url: "@routes.CheckController.checkGeneId()",
+                    type: "post",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        if (data.valids == "false") {
+                            swal("Error!", data.messages, "error")
+                            $("#search").attr("disabled", false).html("运行");
+                        } else {
+                            $("#conditionForm").submit()
+                        }
+                    }
+                });
+            }
+    </script>
+}

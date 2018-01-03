@@ -1,0 +1,195 @@
+@Chinese.search.mainWithSearch("SAGC-GO") {
+
+    <div class="container">
+        <form class="registration-form form-horizontal" id="conditionForm"
+        style="margin: 20px;">
+
+            <div class="form-group col-sm-12">
+                <h2 class="page-heading"
+                style="text-align: left;
+                    border-bottom: 5px solid #e9f3f4">水稻 GO 富集分析</h2>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px">
+                <label class="control-label col-sm-2 col-sm-offset-1">基因名:</label>
+                <div class="col-sm-6">
+                    <textarea class="form-control" name="id" id="gene" rows="5"
+                    style="border-radius: 4px;"></textarea>
+                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+                        样例</em></a></span>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 25px">
+                <label class="control-label col-sm-2 col-sm-offset-1"> 请选择显著水平值</label>
+                <div class="col-sm-6">
+                    <select class="form-control" name="alpha" style="border-radius: 4px;">
+                        <option value="0.01">0.01</option>
+                        <option value="0.05" selected="selected">0.05</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 25px">
+                <label class="control-label col-sm-2 col-sm-offset-1">设置p-value过滤值（仅输出小于这个值的项）:</label>
+                <div class="col-sm-6">
+                    <input class="form-control" type="text" value="0.05" name="pval"
+                    id="pValue"
+                    style="border-top-left-radius: 4px;
+                        border-bottom-left-radius: 4px;"/>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 35px">
+                <div class="actions col-sm-offset-3 col-sm-3">
+                    <button type="button" id="analyse"
+                    class="btn btn-primary" onclick="update()" style="width: 80%">运行</button>
+                </div>
+                <div class="actions col-sm-offset-1/2 col-sm-3">
+                    <button type="reset" class="btn btn-primary" style="width: 80%;
+                        margin-left: 50px">重置</button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <div id="result" style="display: none">
+            <hr>
+            <label style="margin-left: 20px">请选择要显示的属性:</label>
+            <div id="checkbox" class="checkbox" style="margin-left: 40px">
+
+            </div>
+            <div id="toolbar">
+                    &nbsp;Keyword：
+            </div>
+            <div class="table-responsive panel-collapse collapse in " >
+                <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+                data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-search-align="left" data-multiple-search="true"
+                data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+                style="word-wrap: break-word">
+                    <thead>
+                        <tr>
+                            <th data-field="id" data-sortable="true">ID</th>
+                            <th data-field="enrichment" data-sortable="true">Enrichment</th>
+                            <th data-field="description" data-sortable="true">Description</th>
+                            <th data-field="ratio_in_study" data-sortable="true">Ratio_In_Study</th>
+                            <th data-field="ratio_in_pop" data-sortable="true">Ratio_In_Pop</th>
+                            <th data-field="p_uncorrected" data-sortable="true">P_Uncorrected</th>
+                            <th data-field="p_bonferroni" data-sortable="true">P_Bonferroni</th>
+                            <th data-field="p_holm" data-sortable="true">P_Holm</th>
+                            <th data-field="p_sidak" data-sortable="true">P_Sidak</th>
+                            <th data-field="p_fdr" data-sortable="true">P_Fdr</th>
+                            <th data-field="namespace" data-sortable="true">Namespace</th>
+                            <th data-field="genes_in_study" data-sortable="true">Genes_In_Study</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+
+            var originalHtml = ""
+
+            $(function () {
+                originalHtml = $("#result").html()
+                $("#egGene").click(function () {
+                    var eg = "OS01G0100100,OS01G0100200,OS01G0100300,OS01G0100400,OS01G0100466,OS01G0100500," +
+                            "OS01G0100600,OS01G0100650,OS01G0100700,OS01G0100800,OS01G0100900,OS01G0101150,OS01G0101200," +
+                            "OS01G0101300,OS01G0101600,OS01G0101700,OS01G0101800,OS01G0101850,OS01G0101900,OS01G0102000," +
+                            "OS01G0102300,OS01G0102400,OS01G0102500,OS01G0102600,OS01G0102700,OS01G0102800,OS01G0102850";
+                    $("#gene").val(eg);
+                });
+
+                function extractor(query) {
+                    var result = /([^,]+)$/.exec(query);
+                    if (result && result[1])
+                        return result[1].trim();
+                    return '';
+                }
+
+                $.ajax({
+                    url: "/SAGC/admin/getAllGeneId",
+                    type: "get",
+                    success: function (data) {
+                        $('#gene').typeahead({
+                            source: data,
+                            updater: function (item) {
+                                return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+                            },
+                            matcher: function (item) {
+                                var tquery = extractor(this.query);
+                                if (!tquery) return false;
+                                return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+                            },
+                            highlighter: function (item) {
+                                var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+                                return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                                    return '<strong>' + match + '</strong>'
+                                })
+                            }
+                        })
+                    }
+                });
+            })
+
+            function update() {
+                $.ajax({
+                    url: "@routes.CheckController.checkGo()",
+                    type: "post",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        var index = layer.load(1, {
+                            shade: [0.1, '#fff']
+                        });
+                        if (data.valids == "false") {
+                            layer.close(index)
+                            swal("Error!", data.messages, "error")
+                        } else {
+                            $("#analyse").attr("disabled", true).html("分析中...")
+                            $("#result").empty().append(originalHtml);
+                            var array = ["ID", "Enrichment", "Description", "Ratio_In_Study", "Ratio_In_Pop", "P_Uncorrected",
+                                "P_Bonferroni", "P_Holm", "P_Sidak", "P_Fdr", "Namespace", "Genes_In_Study"]
+                            var values = ["id", "enrichment", "description", "ratio_in_study", "ratio_in_pop", "p_uncorrected",
+                                "p_bonferroni", "p_holm", "p_sidak", "p_fdr", "namespace", "genes_in_study"]
+                            var html = ""
+                            $.each(array, function (n, value) {
+                                        html += "<label style='margin-right: 15px'>" +
+                                                "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
+                                                "</label>"
+                                    }
+                            );
+                            $("#checkbox").append(html)
+                            $.ajax({
+                                url: "@routes.AnalyseController.goResult()",
+                                type: "post",
+                                dataType: "json",
+                                data: $("#conditionForm").serialize(),
+                                success: function (data) {
+                                    $('#table').bootstrapTable({data: data});
+                                    $("#analyse").attr("disabled", false).html("运行").blur()
+                                    var hiddenArray = ["p_bonferroni", "p_holm", "p_sidak", "p_fdr", "genes_in_study"]
+                                    $.each(hiddenArray, function (n, value) {
+                                        $('#table').bootstrapTable('hideColumn', value);
+                                        $("input:checkbox[value=" + value + "]").attr("checked", false)
+                                    });
+                                    $("#result").show()
+                                    layer.close(index)
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            function setColumns(value) {
+                var element = $("input:checkbox[value=" + value + "]")
+                if (element.is(":checked")) {
+                    $('#table').bootstrapTable('showColumn', value);
+                } else {
+                    $('#table').bootstrapTable('hideColumn', value);
+                }
+            }
+    </script>
+
+}

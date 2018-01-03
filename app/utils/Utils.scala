@@ -22,6 +22,11 @@ object Utils {
     }
   }
 
+  def deleteDirectory(tmpDir: String):Unit = {
+    val direcotry = new File(tmpDir)
+    deleteDirectory(direcotry)
+  }
+
   val scriptHtml =
     """
       |<script>

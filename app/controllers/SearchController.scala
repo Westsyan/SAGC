@@ -14,7 +14,7 @@ class SearchController  @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao
                                   geneInformationDao : GeneInformationDao)extends Controller {
 
   def toIndex = Action {implicit request =>
-    Ok(views.html.search.index())
+    Ok(views.html.English.search.index())
   }
 
 //得到输入的基因ID
@@ -22,7 +22,7 @@ class SearchController  @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao
     //获得以逗号分隔和除去空格的id
     val idStr = id.split(",").map(_.trim).distinct.mkString(",")
     geneInformationDao.selectById(idStr).map{x=>
-      Ok(views.html.search.result(idStr, sampleName,x))
+      Ok(views.html.English.search.result(idStr, sampleName,x))
       }
     }
 

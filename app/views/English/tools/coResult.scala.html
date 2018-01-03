@@ -1,0 +1,131 @@
+@(id: String, rvalue: String, total: String)
+@English.search.mainWithSearch("Expression Profile-SAGCRICEDB") {
+    <style>
+            .fixed-table-container tbody td .th-inner, .fixed-table-container thead th .th-inner {
+                padding: 8px;
+                line-height: 24px;
+                vertical-align: top;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-size: 12px;
+                white-space: normal;
+            }
+
+            .table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td {
+                padding: 8px;
+                line-height: 1.42857143;
+                vertical-align: top;
+                border-top: 1px solid #ddd;
+                font-size: 12px;
+            }
+
+            #table a {
+                font-size: 12px;
+            }
+
+    </style>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-flag"></i> Gene Expression Profiles</h3>
+        </div>
+        <div class="panel-body">
+            <ul class="list-unstyled">
+
+                <li><label class="label label-define label-primary">Total:</label>
+                    <a class="gene_tag disabled btn btn-default btn-xs">@total</a>
+                </li>
+                <br>
+                <li><label class="label label-define label-primary">Gene Symbol:</label>
+                    @for(geneid <- id.split(",").map(_.trim)) {
+                        <a class="gene_tag disabled btn btn-default btn-xs">@geneid</a>
+                    }
+                </li>
+            </ul>
+            <br>
+            <div class="well" role="alert" >
+                <div id="charts" style="height: 500px;
+                    background-color: white"></div>
+            </div>
+
+            <hr>
+
+            <div class="table-responsive panel-collapse collapse in ">
+                <table class="display table table-bordered table-hover" id="table" data-pagination="true" data-search="true"
+                data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true"
+                style="table-layout: fixed;
+                    word-wrap: break-word">
+                    <thead>
+                        <tr>
+                            <th data-field="gene1" data-sortable="true">Gene One</th>
+                            <th data-field="gene2" data-sortable="true">Gene Two</th>
+                            <th data-field="correlation" data-sortable="true">Pearson's r-value</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+
+            $(document).ready(function () {
+
+                $.ajax({
+                    url: "/SAGC/tools/correlation?id=@id&rvalue=@rvalue",
+                    type: "post",
+                    dataType: "json",
+                    success: function (data) {
+                        netWork(data);
+                    }
+                });
+            })
+
+            $.ajax({
+                url: "/SAGC/tools/correlationInfo?id=@id&rvalue=@rvalue",
+                type: "post",
+                dataType: "json",
+                success: function (data) {
+                    $('#table').bootstrapTable({
+                        data: data
+                    });
+                }
+            })
+
+            function netWork(data) {
+                var nodesDataset = new vis.DataSet(data.nodes);
+                var edgesDataset = new vis.DataSet(data.edges);
+                var container = document.getElementById('charts');
+
+                // vis数据
+                var data1 = {nodes: nodesDataset, edges: edgesDataset};
+                var options = {
+                    autoResize: true,
+                    nodes: {
+                        shape: 'dot',
+                        size: 5,
+                        borderWidth: 0,
+                        borderWidthSelected: 0,
+                        font: '12px arial #333'
+                    },
+                    groups: {
+                        geneGroup: {color: {background: 'red'}, borderWidth: 0, size: 10}
+                    },
+                    physics: false,
+                    edges: {
+                        width: 0.2,
+                        color: '#999',
+                        smooth: {
+                            type: 'continuous'
+                        }
+                    },
+                    interaction: {
+                        hover: true,
+                        tooltipDelay: 50
+                    }
+                };
+
+                // 初始化网络
+                var network = new vis.Network(container, data1, options);
+            }
+    </script>
+
+}

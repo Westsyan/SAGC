@@ -19,7 +19,14 @@ class CorrelationDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
 
   def selectByGeneid(geneid:String) : Future[Seq[CorrelationRow]] = {
     val id = geneid.split(",").map(_.trim).distinct
-    db.run(Correlation.filter(x=> x.gene1.inSetBind(id) || x.gene2.inSetBind(id)).result)
+    db.run(Correlation.filter(x=> x.gene1.inSetBind(id)).result)
   }
+
+  def selectById(geneid:String) : Future[Seq[String]] = {
+    val id = geneid.split(",").map(_.trim).distinct
+    db.run(Correlation.filter(x=> x.gene1.inSetBind(id)).map(_.gene1).distinct.result)
+  }
+
+  def selectAllGene : Future[Seq[String]] = db.run(Correlation.map(_.gene1).distinct.result)
 
 }

@@ -1,0 +1,62 @@
+@English.admin.main("") {
+
+    <div class="container">
+        <form class="registration-form" id="form"
+        accept-charset="UTF-8" style="margin: 20px;"
+        enctype="multipart/form-data" >
+
+            <div class="row">
+                <div class="form-group col-sm-12">
+                    <h2 class="page-heading"
+                    style="text-align: left;
+                        border-bottom: 5px solid #e9f3f4">Update Correlation</h2>
+                </div>
+            </div>
+
+            <ul>
+                <li><div>The update time is longer！</div></li>
+                <li><div>Please confirm whether to update!</div></li>
+            </ul>
+
+            <div class="row">
+                <div class="form-group col-sm-12" style="margin-top: 20px">
+                    <div class="actions">
+                        <input type="button" id="fileSubmit" value="update database"
+                        class="btn btn-primary btn-lg" onclick="update()" style="width: 100%">
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+    <script>
+            function update() {
+
+                swal({
+                            title: "",
+                            text: "Are you sure update the correlation database？",
+                            type: "warning",
+                            showCancelButton: true,
+                            showConfirmButton: true,
+                            confirmButtonClass: "btn-danger",
+                            confirmButtonText: "Yes",
+                            closeOnConfirm: false,
+                            cancelButtonText: "No"
+                        },
+                        function () {
+                            $.ajax({
+                                url: "@routes.SaveDatabase.saveCor3()",
+                                type: "get",
+                                dataType: "json",
+                                success: function (data) {
+                                    swal("Success！", data.message, "success")
+                                    setSamples()
+                                }
+                            });
+                        });
+            }
+
+
+    </script>
+
+}

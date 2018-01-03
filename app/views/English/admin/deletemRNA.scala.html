@@ -1,0 +1,95 @@
+@()
+@English.admin.mainWithDelete("Delete-SAGC") {
+    <div class="container">
+        <form class="registration-form" action="deletemRNABefore" id="pcaForm" accept-charset="UTF-8"
+        method="get" style="margin: 20px;">
+
+            <div class="row">
+                <div class="form-group col-sm-12">
+                    <h2 class="page-heading" style="text-align: left;
+                        border-bottom: 5px solid #e9f3f4;margin-top: 20px">
+                        Delete Sample Genotype Expression</h2>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-sm-12">
+                    <label>Please select the sample to be deleted:</label>
+                    <div id="checkbox" class="checkbox">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-sm-12">
+                    <hr>
+                    <div class="actions col-sm-2" style="padding-left: 0px">
+                        <button type="button" class="btn btn-primary" id="search" style="width: 100%"
+                        onclick="deleteSamples()">Immediately delete</button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+    <script>
+            function deleteSamples() {
+                var array = []
+                //当chekeBox被选中时，在arry中加入新选中的元素
+                //:checkbox ：选取所有type为checkbox的元素
+                $(":checkbox:checked").each(function () {
+                    //在array的后面加上新的元素
+                    array.push($(this).val())
+                })
+
+                if (array.length == 0) {
+                    swal("错误", "请至少选择一个样品!", "error")
+                } else {
+                    swal({
+                                title: "",
+                                text: "确定要在数据库中删除这些样品吗？",
+                                type: "warning",
+                                showCancelButton: true,
+                                showConfirmButton: true,
+                                confirmButtonClass: "btn-danger",
+                                confirmButtonText: "确定",
+                                closeOnConfirm: false,
+                                cancelButtonText: "取消"
+                            },
+                            function () {
+                                $.ajax({
+                                    url: "deletemRNABySamplename?sampleName=" + array,
+                                    type: "get",
+                                    success: function () {
+                                        swal("成功！", "删除数据成功！", "success")
+                                        setSamples()
+                                    }
+                                });
+                            });
+                }
+            }
+
+            function setSamples() {
+                $(".checkbox").empty()
+                $.ajax({
+                    url: "@routes.AdminController.getAllSampleName()",
+                    type: "get",
+                    dataType: "json",
+                    success: function (data) {
+                        $.each(data, function (n, value) {
+                                    var html = "<label style='margin-right: 15px' class='col-sm-2'>" +
+                                            "<input type='checkbox'  value='" + value + "'>" + value +
+                                            "</label>"
+                                    $(".checkbox").append(html)
+                                }
+                        );
+                    }
+                })
+            }
+
+            $(function () {
+                setSamples()
+            })
+    </script>
+}
+

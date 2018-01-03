@@ -9,6 +9,9 @@ object Tables extends {
 trait Tables {
   val profile: slick.jdbc.JdbcProfile
   import profile.api._
+  import com.github.tototoshi.slick.MySQLJodaSupport._
+  import org.joda.time.DateTime
+  import slick.model.ForeignKeyAction
   // NOTE: GetResult mappers for plain SQL are only generated for tables where Slick knows how to map the types of all columns.
   import slick.jdbc.{GetResult => GR}
 
@@ -149,7 +152,7 @@ trait Tables {
     val value: Rep[Double] = column[Double]("value")
 
     /** Primary key of Mrnaprofile (database name mrnaprofile_PK) */
-    val pk = primaryKey("mrnaprofile_PK", (samplename, geneid))
+    val pk = primaryKey("mrnaprofile_PK", (geneid, samplename))
   }
   /** Collection-like TableQuery object for table Mrnaprofile */
   lazy val Mrnaprofile = new TableQuery(tag => new Mrnaprofile(tag))

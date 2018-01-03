@@ -1,0 +1,76 @@
+@()
+
+<div class="page-header">
+    <div class="banner" >
+        <div class="logo">
+            <a href="@routes.AdminController.toIndex()"><img src="/assets/images/rice.png"></a>
+            <h1><span>SAGC</span>
+                <font style="font-size: 28px;"> &nbsp;Rice Gene Expression Database</font></h1>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-default">
+            <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="@routes.IndexController.toIndex()"><span class="glyphicon glyphicon-home"></span>
+                    Home</a></li>
+                <li class="dropdown">
+                    <a href="#"><span class="glyphicon glyphicon-search"></span>
+                        Search <span class="fa fa-caret-down"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="@routes.SearchController.toIndex()">Search By Position</a></li>
+                        <li><a href="@routes.GeneInformationController.searchBySRegion()">Search By Region</a></li>
+                        <li><a href="@routes.GeneInformationController.regionIndex()">Search By Chromosome</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#"><span class="glyphicon glyphicon-signal"></span>
+                        Analyse <span class="fa fa-caret-down"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="@routes.AnalyseController.tTest()">T-Test</a></li>
+                        <li><a href="@routes.AnalyseController.go()">Go Enrichment</a></li>
+                        <li><a href="@routes.AnalyseController.kegg()">Kegg Enrichment</a></li>
+                        <li class="divider"></li>
+                        <li><a href="@routes.AnalyseController.cHeatmap()">Correlation heatmap</a></li>
+                        <li><a href="@routes.AnalyseController.clusterIndex()">Clustering analysis</a></li>
+                        <li class="divider"></li>
+                        <li><a href="@routes.AnalyseController.scatterIndex()">Scatter Plot</a></li>
+                        <li><a href="@routes.AnalyseController.PCAIndex()">PCA Scatter Plot</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#"><span class="glyphicon glyphicon-wrench"></span>
+                        Tools <span class="fa fa-caret-down"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="@routes.ToolsController.seqIndex()">Sequence Fetch</a></li>
+                        <li><a href="@routes.ToolsController.regionIndex()">Multiple Sequences Fetch</a></li>
+                        <li class="divider"></li>
+                        <li><a href="@routes.ToolsController.geneBlastn()">Blastn Against Gene</a></li>
+                        <li><a href="@routes.ToolsController.genomeBlastn()">Blastn Against Genome</a></li>
+                        <li class="divider"></li>
+                        <li><a href="@routes.ToolsController.coIndex()">Co Expression</a></li>
+                    </ul>
+                </li>
+                <li><a href="@routes.DownLoadController.toIndex()"><span class="glyphicon glyphicon-download"></span>
+                    DownLoad</a></li>
+                <li style="margin-left: 10px;">
+                    <a href="@routes.AdminController.toIndex()"><span class="fa fa-user"></span> Admin</a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="@routes.ChineseController.mainIndex()"><span class="fa fa-wordpress"></span> Chinese</a></li>
+            </ul>
+
+        </div><!-- /.navbar-collapse -->
+    </nav>
+</div>

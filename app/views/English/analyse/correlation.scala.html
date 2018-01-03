@@ -1,0 +1,125 @@
+@English.search.mainWithSearch("Heatmap-SAGC") {
+
+    <div class="container">
+        <form class="registration-form form-horizontal" id="conditionForm"
+        style="margin: 20px">
+
+            <div class="form-group col-sm-12">
+                <h2 class="page-heading"
+                style="text-align: left;
+                    border-bottom: 5px solid #e9f3f4"> Correlation Heat Map</h2>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2 col-sm-offset-1">Sample Name:</label>
+                <div class="col-sm-6">
+                    <textarea class="form-control" name="sampleName" id="sampleName" rows="5"
+                    required style="border-radius: 4px;
+                        margin-top: 10px"
+                    ></textarea>
+                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eSample">
+                        Example</em></a></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-offset-1 col-sm-2">Correlation coefficient:</label>
+                <div class="col-sm-6">
+                    <select class="form-control" name="method" id="mySelect" style="border-radius: 4px;
+                        margin-top: 10px">
+                        <option>pearson</option>
+                        @* <option>kendall</option>*@
+                        <option>spearman</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 30px">
+                <div class="actions col-sm-offset-3 col-sm-3">
+                    <button type="button" class="btn btn-primary" style="width: 80%;" id="heatmap" onclick="mySearch()">
+                        Running</button>
+                </div>
+                <div class="actions col-sm-offset-1/2 col-sm-3">
+                    <button type="reset" class="btn btn-primary" style="width: 80%;
+                        margin-left: 50px">reset</button>
+                </div>
+            </div>
+            <br>
+            <br>
+            <div id="result" style="display: none;" >
+                <div class="row">
+                    <div class="well" role="alert">
+                        <div id="charts"></div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+
+            var originalHtml = ""
+            $(function () {
+                originalHtml = $("#result").html()
+                $('#eSample').click(function () {
+                    //输入的文本去掉两边的空格
+                    var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036,B039";
+                    $('#sampleName').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "sampleName")
+                });
+
+                function extractor(query) {
+                    var result = /([^,]+)$/.exec(query);
+                    if (result && result[1])
+                        return result[1].trim();
+                    return '';
+                }
+
+                $.ajax({
+                    url: "/SAGC/admin/getAllSampleName",
+                    type: "get",
+                    success: function (data) {
+                        $('#samplename').typeahead({
+                            source: data,
+                            updater: function (item) {
+                                return this.$element.val().replace(/[^,]*$/, '') + item + ',';
+                            },
+                            matcher: function (item) {
+                                var tquery = extractor(this.query);
+                                if (!tquery) return false;
+                                return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+                            },
+                            highlighter: function (item) {
+                                var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+                                return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                                    return '<strong>' + match + '</strong>'
+                                })
+                            }
+                        })
+                    }
+                });
+            })
+
+
+            function mySearch() {
+                $.ajax({
+                    url: " /SAGC/check/checkSamplename",
+                    type: "get",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        if (data.valid == "false") {
+                            swal("Error!", data.message, "error")
+                        } else {
+                            $("#heatmap").attr("disabled", true).html("Drawing...")
+                            $("#result").empty().append(originalHtml);
+                            cheatmap("heatmap")
+                            $("#result").show()
+                            $("#heatmap").attr("disabled", false).html("Running")
+                        }
+                    }
+                });
+            }
+
+    </script>
+}

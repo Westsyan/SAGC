@@ -12,8 +12,8 @@ import play.api.libs.json._
 import play.api.mvc._
 import utils._
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
 case class seqData(chr: String, start: String, end: String)
@@ -49,19 +49,19 @@ class ToolsController@Inject()(correlationDao : CorrelationDao) extends Controll
   )
 
   def seqIndex = Action {
-    Ok(views.html.tools.seqFetch())
+    Ok(views.html.English.tools.seqFetch())
   }
 
   def regionIndex = Action {
-    Ok(views.html.tools.multipleSeq())
+    Ok(views.html.English.tools.multipleSeq())
   }
 
   def geneBlastn = Action {
-    Ok(views.html.tools.geneBlastn())
+    Ok(views.html.English.tools.geneBlastn())
   }
 
   def genomeBlastn = Action {
-    Ok(views.html.tools.genomeBlastn())
+    Ok(views.html.English.tools.genomeBlastn())
   }
 
   def seqFetch = Action { implicit request =>
@@ -118,8 +118,10 @@ class ToolsController@Inject()(correlationDao : CorrelationDao) extends Controll
       execCommand.exec(command1,command2)
       if(execCommand.isSuccess){
         val html = FileUtils.readFileToString(outHtml)
+        Utils.deleteDirectory(tmpDir)
         Ok(Json.obj("html" -> (html + "\n" + Utils.scriptHtml)))
       }else{
+        Utils.deleteDirectory(tmpDir)
       Ok(Json.obj("valid" -> "false", "message" -> execCommand.getErrStr))
     }
   }
@@ -146,21 +148,28 @@ class ToolsController@Inject()(correlationDao : CorrelationDao) extends Controll
     execCommand.exec(command1,command2)
     if(execCommand.isSuccess){
       val html = FileUtils.readFileToString(outHtml)
+      Utils.deleteDirectory(tmpDir)
       Ok(Json.obj("html" -> (html + "\n" + Utils.scriptHtml)))
     }else{
+      Utils.deleteDirectory(tmpDir)
       Ok(Json.obj("valid" -> "false", "message" -> execCommand.getErrStr))
     }
   }
 
-
   def coIndex = Action {
-    Ok(views.html.tools.coIndex())
+    Ok(views.html.English.tools.coIndex())
   }
 
   def coResult(id:String,rvalue:String):Action[AnyContent] = Action.async { implicit request=>
     correlationDao.selectByGeneid(id).map{x=>
-      val total = x.filter(_.correlation >= rvalue.toDouble).distinct.size
-      Ok(views.html.tools.coResult(id,rvalue,total))
+      var total = ""
+      val size = x.filter(_.correlation >= rvalue.toDouble).distinct.size
+      if(size>0){
+        total = size.toString
+      }else{
+        total = "no matched results!"
+      }
+      Ok(views.html.English.tools.coResult(id,rvalue,total))
     }
   }
 
@@ -179,9 +188,21 @@ class ToolsController@Inject()(correlationDao : CorrelationDao) extends Controll
     val x = Await.result(correlationDao.selectByGeneid(id), Duration.Inf)
     val result = x.filter(_.correlation >= rvalue.toDouble)
     val gene2 = result.map(_.gene2).distinct
-    val y = Await.result(correlationDao.selectByGeneid(gene2.mkString(",")), Duration.Inf)
-    val r = y.filter(_.correlation >= rvalue.toDouble)
-    val all = result ++ r
+    val expressByGene2 = Await.result(correlationDao.selectByGeneid(gene2.mkString(",")), Duration.Inf)
+    val r = expressByGene2.filter(_.correlation >= rvalue.toDouble)
+    val r1 =  r.filter(x=> geneid.contains(x.gene2))
+    val r2 = r.diff(r1)
+    val r3 =r2.map{x=>(x.gene1,x.gene2)}
+    var r4 = r2
+    //去除重复的相关性系数
+    for(i <- 0 until r3.size;j <- i+1 until r3.size){
+      val x1 = r3(i)
+      val x2 = r3(j)
+      if(x1._1 == x2._2 && x2._1 == x1._2){
+       r4= r4.diff(r2.filter(_.gene2 == x2._1 ))
+      }
+    }
+    val all = result ++ r4
     val edges = all.map { z =>
       val value = "Value:" + z.correlation
       Json.obj("from" -> z.gene1, "title" -> value, "to" -> z.gene2)
