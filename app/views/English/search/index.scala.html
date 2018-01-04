@@ -121,8 +121,8 @@
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
                     success: function (data) {
-                        if (data.valids == "false") {
-                            swal("Error!", data.messages, "error")
+                        if (data.valid == "false") {
+                            swal("Error!", data.message, "error")
                             $("#search").attr("disabled", false).html("Search");
                         } else {
                             $("#conditionForm").submit()

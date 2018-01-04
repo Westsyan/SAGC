@@ -59,7 +59,7 @@
 
             </div>
             <div id="toolbar">
-                    &nbsp;Keyword：
+                    &nbsp;关键词：
             </div>
             <div class="table-responsive panel-collapse collapse in " >
                 <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
@@ -130,11 +130,35 @@
                         })
                     }
                 });
+                formValidation();
             })
+
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        pval: {
+                            validators: {
+                                notEmpty: {
+                                    message: '不能为空!'
+                                },
+                                numeric: {
+                                    message: 'p-value必须为一个数字!'
+                                },
+                            }
+                        },
+                    }
+                });
+            }
 
             function update() {
                 $.ajax({
-                    url: "@routes.CheckController.checkGo()",
+                    url: "@routes.CheckController.checkGeneId()",
                     type: "post",
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
@@ -142,9 +166,14 @@
                         var index = layer.load(1, {
                             shade: [0.1, '#fff']
                         });
-                        if (data.valids == "false") {
+                        if (data.valid == "false") {
                             layer.close(index)
-                            swal("Error!", data.messages, "error")
+                            swal({
+                                title: "错误!",
+                                text: data.message,
+                                type: "error",
+                                confirmButtonText: "确定"
+                            })
                         } else {
                             $("#analyse").attr("disabled", true).html("分析中...")
                             $("#result").empty().append(originalHtml);

@@ -7,7 +7,7 @@
             <div class="form-group col-sm-12">
                 <h2 class="page-heading"
                 style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">Rice T-Test</h2>
+                    border-bottom: 5px solid #e9f3f4">水稻 T-Test 检验</h2>
             </div>
 
             <div class="form-group">
@@ -15,7 +15,7 @@
                 <div class="col-sm-6">
                     <textarea class="form-control" name="group1" id="group1" rows="4" style="border-radius: 4px;
                         margin-top: 10px"
-                    required ></textarea>
+                     ></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eGroup1">
                         样例</em></a></span>
                 </div>
@@ -25,7 +25,7 @@
                 <label class="control-label col-sm-2 col-sm-offset-1">样品组2:</label>
                 <div class="col-sm-6">
                     <textarea class="form-control" name="group2" id="group2" rows="4" style="border-radius: 4px;"
-                    required ></textarea>
+                     ></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eGroup2">
                         样例</em></a></span>
                 </div>
@@ -67,7 +67,7 @@
 
             </div>
             <div id="toolbar">
-                    &nbsp;Keyword：
+                    &nbsp;关键词：
             </div>
             <div class="table-responsive panel-collapse collapse in " >
                 <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
@@ -162,7 +162,41 @@
                         })
                     }
                 });
+                formValidation();
             })
+
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        c: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'logFc不能为空!'
+                                },
+                                numeric: {
+                                    message: 'logFc必须为一个数字!'
+                                },
+                            }
+                        },
+                        pval: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'q-value不能为空!'
+                                },
+                                numeric: {
+                                    message: 'p-value必须为一个数字!'
+                                },
+                            }
+                        },
+                    }
+                });
+            }
 
             function mySearch() {
                 $.ajax({
@@ -174,9 +208,14 @@
                         var index = layer.load(1, {
                             shade: [0.1, '#fff']
                         });
-                        if (data.valids == "false") {
+                        if (data.valid == "false") {
                             layer.close(index)
-                            swal("Error!", data.messages, "error")
+                            swal({
+                                title: "错误!",
+                                text: data.message,
+                                type: "error",
+                                confirmButtonText: "确定"
+                            })
                         } else {
                             $("#search").attr("disabled", true).html("分析中...")
                             $("#result").empty().append(originalHtml);

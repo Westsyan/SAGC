@@ -30,7 +30,7 @@
 
             <div class="form-group" style="margin-top: 30px">
                 <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search">
                         Running</button>
                 </div>
                 <div class="actions col-sm-offset-1/2 col-sm-3">
@@ -42,22 +42,19 @@
     </div>
 
     <script>
-
             $(function () {
-
                 $('#egGene').click(function () {
                     //输入的文本去掉两边的空格
                     var eg = "OS01G0100100,OS01G0100500";
                     $('#gene').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "id")
                 });
-
                 function extractor(query) {
                     var result = /([^,]+)$/.exec(query);
                     if (result && result[1])
                         return result[1].trim();
                     return '';
                 }
-
                 $.ajax({
                     url: "/SAGC/admin/getAllGeneId",
                     type: "get",
@@ -81,26 +78,46 @@
                         })
                     }
                 });
+                formValidation();
             })
-
-            function mySearch() {
-                $("#search").attr("disabled", true).html("Search...");
-                $.ajax({
-                    url: "@routes.CheckController.checkGeneId()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        if (data.valids == "false") {
-                            swal("Error!", data.messages, "error")
-                            $("#search").attr("disabled", false).html("Search");
-                        } else {
-                            $("#conditionForm").submit()
-                        }
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        id: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkGeneId',
+                                    delay: 2000
+                                },
+                            }
+                        },
+                        rvalue: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                number:{
+                                    message: 'Must be a number!'
+                                },
+                                between: {
+                                    min: '0',
+                                    max: '1',
+                                    message: "The r-value not be in range！"
+                                },
+                            }
+                        },
                     }
                 });
             }
-
-
     </script>
 }

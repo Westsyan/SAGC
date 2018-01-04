@@ -130,11 +130,35 @@
                         })
                     }
                 });
+                formValidation();
             })
+
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        pval: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                numeric: {
+                                    message: 'The p-value must be a number!'
+                                },
+                            }
+                        },
+                    }
+                });
+            }
 
             function update() {
                 $.ajax({
-                    url: "@routes.CheckController.checkGo()",
+                    url: "@routes.CheckController.checkGeneId()",
                     type: "post",
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
@@ -142,9 +166,9 @@
                         var index = layer.load(1, {
                             shade: [0.1, '#fff']
                         });
-                        if (data.valids == "false") {
+                        if (data.valid == "false") {
                             layer.close(index)
-                            swal("Error!", data.messages, "error")
+                            swal("Error!", data.message, "error")
                         } else {
                             $("#analyse").attr("disabled", true).html("Analyse...")
                             $("#result").empty().append(originalHtml);

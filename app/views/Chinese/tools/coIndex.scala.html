@@ -30,7 +30,7 @@
 
             <div class="form-group" style="margin-top: 30px">
                 <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search">
                         运行</button>
                 </div>
                 <div class="actions col-sm-offset-1/2 col-sm-3">
@@ -49,6 +49,7 @@
                     //输入的文本去掉两边的空格
                     var eg = "OS01G0100100,OS01G0100500";
                     $('#gene').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "id")
                 });
 
                 function extractor(query) {
@@ -81,24 +82,48 @@
                         })
                     }
                 });
+                formValidation();
             })
 
-            function mySearch() {
-                $("#search").attr("disabled", true).html("搜索...");
-                $.ajax({
-                    url: "@routes.CheckController.checkGeneId()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        if (data.valids == "false") {
-                            swal("Error!", data.messages, "error")
-                            $("#search").attr("disabled", false).html("运行");
-                        } else {
-                            $("#conditionForm").submit()
-                        }
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        id: {
+                            validators: {
+                                notEmpty: {
+                                    message: '不能为空!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkGeneId',
+                                    delay: 2000
+                                },
+                            }
+                        },
+                        rvalue: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'r-value不能为空!'
+                                },
+                                number:{
+                                    message: 'r-value必须为数字!'
+                                },
+                                between: {
+                                    min: '0',
+                                    max: '1',
+                                    message: "r-value必须在0到1之间！"
+                                },
+                            }
+                        },
                     }
                 });
             }
+
     </script>
 }

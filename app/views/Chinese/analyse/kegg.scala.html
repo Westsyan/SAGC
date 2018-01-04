@@ -75,12 +75,12 @@
         <br>
         <div id="result" style="display: none">
             <hr>
-            <label style="margin-left: 20px">Select the attributes to display:</label>
+            <label style="margin-left: 20px">选择要显示的属性:</label>
             <div id="checkbox" class="checkbox" style="margin-left: 40px">
 
             </div>
             <div id="toolbar">
-                    &nbsp;Keyword：
+                    &nbsp;关键词：
             </div>
             <div class="table-responsive panel-collapse collapse in " >
                 <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
@@ -150,11 +150,47 @@
                         })
                     }
                 });
+                formValidation();
             })
+
+
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        c: {
+                            validators: {
+                                notEmpty: {
+                                    message: '不能为空!'
+                                },
+                                numeric: {
+                                    message: '必须为数字!'
+                                },
+                            }
+                        },
+                        pval: {
+                            validators: {
+                                notEmpty: {
+                                    message: '不能为空!'
+                                },
+                                numeric: {
+                                    message: '必须为数字!'
+                                },
+                            }
+                        },
+                    }
+                });
+            }
+
 
             function update() {
                 $.ajax({
-                    url: "@routes.CheckController.checkKegg()",
+                    url: "@routes.CheckController.checkGeneId()",
                     type: "post",
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
@@ -162,9 +198,14 @@
                         var index = layer.load(1, {
                             shade: [0.1, '#fff']
                         });
-                        if (data.valids == "false") {
+                        if (data.valid == "false") {
                             layer.close(index)
-                            swal("Error!", data.messages, "error")
+                            swal({
+                                title: "错误!",
+                                text: data.message,
+                                type: "error",
+                                confirmButtonText: "确定"
+                            })
                         } else {
                             $("#analyse").attr("disabled", true).html("Analyse...")
                             $("#result").empty().append(originalHtml);

@@ -57,17 +57,17 @@
                 style="word-wrap: break-word">
                     <thead>
                         <tr>
-                            <th data-field="geneId" data-sortable="true">Gene ID</th>
-                            <th data-field="genename" data-sortable="true">Gene Name</th>
-                            <th data-field="Chromosome" data-sortable="true">Chromosome</th>
-                            <th data-field="Gene_start" data-sortable="true">Start</th>
-                            <th data-field="Gene_end" data-sortable="true">End</th>
-                            <th data-field="Strand" data-sortable="true">Strand</th>
-                            <th data-field="FUNC" data-sortable="true">FUNC</th>
+                            <th data-field="geneId" data-sortable="true">基因 Id</th>
+                            <th data-field="genename" data-sortable="true">基因名</th>
+                            <th data-field="Chromosome" data-sortable="true">染色体</th>
+                            <th data-field="Gene_start" data-sortable="true">基因起始位置</th>
+                            <th data-field="Gene_end" data-sortable="true">基因终止位置</th>
+                            <th data-field="Strand" data-sortable="true">方向</th>
+                            <th data-field="FUNC" data-sortable="true">功能</th>
                             <th data-field="GO" data-sortable="true">GO</th>
                             <th data-field="KEGG" data-sortable="true">KEGG</th>
                             <th data-field="IPR_Id" data-sortable="true">IPR ID</th>
-                            <th data-field="IPR_Descrip" data-sortable="true">IPR Descrip</th>
+                            <th data-field="IPR_Descrip" data-sortable="true">IPR 描述</th>
                         </tr>
                     </thead>
                 </table>
@@ -102,7 +102,7 @@
                     }
                 });
 
-                var array = ["Gene Name", "Chromosome", "Start", "End", "Strand", "FUNC", "GO", "KEGG", "IPR ID", "IPR Descrip"]
+                var array = ["基因名", "染色体", "基因起始位置", "基因终止位置", "方向", "功能", "GO", "KEGG", "IPR ID", "IPR 描述"]
                 var values = ["genename", "Chromosome", "Gene_Start", "Gene_End", "Strand", "FUNC", "GO", "KEGG", "IPR_Id", "IPR_Descrip"]
                 var html = ""
                 $.each(array, function (n, value) {

@@ -9,45 +9,9 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
 class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDao, geneInformationDao: GeneInformationDao) extends Controller {
-
-  def checkPCA(sampleName: String) = Action { implicit request =>
-    if (sampleName.isEmpty) {
-      Ok(Json.obj("valid" -> "true"))
-    } else {
-      val result = checkSample(sampleName)
-      val message = "The Sample Name : " + result._2
-      val json = Json.obj("valid" -> result._1, "message" -> message)
-      Ok(Json.toJson(json))
-    }
-  }
-
-  def checkSamplename(sampleName: String) = Action { implicit request =>
-    val result = checkSample(sampleName)
-    val message = "The Sample Name : " + result._2
-    val json = Json.obj("valid" -> result._1, "message" -> message)
-    Ok(Json.toJson(json))
-  }
-
-  case class geneIdData(id: String)
-
-  val geneIdForm = Form(
-    mapping(
-      "id" -> text
-    )(geneIdData.apply)(geneIdData.unapply)
-  )
-
-  def checkGeneId = Action { implicit request =>
-    val data = geneIdForm.bindFromRequest.get
-    val id = data.id
-    val result = checkId(id)
-    val message = "The Gene Symbol : " + result._2
-    val json = Json.obj("valid" -> result._1, "message" -> message)
-    Ok(Json.toJson(json))
-  }
 
   def checkId(id: String) = {
     if (id.isEmpty) {
@@ -60,7 +24,41 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
       if (x.size != geneId.size) {
         valid = "false"
         val invalidGeneId = geneId.diff(x).mkString(",")
-        message = invalidGeneId
+        message = invalidGeneId + " is not in Database!"
+      }
+      (valid, message)
+    }
+  }
+
+  def checkChId(id: String) = {
+    if (id.isEmpty) {
+      ("false", "请至少输入一个基因!")
+    } else {
+      val geneId = id.split(",").map(_.trim).distinct
+      val x = Await.result(geneIdDao.selectById(id), Duration.Inf)
+      var valid = "true"
+      var message = ""
+      if (x.size != geneId.size) {
+        valid = "false"
+        val invalidGeneId = geneId.diff(x).mkString(",")
+        message = invalidGeneId + " 不在数据库中!"
+      }
+      (valid, message)
+    }
+  }
+
+  def checkChSample(sample: String) = {
+    if (sample.isEmpty) {
+      ("false", "请至少输入一个样品!")
+    } else {
+      val samplename = sample.split(",").map(_.trim).distinct
+      val x = Await.result(mRNAProfileDao.selectBySampleName(sample), Duration.Inf)
+      var valid = "true"
+      var message = ""
+      if (x.size != samplename.size) {
+        valid = "false"
+        val invalidSampleName = samplename.diff(x).mkString(",")
+        message = invalidSampleName + " 不在数据库中!"
       }
       (valid, message)
     }
@@ -77,10 +75,89 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
       if (x.size != samplename.size) {
         valid = "false"
         val invalidSampleName = samplename.diff(x).mkString(",")
-        message = invalidSampleName
+        message = invalidSampleName + " is not in Database!"
       }
       (valid, message)
     }
+  }
+
+  def checkPCA(sampleName: String) = Action { implicit request =>
+    if (sampleName.isEmpty) {
+      Ok(Json.obj("valid" -> "true"))
+    } else {
+      val header = request.headers.toMap
+      val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+      var valid = "true"
+      var message = ""
+      if (refer.contains("chinese")) {
+        val result = checkChSample(sampleName)
+        valid = result._1
+        message = "样品名 : " + result._2
+      } else {
+        val result = checkSample(sampleName)
+        valid = result._1
+        message = "The Sample Name : " + result._2
+      }
+      val json = Json.obj("valid" -> valid, "message" -> message)
+      Ok(Json.toJson(json))
+    }
+  }
+
+  case class sampleData(sampleName: String)
+
+  val sampleForm = Form(
+    mapping(
+      "sampleName" -> text
+    )(sampleData.apply)(sampleData.unapply)
+  )
+
+  def checkSamplename = Action { implicit request =>
+    val data = sampleForm.bindFromRequest.get
+    val sampleName = data.sampleName
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    var valid = "true"
+    var message = ""
+    if (refer.contains("chinese")) {
+      val result = checkChSample(sampleName)
+      valid = result._1
+      message = "样品 : " + result._2
+    } else {
+      val result = checkSample(sampleName)
+      valid = result._1
+      message = "The Sample Name : " + result._2
+    }
+    val json = Json.obj("valid" -> valid, "message" -> message)
+    Ok(Json.toJson(json))
+  }
+
+  case class geneIdData(id: String)
+
+  val geneIdForm = Form(
+    mapping(
+      "id" -> text
+    )(geneIdData.apply)(geneIdData.unapply)
+  )
+
+  def checkGeneId = Action { implicit request =>
+    val data = geneIdForm.bindFromRequest.get
+    val id = data.id
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    var valid = "true"
+    var message = ""
+    if (refer.contains("chinese")) {
+      val result = checkChId(id)
+      valid = result._1
+      message = "基因名: " + result._2
+    } else {
+      val result = checkId(id)
+      valid = result._1
+      message = "The Gene Symbol : " + result._2
+    }
+    println(valid)
+    val json = Json.obj("valid" -> valid, "message" -> message)
+    Ok(Json.toJson(json))
   }
 
   val ttestForm = Form(
@@ -96,78 +173,33 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     val data = ttestForm.bindFromRequest.get
     val gro1 = data.group1
     val gro2 = data.group2
-    val pValue = data.pval.toDouble
-    val r1 = checkSample(gro1)
-    val r2 = checkSample(gro2)
     var valid = "true"
     var message = ""
-    if (r1._1 == "false") {
-      valid = r1._1
-      message = "The Group1:" + r1._2
-    } else if (r2._1 == "false") {
-      valid = r2._1
-      message = "The Gourp2:" + r2._2
-    } else if (pValue < 0) {
-      valid = "false"
-      message = "The q-value  must be greater than 0"
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    if (refer.contains("chinese")) {
+      val r1 = checkChSample(gro1)
+      val r2 = checkChSample(gro2)
+      if (r1._1 == "false") {
+        valid = r1._1
+        message = "样品组1: " + r1._2
+      } else if (r2._1 == "false") {
+        valid = r2._1
+        message = "样品组2: " + r2._2
+      }
+    } else {
+      val r1 = checkSample(gro1)
+      val r2 = checkSample(gro2)
+      if (r1._1 == "false") {
+        valid = r1._1
+        message = "The Group1:" + r1._2
+      } else if (r2._1 == "false") {
+        valid = r2._1
+        message = "The Gourp2:" + r2._2
+      }
     }
-    val json = Json.obj("valids" -> valid, "messages" -> message)
-    Ok(json)
-  }
-
-  val keggForm = Form(
-    mapping(
-      "id" -> text,
-      "m" -> text,
-      "n" -> text,
-      "c" -> text,
-      "pval" -> text
-    )(checkKeggData.apply)(checkKeggData.unapply)
-  )
-
-  def checkKegg = Action { implicit request =>
-    val data = keggForm.bindFromRequest.get
-    val geneId = data.id
-    val cutoff = data.c.toDouble
-    val pval = data.pval.toDouble
-    val m = data.m
-    val n = data.n
-    val result = checkId(geneId)
-    var valids = result._1
-    var message = "The Gene Symbol: " + result._2
-    if (cutoff <= 0) {
-      valids = "false"
-      message = "The threshold must be  positive number"
-    } else if (pval <= 0) {
-      valids = "false"
-      message = "The p-value must be  positive number"
-    }
-    val json = Json.obj("valids" -> valids, "messages" -> message)
-    Ok(json)
-
-  }
-
-  val goForm = Form(
-    mapping(
-      "id" -> text,
-      "alpha" -> text,
-      "pval" -> text
-    )(checkGoData.apply)(checkGoData.unapply)
-  )
-
-  def checkGo = Action { implicit request =>
-    val data = goForm.bindFromRequest.get
-    val geneId = data.id
-    val pval = data.pval.toDouble
-    val result = checkId(geneId)
-    var valids = result._1
-    var message = "The Gene Symbol:" + result._2
-    if (pval <= 0) {
-      valids = "false"
-      message = "The p-value must be  positive number"
-    }
-    val json = Json.obj("valids" -> valids, "messages" -> message)
-    Ok(json)
+    val json = Json.obj("valid" -> valid, "message" -> message)
+    Ok(Json.toJson(json))
   }
 
   case class checkSearchData(id: String, sampleName: String)
@@ -183,54 +215,73 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     val data = searchForm.bindFromRequest.get
     val id = data.id
     val sampleName = data.sampleName
-    val gene = checkId(id)
-    val sample = checkSample(sampleName)
     var valid = "true"
     var message = ""
-    if (gene._1 == "false") {
-      valid = gene._1
-      message = "The Gene Symbol:" + gene._2
-    } else if (sample._1 == "false") {
-      valid = sample._1
-      message = "The Sample Name: " + sample._2
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    if (refer.contains("chinese")) {
+      val gene = checkChId(id)
+      val sample = checkChSample(sampleName)
+      if (gene._1 == "false") {
+        valid = gene._1
+        message = "基因名: " + gene._2
+      } else if (sample._1 == "false") {
+        valid = sample._1
+        message = "样品名: " + sample._2
+      }
+    } else {
+      val gene = checkId(id)
+      val sample = checkSample(sampleName)
+      if (gene._1 == "false") {
+        valid = gene._1
+        message = "The Gene Symbol:" + gene._2
+      } else if (sample._1 == "false") {
+        valid = sample._1
+        message = "The Sample Name: " + sample._2
+      }
     }
-    val json = Json.obj("valids" -> valid, "messages" -> message)
+    val json = Json.obj("valid" -> valid, "message" -> message)
     Ok(json)
   }
 
-  val sampleRegionForm = Form(
+  case class coData(id: String, rvalue: String)
+
+  val coForm = Form(
     mapping(
-      "chr" -> number,
-      "start" -> number,
-      "end" -> number,
-      "sampleName" -> text
-    )(SampleRegionData.apply)(SampleRegionData.unapply)
+      "id" -> text,
+      "rvalue" -> text
+    )(coData.apply)(coData.unapply)
   )
 
-  def checkSampleRegion = Action.async { implicit request =>
-    val data = sampleRegionForm.bindFromRequest.get
-    val sampleName = data.sampleName
-    val start = data.start
-    val end = data.end
-    val result = checkSample(sampleName)
-    geneInformationDao.selectBySRegion(data).map { idStr =>
-      val id = idStr.mkString(",")
-      var valid = "true"
-      var message = ""
-      if (start >= end) {
-        valid = "false"
-        message = "The start must be samll than the end!"
-      } else if (idStr.size == 0) {
-        valid = "false"
-        message = "There is no data in the current range!"
-      } else if (result._1 == "false") {
+  def checkCo = Action{ implicit request=>
+    val data = coForm.bindFromRequest.get
+    val id = data.id
+    val rvalue = data.rvalue
+    var valid = "true"
+    var message = ""
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    if (refer.contains("chinese")) {
+      val result = checkChId(id)
+      if (result._1 == "false") {
         valid = result._1
-        message = "The Sample Name:" + result._2
+        message = "基因名: " + result._2
+      }else if(rvalue.toDouble > 1 || rvalue.toDouble <0){
+        valid = "false"
+        message = "r-value 必须在0到1之间"
       }
-      val json = Json.obj("valids" -> valid, "messages" -> message)
-      Ok(json)
+    } else {
+      val result = checkId(id)
+      if (result._1 == "false") {
+        valid = result._1
+        message = "Gene Symbol: " + result._2
+      }else if(rvalue.toDouble > 1 || rvalue.toDouble <0){
+        valid = "false"
+        message = "The r-value must be between 0 and 1！"
+      }
     }
-
+    val json = Json.obj("valid" -> valid, "message" -> message)
+    Ok(Json.toJson(json))
   }
 
   case class downData(id: String, sampleName: String)
@@ -256,10 +307,10 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
       val sample = checkSample(sampleName)
       var valid = "true"
       var message = ""
-      if(gene._1 == "false"){
+      if (gene._1 == "false") {
         valid = gene._1
         message = "The Gene Symbol: " + gene._2
-      }else if(sample._1 == "false"){
+      } else if (sample._1 == "false") {
         valid = sample._1
         message = "The Sample Name: " + sample._2
       }

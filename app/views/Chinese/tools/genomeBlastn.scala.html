@@ -115,7 +115,7 @@
                     var index = layer.load(1, {
                         shade: [0.1, '#fff']
                     });
-                    $("#search").attr("disabled", true).html("Search...")
+                    $("#search").attr("disabled", true).html("运行...")
                     $.ajax({
                         url: "@routes.ToolsController.genomeBlastnRun()",
                         type: "post",
@@ -123,7 +123,7 @@
                         contentType: false,
                         data: form1,
                         success: function (data) {
-                            $("#search").attr("disabled", false).html("Search").blur()
+                            $("#search").attr("disabled", false).html("运行").blur()
                             if (data.valid == "false") {
                                 swal("Error", data.message, "error")
                                 $("#result").hide()

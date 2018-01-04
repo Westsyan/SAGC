@@ -15,7 +15,7 @@
                 <div class="col-sm-6">
                     <textarea class="form-control" name="group1" id="group1" rows="4" style="border-radius: 4px;
                         margin-top: 10px"
-                    required ></textarea>
+                     ></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eGroup1">
                         Example</em></a></span>
                 </div>
@@ -25,7 +25,7 @@
                 <label class="control-label col-sm-2 col-sm-offset-1">Group2:</label>
                 <div class="col-sm-6">
                     <textarea class="form-control" name="group2" id="group2" rows="4" style="border-radius: 4px;"
-                    required ></textarea>
+                     ></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eGroup2">
                         Example</em></a></span>
                 </div>
@@ -162,7 +162,41 @@
                         })
                     }
                 });
+                formValidation();
             })
+
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        c: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                numeric: {
+                                    message: 'The p-value must be a number!'
+                                },
+                            }
+                        },
+                        pval: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                numeric: {
+                                    message: 'The p-value must be a number!'
+                                },
+                            }
+                        },
+                    }
+                });
+            }
 
             function mySearch() {
                 $.ajax({
@@ -174,9 +208,9 @@
                         var index = layer.load(1, {
                             shade: [0.1, '#fff']
                         });
-                        if (data.valids == "false") {
+                        if (data.valid == "false") {
                             layer.close(index)
-                            swal("Error!", data.messages, "error")
+                            swal("Error!", data.message, "error")
                         } else {
                             $("#search").attr("disabled", true).html("Analyse...")
                             $("#result").empty().append(originalHtml);

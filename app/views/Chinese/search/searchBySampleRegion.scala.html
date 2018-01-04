@@ -1,7 +1,7 @@
 @Chinese.main("Search By Region") {
 
     <div class="container">
-        <form class="registration-form form-horizontal" action="getSBySRegion" method="get" id="conditionForm"
+        <form class="registration-form form-horizontal" action="/SAGC/chinese/search/getSBySRegion" method="get" id="conditionForm"
         style="margin: 20px;" >
 
             <div class="form-group col-sm-12">
@@ -20,7 +20,7 @@
             <div class="form-group">
                 <label class="control-label col-sm-2">开始:</label>
                 <div class="col-sm-2">
-                    <input class="form-control" name="start" id="start">
+                    <input class="form-control" name="start" id="start" required="true">
                 </div>
                 <label class="control-label">e.g., <a href="#"><em id="egStart">15</em></a></label>
             </div>
@@ -28,7 +28,7 @@
             <div class="form-group">
                 <label class="control-label col-sm-2">结束:</label>
                 <div class="col-sm-2">
-                    <input class="form-control" name="end" id="end">
+                    <input class="form-control" name="end" id="end" required="true">
                 </div>
                 <label class="control-label">e.g., <a href="#"><em id="egEnd">600000</em></a></label>
             </div>
@@ -37,7 +37,7 @@
                 <label class="control-label col-sm-2">样品名:</label>
                 <div class="col-sm-6">
                     <textarea class="form-control" name="sampleName" id="sample" rows="5"
-                    style="border-radius: 4px;" required></textarea>
+                    style="border-radius: 4px;" ></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egSample">
                         样例</em></a></span>
                 </div>
@@ -45,7 +45,7 @@
 
             <div class="form-group" style="margin-top: 25px">
                 <div class="actions col-sm-offset-2 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search">
                         搜索</button>
                 </div>
             </div>
@@ -57,17 +57,18 @@
                 $("#egStart").click(function () {
                     var eg = $(this).text().trim();
                     $('#start').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "start")
                 });
                 $("#egEnd").click(function () {
                     var eg = $(this).text().trim();
                     $('#end').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "end")
                 });
-
                 $('#egSample').click(function () {
                     var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036";
                     $('#sample').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "sampleName")
                 });
-
                 function extractor(query) {
                     var result = /([^,]+)$/.exec(query);
                     if (result && result[1])
@@ -110,27 +111,66 @@
                         );
                     }
                 });
-
+                formValidation();
             })
 
-            function mySearch() {
-                $("#search").attr("disabled", true).html("Search...");
-                $.ajax({
-                    url: "@routes.CheckController.checkSampleRegion()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        if (data.valids == "false") {
-                            swal("Error!", data.messages, "error")
-                            $("#search").attr("disabled", false).html("Search")
-                        } else {
-                            $("#conditionForm").submit()
-                        }
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        start: {
+                            validators: {
+                                notEmpty: {
+                                    message: '开始不能为空！'
+                                },
+                                integer: {
+                                    message: '开始值必须为整数！'
+                                },
+                                stringLength: {
+                                    max: 9,
+                                    message:"数字太大!"
+                                },
+                            }
+                        },
+                        end: {
+                            validators: {
+                                notEmpty: {
+                                    message: '结束不能为空！'
+                                },
+                                integer: {
+                                    message: '结束必须为整数！'
+                                },
+                                between: {
+                                    min: 'start',
+                                    max: 99999999999,
+                                    message: "结束值必须比开始值大！"
+                                },
+                                stringLength: {
+                                    max: 9,
+                                    message:"数字太大!"
+                                },
+                            }
+                        },
+                        sampleName: {
+                            validators: {
+                                notEmpty: {
+                                    message: '不能为空!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkSamplename',
+                                    delay: 2000
+                                },
+                            }
+                        },
                     }
                 });
             }
-
     </script>
 
 }

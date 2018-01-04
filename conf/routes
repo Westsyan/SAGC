@@ -69,13 +69,11 @@ POST        /SAGC/tools/correlationInfo                     controllers.ToolsCon
 
 POST        /SAGC/check/checkGeneId                         controllers.CheckController.checkGeneId
 GET         /SAGC/check/checkPCA                            controllers.CheckController.checkPCA(sampleName:String)
-GET         /SAGC/check/checkSamplename                     controllers.CheckController.checkSamplename(sampleName:String)
+POST        /SAGC/check/checkSamplename                     controllers.CheckController.checkSamplename
 POST        /SAGC/check/checkSearchPostion                  controllers.CheckController.checkSearchPostion
-POST        /SAGC/check/checkSampleRegion                   controllers.CheckController.checkSampleRegion
 POST        /SAGC/check/checkDownload                       controllers.CheckController.checkDownload
-POST        /SAGC/check/checkKegg                           controllers.CheckController.checkKegg
-POST        /SAGC/check/checkGo                             controllers.CheckController.checkGo
 POST        /SAGC/check/checkTtest                          controllers.CheckController.checkTtest
+POST        /SAGC/check/checkCo                             controllers.CheckController.checkCo
 
 
 #GET         /SAGC/save/information/save             controllers.SaveDatabase.saveMRNAProfile

@@ -71,18 +71,30 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
   }
 
   def getMoreInfo(id: String): Action[AnyContent] = Action.async { implicit request =>
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
     val long = geneInformationDao.selectById(id)
     long.map { x =>
       val trueLong = x.head
-      Ok(views.html.English.search.moreInfo(trueLong))
+      if (refer.contains("chinese")) {
+        Ok(views.html.Chinese.search.moreInfo(trueLong))
+      } else {
+        Ok(views.html.English.search.moreInfo(trueLong))
+      }
     }
   }
 
   def moreInfoBoxPlot(id: String, group1: String, group2: String): Action[AnyContent] = Action.async { implicit request =>
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
     val long = geneInformationDao.selectById(id)
     long.map { x =>
       val trueLong = x.head
-      Ok(views.html.English.analyse.moreInfo(trueLong, group1, group2))
+      if (refer.contains("chinese")) {
+        Ok(views.html.Chinese.analyse.moreInfo(trueLong, group1, group2))
+      } else {
+        Ok(views.html.English.analyse.moreInfo(trueLong, group1, group2))
+      }
     }
   }
 

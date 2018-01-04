@@ -28,7 +28,7 @@
                 </div>
                 <div class="actions col-sm-offset-1/2 col-sm-3">
                     <button type="reset" class="btn btn-primary" style="width: 80%;
-                        margin-left: 50px">reset</button>
+                        margin-left: 50px">重置</button>
                 </div>
             </div>
             <br>
@@ -105,18 +105,23 @@
 
             function mySearch() {
                 $.ajax({
-                    url: " /SAGC/check/checkSamplename",
-                    type: "get",
+                    url: "@routes.CheckController.checkSamplename()",
+                    type: "post",
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
                     success: function (data) {
                         if (data.valid == "false") {
-                            swal("Error!", data.message, "error")
+                            swal({
+                                title: "错误!",
+                                text: data.message,
+                                type: "error",
+                                confirmButtonText: "确定"
+                            })
                         } else {
                             var index = layer.load(1, {
                                 shade: [0.1, '#fff']
                             });
-                            $("#heatmap").attr("disabled", true).html("Drawing...")
+                            $("#heatmap").attr("disabled", true).html("作图中...")
                             $.ajax({
                                 url: "/SAGC/analyse/clusterResult",
                                 type: "get",
@@ -126,7 +131,7 @@
                                     $("#result").empty().append(originalHtml);
                                     $("#charts").html(data.div)
                                     $("#result").show()
-                                    $("#heatmap").attr("disabled", false).html("Running").blur()
+                                    $("#heatmap").attr("disabled", false).html("运行").blur()
                                     layer.close(index)
                                 }
                             });

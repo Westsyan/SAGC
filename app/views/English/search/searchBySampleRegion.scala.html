@@ -45,36 +45,35 @@
 
             <div class="form-group" style="margin-top: 25px">
                 <div class="actions col-sm-offset-2 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search">
                         Search</button>
                 </div>
             </div>
         </form>
     </div>
     <script>
-
             $(function () {
                 $("#egStart").click(function () {
                     var eg = $(this).text().trim();
                     $('#start').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "start")
                 });
                 $("#egEnd").click(function () {
                     var eg = $(this).text().trim();
                     $('#end').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "end")
                 });
-
                 $('#egSample').click(function () {
                     var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036";
                     $('#sample').val(eg);
+                    $("#conditionForm").formValidation("revalidateField", "sampleName")
                 });
-
                 function extractor(query) {
                     var result = /([^,]+)$/.exec(query);
                     if (result && result[1])
                         return result[1].trim();
                     return '';
                 }
-
                 $.ajax({
                     url: "/SAGC/admin/getAllSampleName",
                     type: "get",
@@ -98,7 +97,6 @@
                         })
                     }
                 });
-
                 $.ajax({
                     url: "@routes.GeneInformationController.getAllChr()",
                     type: "post",
@@ -110,25 +108,67 @@
                         );
                     }
                 });
+                formValidation()
             })
 
-            function mySearch() {
-                $("#search").attr("disabled", true).html("Search...");
-                $.ajax({
-                    url: "@routes.CheckController.checkSampleRegion()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        if (data.valids == "false") {
-                            swal("Error!", data.messages, "error")
-                            $("#search").attr("disabled", false).html("Search")
-                        } else {
-                            $("#conditionForm").submit()
-                        }
+            function formValidation() {
+                $('#conditionForm').formValidation({
+                    framework: 'bootstrap',
+                    icon: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },
+                    fields: {
+                        start: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Start is required！'
+                                },
+                                integer: {
+                                    message: 'Start must be integer！'
+                                },
+                                stringLength: {
+                                    max: 9,
+                                    message:"The number is to big!"
+                                },
+                            }
+                        },
+                        end: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'End is required！'
+                                },
+                                integer: {
+                                    message: 'End must be integer！'
+                                },
+                                between: {
+                                    min: 'start',
+                                    max: 99999999999,
+                                    message: "The end must be larger than the start！"
+                                },
+                                stringLength: {
+                                    max: 9,
+                                    message:"The number is to big!"
+                                },
+                            }
+                        },
+                        sampleName: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'This is not be empty!'
+                                },
+                                remote: {
+                                    type: 'POST',
+                                    url: '/SAGC/check/checkSamplename',
+                                    delay: 2000
+                                },
+                            }
+                        },
                     }
                 });
             }
+
     </script>
 
 }

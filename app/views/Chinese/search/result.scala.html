@@ -81,11 +81,11 @@
                     word-wrap: break-word">
                     <thead>
                         <tr>
-                            <th data-field="geneId" data-sortable="true" title="Gene symbol">Gene symbol</th>
-                            <th data-field="Chromosome" data-sortable="true" title="Chromosome">Chromosome</th>
-                            <th data-field="Gene_start" data-sortable="true" title="Gene_start">Gene_start</th>
-                            <th data-field="Gene_end" data-sortable="true" title="Gene_end">Gene_end</th>
-                            <th data-field="FUNC" data-sortable="true" title="Function">Function</th>
+                            <th data-field="geneId" data-sortable="true" title="Gene symbol">基因 Id</th>
+                            <th data-field="Chromosome" data-sortable="true" title="Chromosome">染色体</th>
+                            <th data-field="Gene_start" data-sortable="true" title="Gene_start">基因起始位置</th>
+                            <th data-field="Gene_end" data-sortable="true" title="Gene_end">基因终止位置</th>
+                            <th data-field="FUNC" data-sortable="true" title="Function">功能</th>
                         </tr>
                     </thead>
                 </table>
@@ -108,14 +108,14 @@
                 ExtendHighcharts();
 
                 var url = "/SAGC/search/linear"
-                linear(url)
+                linearCh(url)
 
                 $("#line").click(function () {
-                    linear("/SAGC/search/linear")
+                    linearCh("/SAGC/search/linear")
                 });
 
                 $("#heatmap").click(function () {
-                    heatmap("/SAGC/search/heatmap")
+                    heatmapCh("/SAGC/search/heatmap")
                 })
             })
 

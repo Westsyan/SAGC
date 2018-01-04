@@ -155,7 +155,12 @@
                         });
                         if (data.valids == "false") {
                             layer.close(index)
-                            swal("Error!", data.messages, "error")
+                            swal({
+                                title: "错误!",
+                                text: data.message,
+                                type: "error",
+                                confirmButtonText: "确定"
+                            })
                         } else {
                             $("#search").attr("disabled", true).html("Search...")
                             $.ajax({

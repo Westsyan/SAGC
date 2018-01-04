@@ -113,16 +113,21 @@
             })
 
             function mySearch() {
-                $("#search").attr("disabled", true).html("Search...");
+                $("#search").attr("disabled", true).html("搜索中...");
                 $.ajax({
                     url: "@routes.CheckController.checkSearchPostion()",
                     type: "post",
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
                     success: function (data) {
-                        if (data.valids == "false") {
-                            swal("Error!", data.messages, "error")
-                            $("#search").attr("disabled", false).html("Search");
+                        if (data.valid == "false") {
+                            swal({
+                                title: "错误!",
+                                text: data.message,
+                                type: "error",
+                                confirmButtonText: "确定"
+                            })
+                            $("#search").attr("disabled", false).html("搜索");
                         } else {
                             $("#conditionForm").submit()
                         }

@@ -103,19 +103,24 @@
 
             function mySearch() {
                 $.ajax({
-                    url: " /SAGC/check/checkSamplename",
-                    type: "get",
+                    url: "@routes.CheckController.checkSamplename()",
+                    type: "post",
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
                     success: function (data) {
                         if (data.valid == "false") {
-                            swal("Error!", data.message, "error")
+                            swal({
+                                title: "错误!",
+                                text: data.message,
+                                type: "error",
+                                confirmButtonText: "确定"
+                            })
                         } else {
-                            $("#heatmap").attr("disabled", true).html("Drawing...")
+                            $("#heatmap").attr("disabled", true).html("画图中...")
                             $("#result").empty().append(originalHtml);
                             cheatmap("heatmap")
                             $("#result").show()
-                            $("#heatmap").attr("disabled", false).html("Running")
+                            $("#heatmap").attr("disabled", false).html("运行")
                         }
                     }
                 });

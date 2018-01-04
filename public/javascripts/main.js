@@ -2,6 +2,7 @@
  * Created by yz on 2017/6/20.
  */
 var html=" "
+
 function linear(url) {
     var chart = null;
     var maxLabelNum = 30;
@@ -70,7 +71,7 @@ function linear(url) {
                     },
                     min: 0,
                     title: {
-                        text: 'Expression (HKM)'
+                        text: 'Expression (FPKM)'
                     },
                     plotLines: [{
                         value: 0,
@@ -110,7 +111,7 @@ function linear(url) {
     });
 }
 
-function circLinear(url) {
+function linearCh(url) {
     var chart = null;
     var maxLabelNum = 30;
     var xLen = 0;
@@ -149,9 +150,11 @@ function circLinear(url) {
                 credits: {
                     enabled: false
                 },
+                //标题
                 title: {
                     text: null
                 },
+                //x轴
                 xAxis: {
                     type: 'category',
                     categories: category,
@@ -164,7 +167,7 @@ function circLinear(url) {
                     },
                     tickInterval: step,
                     title: {
-                        text: 'Samples'
+                        text: '样品名'
                     }
                 },
                 yAxis: {
@@ -176,7 +179,7 @@ function circLinear(url) {
                     },
                     min: 0,
                     title: {
-                        text: 'Expression (RPM)'
+                        text: '表达量 (FPKM)'
                     },
                     plotLines: [{
                         value: 0,
@@ -206,6 +209,7 @@ function circLinear(url) {
                     }],
 
                 },
+                //取的数据
                 series: data.infos
             }, function (chartObj) {
                 //获得图表对象
@@ -255,7 +259,7 @@ function boxPlot(id, group1,group2,path) {
                 },
                 yAxis: {
                     title: {
-                        text: 'Expression (RPM)'
+                        text: 'Expression (FPKM)'
                     },
                     min: 0
                 },
@@ -309,6 +313,105 @@ function boxPlot(id, group1,group2,path) {
     });
 }
 
+function boxPlotCh(id, group1,group2,path) {
+    $("#charts").html("<img src='/assets/images/loading.gif'/>");
+    var url = path + "?id=" + id + "&group1=" + group1 + "&group2=" + group2 + "";
+    $.ajax({
+        url: url,
+        type: "get",
+        dataType: "json",
+        success: function (data) {
+            $("#charts").highcharts({
+                credits: {
+                    enabled: false
+                },
+                chart: {
+                    type: 'boxplot',
+                    height: 550,
+                    marginTop: 40,
+                    marginBottom: 80,
+                    marginLeft:300,
+                    marginRight:300
+                },
+                title: {
+                    text: id
+                },
+                legend: {
+                    enabled: false
+                },
+                xAxis: {
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontFamily: 'Arial, sans-serif'
+                        }
+                    },
+                    categories: ["样品组1","样品组2"]
+                    ,
+                },
+                yAxis: {
+                    title: {
+                        text: '表达量 (FPKM)'
+                    },
+                    min: 0
+                },
+                labels: {
+                    style: {
+                        color: "black",
+                        fontSize: '16px',
+                        fontWeight: 'normal'
+                    },
+                    items: [{
+                        html: html,
+                        style: {
+                            left: '90px',
+                            top: '475px'
+                        }
+                    }]
+                },
+                plotOptions: {
+                    boxplot: {
+                        fillColor: '#F0F0E0',
+                        lineWidth: 2,
+                        medianColor: '#0C5DA5',
+                        medianWidth: 3,
+                        stemColor: '#A63400',
+                        stemDashStyle: 'dot',
+                        stemWidth: 1,
+                        whiskerColor: '#3D9200',
+                        whiskerLength: '20%',
+                        whiskerWidth: 3
+                    }
+                },
+                tooltip: {
+                    pointFormat: '<span style="color:{point.color}">\u25CF</span> <b> {series.name}</b><br/>' +
+                    '最大值: {point.high}<br/>' +
+                    'Q2\t: {point.q3}<br/>' +
+                    '中位数: {point.median}<br/>' +
+                    'Q1\t: {point.q1}<br/>' +
+                    '最小值: {point.low}<br/>'
+                },
+                series: [{
+                    name: id,
+                    data: data.ev
+                },
+                    {
+                        name: 'Outlier',
+                        color: Highcharts.getOptions().colors[0],
+                        type: 'scatter',
+                        marker: {
+                            fillColor: 'white',
+                            lineWidth: 1,
+                            lineColor: Highcharts.getOptions().colors[0]
+                        },
+                        tooltip: {
+                            pointFormat: 'FPKM: {point.y}'
+                        }
+                    }]
+            });
+        }
+    });
+}
 
 function heatmap(url) {
     var chart = null;
@@ -407,7 +510,7 @@ function heatmap(url) {
                             color: '#555',
                             fontSize: '12px'
                         },
-                        text: 'HKM (log2+1)'
+                        text: 'FPKM (log2+1)'
                     },
                     align: 'right',
                     layout: 'vertical',
@@ -418,7 +521,135 @@ function heatmap(url) {
                 },
                 tooltip: {
                     formatter: function () {
-                        return '<b>Sample Name:</b>' + this.series.xAxis.categories[this.point.x] + '<br>' + this.series.yAxis.categories[this.point.y] + '<br><b>HKM (log2+1): ' + this.point.value + '</b>';
+                        return '<b>Sample Name:</b>' + this.series.xAxis.categories[this.point.x] + '<br>' + this.series.yAxis.categories[this.point.y] + '<br><b>FPKM (log2+1): ' + this.point.value + '</b>';
+                    }
+                },
+                series: [{
+                    borderWidth: '0.2',
+                    color: '#fefefe',
+                    data: data[0].expression,
+                    dataLabels: {
+                        enabled: false
+                    }
+                }]
+            }, function (chartObj) {
+                //获得图表对象
+                chart = chartObj;
+            });
+
+        }
+    });
+}
+
+function heatmapCh(url) {
+    var chart = null;
+    var maxLabelNum = 30;
+    var xLen = 0;
+    var step;
+    $("#charts").html("<img src='/assets/images/loading.gif'/>");
+    parameter = $("#heatmap").data("url");
+    $.ajax({
+        url: url + "?" + parameter,
+        type: "get",
+        dataType: "json",
+        success: function (data) {
+            xLen = data[0].treatment.length;
+            step = Math.round(xLen / maxLabelNum) < 1 ? 1 : Math.round(xLen / maxLabelNum);
+            $("#charts").highcharts({
+                plotOptions: {
+                    heatmap: {
+                        turboThreshold: 0 //不限制数据点个数
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                chart: {
+                    zoomType: 'xy',
+                    type: 'heatmap',
+                    height: 550,
+                    marginTop: 65,
+                    marginBottom: 170,
+                    events: {
+                        //监听图表区域选择事件
+                        selection: function (event) {//动态修改
+                            var len = event.xAxis[0].max - event.xAxis[0].min;
+                            var interval = Math.round(len / maxLabelNum < 1 ? 1 : Math.round(len / maxLabelNum));
+                            DynamicChangeTickInterval(interval);
+                        }
+                    }
+                },
+                title: {
+                    text: null
+                },
+                xAxis: {
+                    categories: data[0].treatment,
+                    labels: {
+                        rotation: -45,
+                        style: {
+                            fontSize: '12px',
+                            fontFamily: 'Arial, sans-serif'
+                        }
+                    },
+                    tickInterval: step,
+                    title: {
+                        text: '样品'
+                    }
+                },
+                yAxis: {
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontFamily: 'Arial, sans-serif'
+                        }
+                    },
+                    categories: data[0].gt,
+                    title: "Gene"
+                },
+                labels: {
+                    style: {
+                        color: "black",
+                        fontSize: '16px',
+                        fontWeight: 'normal'
+                    },
+                    items: [{
+                        html: html,
+                        style: {
+                            left: '0px',
+                            top: '425px'
+                        }
+                    }]
+                },
+                colorAxis: {
+                    stops: [
+                        [0.1, '#78b8ed'],
+                        [0.5, '#fffbbc'],
+                        [0.8, '#c4463a'],
+                        [1, '#c4463a']
+                    ],
+                    min: 0
+//                        minColor: '#FFFFFF'
+//                        maxColor: Highcharts.getOptions().colors[0]
+                },
+                legend: {
+                    title: {
+                        style: {
+                            fontWeight: '1',
+                            color: '#555',
+                            fontSize: '12px'
+                        },
+                        text: 'FPKM (log2+1)'
+                    },
+                    align: 'right',
+                    layout: 'vertical',
+                    marginTop: 0,
+                    verticalAlign: 'top',
+                    y: 25,
+                    symbolHeight: 305
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>样品名:</b>' + this.series.xAxis.categories[this.point.x] + '<br>' + this.series.yAxis.categories[this.point.y] + '<br><b>FPKM (log2+1): ' + this.point.value + '</b>';
                     }
                 },
                 series: [{
@@ -551,134 +782,6 @@ function cheatmap(url) {
                 tooltip: {
                     formatter: function () {
                         return '<b>C.C: ' + this.point.value + '</b>';
-                    }
-                },
-                series: [{
-                    borderWidth: '0.2',
-                    color: '#fefefe',
-                    data: data[0].expression,
-                    dataLabels: {
-                        enabled: false
-                    }
-                }]
-            }, function (chartObj) {
-                //获得图表对象
-                chart = chartObj;
-                $("#heatmap").attr("disabled", false).html("Running").blur()
-            });
-
-        }
-    });
-}
-function circHeatmap(url) {
-    var chart = null;
-    var maxLabelNum = 30;
-    var xLen = 0;
-    var step;
-    $("#charts").html("<img src='/assets/images/loading.gif'/>");
-    parameter = $("#heatmap").data("url");
-    $.ajax({
-        url: url + "?" + parameter,
-        type: "get",
-        dataType: "json",
-        success: function (data) {
-            xLen = data[0].treatment.length;
-            step = Math.round(xLen / maxLabelNum) < 1 ? 1 : Math.round(xLen / maxLabelNum);
-            $("#charts").highcharts({
-                plotOptions: {
-                    heatmap: {
-                        turboThreshold: 0 //不限制数据点个数
-                    }
-                },
-                credits: {
-                    enabled: false
-                },
-                chart: {
-                    zoomType: 'xy',
-                    type: 'heatmap',
-                    height: 550,
-                    marginTop: 65,
-                    marginBottom: 170,
-                    events: {
-                        //监听图表区域选择事件
-                        selection: function (event) {//动态修改
-                            var len = event.xAxis[0].max - event.xAxis[0].min;
-                            var interval = Math.round(len / maxLabelNum < 1 ? 1 : Math.round(len / maxLabelNum));
-                            DynamicChangeTickInterval(interval);
-                        }
-                    }
-                },
-                title: {
-                    text: null
-                },
-                xAxis: {
-                    categories: data[0].treatment,
-                    labels: {
-                        rotation: -45,
-                        style: {
-                            fontSize: '12px',
-                            fontFamily: 'Arial, sans-serif'
-                        }
-                    },
-                    tickInterval: step,
-                    title: {
-                        text: 'Samples'
-                    }
-                },
-                yAxis: {
-                    labels: {
-                        style: {
-                            fontSize: '12px',
-                            fontFamily: 'Arial, sans-serif'
-                        }
-                    },
-                    categories: data[0].gt,
-                    title: "Gene"
-                },
-                labels: {
-                    style: {
-                        color: "black",
-                        fontSize: '16px',
-                        fontWeight: 'normal'
-                    },
-                    items: [{
-                        html: html,
-                        style: {
-                            left: '0px',
-                            top: '425px'
-                        }
-                    }]
-                },
-                colorAxis: {
-                    stops: [
-                        [0.1, '#78b8ed'],
-                        [0.5, '#fffbbc'],
-                        [0.8, '#c4463a'],
-                        [1, '#c4463a']
-                    ],
-                    min: 0
-//                        minColor: '#FFFFFF'
-//                        maxColor: Highcharts.getOptions().colors[0]
-                },
-                legend: {
-                    title: {
-                        style: {
-                            fontWeight: '1',
-                            color: '#555',
-                            fontSize: '12px'
-                        },
-                        text: 'RPM (log2+1)'
-                    },
-                    align: 'right',
-                    layout: 'vertical',
-                    marginTop: 0,
-                    verticalAlign: 'top',
-                    y: 25,
-                    symbolHeight: 305
-                },
-                tooltip: {
-                    formatter: function () {
-                        return '<b>Sample Name:</b>' + this.series.xAxis.categories[this.point.x] + '<br>' + this.series.yAxis.categories[this.point.y] + '<br><b>RPM (log2+1): ' + this.point.value + '</b>';
                     }
                 },
                 series: [{

@@ -15,7 +15,7 @@
                 <div class="col-sm-6">
                     <textarea class="form-control" name="sampleName" id="sampleName" rows="5" style="border-radius: 4px;
                         margin-top: 10px"
-                    placeholder="if not select,select all"></textarea>
+                    placeholder="如果不填写，则选择全部"></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eSample">
                         样例</em>
                     </a> </span>
@@ -97,24 +97,28 @@
                     data: $("#conditionForm").serialize(),
                     success: function (data) {
                         if (data.valid == "false") {
-                            swal("Error!", data.message, "error")
+                            swal({
+                                title: "错误!",
+                                text: data.message,
+                                type: "error",
+                                confirmButtonText: "确定"
+                            })
                         } else {
                             var index = layer.load(1, {
                                 shade: [0.1, '#fff']
                             });
-                            $("#pca").attr("disabled", true).html("Drawing...")
+                            $("#pca").attr("disabled", true).html("作图中...")
                             $.ajax({
                                 url: "/SAGC/analyse/PCA",
                                 type: "get",
                                 dataType: "json",
                                 data: $("#conditionForm").serialize(),
                                 success: function (data) {
-                                    $("#pca").attr("disabled", false).html("Search")
                                     $("#result").empty().append(originalHtml);
                                     scatterPlot(data)
                                     $("#result").show()
                                     layer.close(index)
-                                    $("#pca").attr("disabled", false).html("Search").blur()
+                                    $("#pca").attr("disabled", false).html("运行").blur()
                                 }
                             });
                         }
@@ -134,7 +138,7 @@
                         marginRight: 280
                     },
                     title: {
-                        text: 'Principal component analysis'
+                        text: '主成分分析'
                     },
                     xAxis: {
                         title: {

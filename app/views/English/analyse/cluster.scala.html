@@ -105,8 +105,8 @@
 
             function mySearch() {
                 $.ajax({
-                    url: "/SAGC/check/checkSamplename",
-                    type: "get",
+                    url: "@routes.CheckController.checkSamplename()",
+                    type: "post",
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
                     success: function (data) {
