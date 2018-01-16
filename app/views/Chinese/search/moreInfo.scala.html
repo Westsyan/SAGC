@@ -1,10 +1,28 @@
 @import models.Tables.GeneinformationRow
 @(geneInfo: GeneinformationRow)
 
-@Chinese.search.mainWithSearch("More info-SAGCBase") {
+@Chinese.search.mainWithSearch("详细信息") {
     <style>
             th {
                 width: 15%;
+            }
+
+            pre {
+                width: 815px;
+                border: 0px;
+                padding: 0px;
+                font-size: 16px;
+                background-color: transparent;
+                white-space: pre-wrap;
+            }
+
+            button {
+                border: 0px;
+                background-color: transparent;
+            }
+
+            i {
+                color: black;
             }
     </style>
     <div class="row">
@@ -20,7 +38,7 @@
         >
             <tbody>
                 <tr>
-                    <th>基因 Id</th>
+                    <th>基因 ID</th>
                     <td>@geneInfo.geneId</td>
                 </tr>
                 <tr>
@@ -32,11 +50,11 @@
                     <td>@geneInfo.chromosome</td>
                 </tr>
                 <tr>
-                    <th>基因起始位置</th>
+                    <th>基因起始坐标</th>
                     <td>@geneInfo.geneStart</td>
                 </tr>
                 <tr>
-                    <th>基因终止位置</th>
+                    <th>基因终止坐标</th>
                     <td>@geneInfo.geneEnd</td>
                 </tr>
                 <tr>
@@ -48,36 +66,129 @@
                     <td>@geneInfo.func</td>
                 </tr>
                 <tr>
-                    <th>GO </th>
-                    <td>@geneInfo.go</td>
+                    <th>GO</th>
+                    @if(geneInfo.go == "NA") {
+                        <td>@geneInfo.go</td>
+                    } else {
+                        <td>
+                        @for(go <- geneInfo.go.split(";").map(_.trim)) {
+                            <a target="_blank" href="http://amigo.geneontology.org/amigo/term/@go">@go</a>
+                        }
+                        </td>
+                    }
                 </tr>
                 <tr>
                     <th>KEGG</th>
-                    <td>@geneInfo.kegg</td>
+                    @if(geneInfo.kegg == "NA") {
+                        <td>@geneInfo.kegg</td>
+                    } else {
+                        <td><a target="_blank" href="http://www.kegg.jp/dbget-bin/www_bget?ko:@geneInfo.kegg">@geneInfo.kegg</a></td>
+                    }
                 </tr>
                 <tr>
                     <th>Interpro ID</th>
-                    <td>@geneInfo.iprId</td>
+                    @if(geneInfo.iprId == "NA") {
+                        <td>@geneInfo.iprId</td>
+                    } else {
+                        <td>
+                        @for(ipr <- geneInfo.iprId.split(",").map(_.trim)) {
+                            <a target="_blank" href="http://www.ebi.ac.uk/interpro/entry/@ipr">@ipr</a>
+                        }
+                        </td>
+                    }
                 </tr>
                 <tr>
                     <th>Interpro描述</th>
                     <td>@geneInfo.iprDescrip</td>
                 </tr>
                 <tr>
-                    <th>cDNA序列</th>
-                    <td>>@geneInfo.geneId<br>@geneInfo.cdna</td>
+                    <th>cDNA序列   <button type="button" onclick="downloadcdna()">
+                        <i class="fa fa-download"></i></button></th>
+                    <td><div style="width: 1000px;
+                        height: 150px;
+                        overflow: auto">
+                        >@geneInfo.geneId<pre id="cdna">@geneInfo.cdna</pre>
+                    </div>
+                    </td>
                 </tr>
                 <tr>
-                    <th>CDS序列</th>
-                    <td>>@geneInfo.geneId<br>@geneInfo.cds</td>
+                    <th>CDS序列   <button type="button" onclick="downloadcds()">
+                        <i class="fa fa-download"></i></button></th>
+                    <td><div style="width: 1000px;
+                        height: 150px;
+                        overflow: auto">
+                        >@geneInfo.geneId<pre id="cds">@geneInfo.cds</pre>
+                    </div>
+                    </td>
                 </tr>
                 <tr>
-                    <th>蛋白序列</th>
-                    <td>>@geneInfo.geneId<br>@geneInfo.pep</td>
+                    <th>蛋白序列  <button type="button" onclick="downloadpep()"><i class="fa fa-download"></i></button></th>
+                    <td><div style="width: 1000px;
+                        height: 150px;
+                        overflow: auto">
+                        >@geneInfo.geneId<pre id="pep">@geneInfo.pep</pre>
+                    </div></td>
                 </tr>
             </tbody>
         </table>
     </div>
     <script>
+            function downloadcdna() {
+                var gene = "@geneInfo.geneId"
+                /*                    var id = obj.name
+                                    var fileName = gene +"_"+ obj.name +".fasta"*/
+                var fileName = gene + "_cdna.fasta"
+                var x = $("#cdna").text();
+                var y = "";
+                for (i = 0; i < x.length; i++) {
+                    y = y + x[i]
+                    if ((i + 1) % 60 == 0) {
+                        y = y + "\n"
+                    }
+                }
+                var content = ">" + gene + "\n" + y;
+                var blob = new Blob([content], {
+                    type: "text/plain;charset=utf-8"
+                })
+                saveAs(blob, fileName)
+            }
+
+            function downloadcds() {
+                var gene = "@geneInfo.geneId"
+                var fileName = gene + "_cds.fasta"
+                var x = $("#cds").text()
+                var y = "";
+                for (i = 0; i < x.length; i++) {
+                    y = y + x[i]
+                    if ((i + 1) % 60 == 0) {
+                        y = y + "\n"
+                    }
+                }
+                var content = ">" + gene + "\n" + y;
+                var blob = new Blob([content], {
+                    type: "text/plain;charset=utf-8"
+                })
+                saveAs(blob, fileName)
+            }
+
+            function downloadpep() {
+                var gene = "@geneInfo.geneId"
+                var fileName = gene + "_pep.fasta"
+                var x = $("#pep").text()
+                var y = "";
+                for (i = 0; i < x.length; i++) {
+                    y = y + x[i]
+                    if ((i + 1) % 60 == 0) {
+                        y = y + "\n"
+                    }
+                }
+                var content = ">" + gene + "\n" + y;
+                var blob = new Blob([content], {
+                    type: "text/plain;charset=utf-8"
+                })
+                saveAs(blob, fileName)
+            }
+
+
     </script>
 }

@@ -1,47 +1,49 @@
 @()(implicit flash: Flash)
-@English.main("Search-SAGC") {
-    <div class="container">
-        <form class="registration-form form-horizontal" action="selectByPosition" method="get" id="conditionForm"
-        style="margin: 20px;">
+@English.search.mainWithSearch("Search By Gene ID") {
 
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">Search By Postion</h2>
-            </div>
-
-            <div class="form-group" style="margin-top: 10px">
-                <label class="control-label col-sm-2 col-sm-offset-1">Gene Symbol:</label>
-                <div class="col-sm-6">
-                    <textarea class="form-control" name="id" id="gene" rows="5"
-                    style="border-radius: 4px;"></textarea>
-                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
-                        Example</em></a></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2 col-sm-offset-1">Sample Name:</label>
-                <div class="col-sm-6">
-                    <textarea class="form-control" name="sampleName" id="sample" rows="5"
-                    style="border-radius: 4px;" required></textarea>
-                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egSample">
-                        Example</em></a></span>
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 30px">
-                <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
-                        Search</button>
-                </div>
-                <div class="actions col-sm-3">
-                    <button type="reset" class="btn btn-primary" style="width: 80%;
-                        margin-left: 50px">reset</button>
-                </div>
-            </div>
-        </form>
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">Search By Gene ID</h2>
+        </div>
     </div>
+
+    <form class="registration-form form-horizontal" action="selectByPosition" method="get" id="conditionForm"
+    style="margin: 20px;">
+
+        <div class="form-group">
+            <label class="control-label col-sm-2 col-sm-offset-1">Gene ID:</label>
+            <div class="col-sm-6">
+                <textarea class="form-control" name="id" id="gene" rows="5"
+                style="border-radius: 4px;"></textarea>
+                <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+                    Example</em></a></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-2 col-sm-offset-1">Sample Name:</label>
+            <div class="col-sm-6">
+                <textarea class="form-control" name="sampleName" id="sample" rows="5"
+                style="border-radius: 4px;" required></textarea>
+                <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egSample">
+                    Example</em></a></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="actions col-sm-offset-3 col-sm-3">
+                <button type="button" class="btn btn-primary" style="width: 80%;
+                    margin-top: 5px" id="search" onclick="mySearch()">
+                    Search</button>
+            </div>
+            <div class="actions col-sm-3 " style="text-align: right">
+                <button type="reset" class="btn btn-primary" style="width: 80%;
+                    margin-top: 5px">Reset</button>
+            </div>
+        </div>
+    </form>
     <script>
             $(function () {
                 $('#egGene').click(function () {
@@ -64,7 +66,7 @@
                 }
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllGeneId",
+                    url: "/SAGC/get/getAllGeneId",
                     type: "get",
                     success: function (data) {
                         $('#gene').typeahead({
@@ -88,7 +90,7 @@
                 });
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllSampleName",
+                    url: "/SAGC/get/getAllSampleName",
                     type: "get",
                     success: function (data) {
                         $('#sample').typeahead({

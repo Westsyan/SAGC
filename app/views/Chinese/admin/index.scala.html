@@ -1,21 +1,100 @@
 @()
-@Chinese.admin.main("Home-SAGC") {
+@Chinese.admin.main("主页") {
 	<style>
 			.row {
 				margin-left: 15px;
 			}
-		body{
-			margin-bottom: 0px;
-		}
+
+			h4 {
+				font-weight: bold;
+				color: #777;
+			}
+
+			body {
+				margin-bottom: 0px;
+			}
+
+			.tiles .tile {
+				height: 180px;
+				width: 180px !important;
+				margin-left: 50px;
+			}
+
+			.tiles .tile .tile-body > i {
+				margin-top: 27px;
+				font-size: 86px;
+			}
 
 	</style>
-	<div class="container">
 
-		<ul class="page-breadcrumb breadcrumb">
-			<li class="active">
-				<h4 style="margin: 0px;"><strong>欢迎!</strong></h4>
-			</li>
-		</ul>
+	<div class="row">
+		<div class="col-sm-10" style="margin-top: 100px">
+			<div class="tiles">
+				<a class="tile bg-green-jungle" href="@routes.AdminController.addmRNABefore()">
+					<div class="corner">
+					</div>
+					<div class="tile-body">
+						<i class="fa fa-files-o"></i>
+					</div>
+					<div class="tile-object">
+						<div class="name"  style="font-size: 16px;">
+							增加样品
+						</div>
+					</div>
+				</a>
+			</div>
+
+			<div class="tiles">
+				<a class="tile bg-red-intense" href="@routes.AdminController.deletemRNABefore()">
+					<div class="corner">
+					</div>
+					<div class="tile-body">
+						<i class="fa fa-remove"></i>
+					</div>
+					<div class="tile-object">
+						<div class="name" style="font-size: 16px;">
+							删除样品
+						</div>
+					</div>
+				</a>
+			</div>
+
+			<div class="tiles">
+				<a class="tile bg-green-jungle" href="@routes.AdminController.updateCorrelation()">
+					<div class="corner">
+					</div>
+					<div class="tile-body">
+						<i class="fa fa-files-o"></i>
+					</div>
+					<div class="tile-object">
+						<div class="name" style="font-size: 16px">
+							更新基因相关性信息
+						</div>
+					</div>
+				</a>
+			</div>
+
+		</div>
+
+		<div class="col-sm-6" style="margin-top: 150px">
+			<hr>
+			<div class="row" style="text-align: center;
+				margin-top: 20px;
+				margin-left: 1px">
+				<p class="text-justify" style="font-size: 15px">
+					地址：上海市北翟路2901号
+				</p>
+				<p class="text-justify" style="font-size: 15px">
+					版权所有：上海市农业生物基因中心（SAGC）
+				</p>
+				<p class="text-justify" style="font-size: 15px">
+					邮编：201106 电话：86-21-52230526 E-mail:sagc&#64sagc.org.cn
+				</p>
+				<p class="text-justify" style="font-size: 15px">
+					沪ICP备06037669号
+				</p>
+			</div>
+		</div>
+
 	</div>
-
 }

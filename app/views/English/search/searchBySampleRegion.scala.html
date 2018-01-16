@@ -1,81 +1,85 @@
 @English.main("Search By Region") {
 
-    <div class="container">
-        <form class="registration-form form-horizontal" action="getSBySRegion" method="get" id="conditionForm"
-        style="margin: 20px;" >
-
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">Search By Region</h2>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2">Chromosome:</label>
-                <div class="col-sm-2">
-                    <select name="chr" id="chr" class="checkbox form-control chr"></select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2">Start:</label>
-                <div class="col-sm-2">
-                    <input class="form-control" name="start" id="start">
-                </div>
-                <label class="control-label">e.g., <a href="#"><em id="egStart">15</em></a></label>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2">End:</label>
-                <div class="col-sm-2">
-                    <input class="form-control" name="end" id="end">
-                </div>
-                <label class="control-label">e.g., <a href="#"><em id="egEnd">600000</em></a></label>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2">Sample Name:</label>
-                <div class="col-sm-6">
-                    <textarea class="form-control" name="sampleName" id="sample" rows="5"
-                    style="border-radius: 4px;" required></textarea>
-                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egSample">
-                        Example</em></a></span>
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 25px">
-                <div class="actions col-sm-offset-2 col-sm-3">
-                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search">
-                        Search</button>
-                </div>
-            </div>
-        </form>
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">Search By Region</h2>
+        </div>
     </div>
+
+    <form class="registration-form form-horizontal" action="getSBySRegion" method="get" id="conditionForm"
+    style="margin: 20px;" >
+
+        <div class="form-group">
+            <label class="control-label col-sm-2">Chromosome:</label>
+            <div class="col-sm-2">
+                <select name="chr" id="chr" class="checkbox form-control chr"></select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-2">Start Location:</label>
+            <div class="col-sm-2">
+                <input class="form-control" name="start" id="start">
+            </div>
+            <label class="control-label">e.g., <a href="#"><em id="egStart">15</em></a></label>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-2">End Location:</label>
+            <div class="col-sm-2">
+                <input class="form-control" name="end" id="end">
+            </div>
+            <label class="control-label">e.g., <a href="#"><em id="egEnd">600000</em></a></label>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-2">Sample Name:</label>
+            <div class="col-sm-6">
+                <textarea class="form-control" name="sampleName" id="sample" rows="5"
+                style="border-radius: 4px;" required></textarea>
+                <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egSample">
+                    Example</em></a></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="actions col-sm-offset-2 col-sm-3">
+                <button type="button" class="btn btn-primary" style="width: 80%;margin-top: 5px"
+                id="search" onclick="mySearch()">
+                    Search</button>
+            </div>
+            <div class="actions col-sm-3" style="text-align: right">
+                <button type="reset" class="btn btn-primary" style="width: 80%;
+                    margin-top: 5px">Reset</button>
+            </div>
+        </div>
+    </form>
     <script>
             $(function () {
                 $("#egStart").click(function () {
                     var eg = $(this).text().trim();
                     $('#start').val(eg);
-                    $("#conditionForm").formValidation("revalidateField", "start")
                 });
                 $("#egEnd").click(function () {
                     var eg = $(this).text().trim();
                     $('#end').val(eg);
-                    $("#conditionForm").formValidation("revalidateField", "end")
                 });
                 $('#egSample').click(function () {
                     var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036";
                     $('#sample').val(eg);
-                    $("#conditionForm").formValidation("revalidateField", "sampleName")
                 });
+
                 function extractor(query) {
                     var result = /([^,]+)$/.exec(query);
                     if (result && result[1])
                         return result[1].trim();
                     return '';
                 }
+
                 $.ajax({
-                    url: "/SAGC/admin/getAllSampleName",
+                    url: "/SAGC/get/getAllSampleName",
                     type: "get",
                     success: function (data) {
                         $('#sample').typeahead({
@@ -97,6 +101,7 @@
                         })
                     }
                 });
+
                 $.ajax({
                     url: "@routes.GeneInformationController.getAllChr()",
                     type: "post",
@@ -108,67 +113,26 @@
                         );
                     }
                 });
-                formValidation()
+
             })
 
-            function formValidation() {
-                $('#conditionForm').formValidation({
-                    framework: 'bootstrap',
-                    icon: {
-                        valid: 'glyphicon glyphicon-ok',
-                        invalid: 'glyphicon glyphicon-remove',
-                        validating: 'glyphicon glyphicon-refresh'
-                    },
-                    fields: {
-                        start: {
-                            validators: {
-                                notEmpty: {
-                                    message: 'Start is required！'
-                                },
-                                integer: {
-                                    message: 'Start must be integer！'
-                                },
-                                stringLength: {
-                                    max: 9,
-                                    message:"The number is to big!"
-                                },
-                            }
-                        },
-                        end: {
-                            validators: {
-                                notEmpty: {
-                                    message: 'End is required！'
-                                },
-                                integer: {
-                                    message: 'End must be integer！'
-                                },
-                                between: {
-                                    min: 'start',
-                                    max: 99999999999,
-                                    message: "The end must be larger than the start！"
-                                },
-                                stringLength: {
-                                    max: 9,
-                                    message:"The number is to big!"
-                                },
-                            }
-                        },
-                        sampleName: {
-                            validators: {
-                                notEmpty: {
-                                    message: 'This is not be empty!'
-                                },
-                                remote: {
-                                    type: 'POST',
-                                    url: '/SAGC/check/checkSamplename',
-                                    delay: 2000
-                                },
-                            }
-                        },
+            function mySearch() {
+                $("#search").attr("disabled", true).html("Search...");
+                $.ajax({
+                    url: "@routes.CheckController.checkRegion()",
+                    type: "post",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        if (data.valid == "false") {
+                            swal("Error!", data.message, "error");
+                            $("#search").attr("disabled", false).html("Search");
+                        } else {
+                            $("#conditionForm").submit()
+                        }
                     }
                 });
             }
-
     </script>
 
 }

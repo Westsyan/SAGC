@@ -1,38 +1,38 @@
-@Chinese.search.mainWithSearch("T-Test-SAGC") {
+@Chinese.search.mainWithSearch("差异表达分析(T-test)") {
 
-    <div class="container">
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">差异表达分析(T-test)</h2>
+        </div>
+    </div>
+
         <form class="registration-form form-horizontal" id="conditionForm"
         style="margin: 20px">
 
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">水稻 T-Test 检验</h2>
-            </div>
-
             <div class="form-group">
-                <label class="control-label col-sm-2 col-sm-offset-1">样品组1:</label>
+                <label class="control-label col-sm-2 col-sm-offset-1">分组1:</label>
                 <div class="col-sm-6">
-                    <textarea class="form-control" name="group1" id="group1" rows="4" style="border-radius: 4px;
-                        margin-top: 10px"
-                     ></textarea>
+                    <textarea class="form-control" name="group1" id="group1" rows="4" style="border-radius: 4px;"
+                    ></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eGroup1">
                         样例</em></a></span>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="control-label col-sm-2 col-sm-offset-1">样品组2:</label>
+                <label class="control-label col-sm-2 col-sm-offset-1">分组2:</label>
                 <div class="col-sm-6">
                     <textarea class="form-control" name="group2" id="group2" rows="4" style="border-radius: 4px;"
-                     ></textarea>
+                    ></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eGroup2">
                         样例</em></a></span>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="control-label col-sm-2 col-sm-offset-1">设置logFc过滤值:</label>
+                <label class="control-label col-sm-2 col-sm-offset-1">logFC阈值:</label>
                 <div class="col-sm-6">
                     <input class="form-control" type="text" value="1"
                     style="border-radius: 4px;"
@@ -41,7 +41,7 @@
             </div>
 
             <div class="form-group" style="margin-top: 20px">
-                <label class="control-label col-sm-2 col-sm-offset-1">设置p-value过滤值:</label>
+                <label class="control-label col-sm-2 col-sm-offset-1">p-value阈值:</label>
                 <div class="col-sm-6">
                     <input class="form-control" type="text" value="0.05" name="pval"
                     id="pValue" style="border-radius: 4px;"/>
@@ -50,24 +50,22 @@
 
             <div class="form-group" style="margin-top: 30px">
                 <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                    <button type="button" class="btn btn-primary" style="width: 80%;margin-top: 5px" id="search" onclick="mySearch()">
                         运行</button>
                 </div>
-                <div class="actions col-sm-3 col-sm-offset-1/2">
-                    <button type="reset" class="btn btn-primary" style="width: 80%;
-                        margin-left: 50px">重置</button>
+                <div class="actions col-sm-3" style="text-align: right">
+                    <button type="button" class="btn btn-primary" id="reset" style="width: 80%;
+                        margin-top: 5px">重置</button>
+                    <button type="reset" style="display: none" id="r"></button>
                 </div>
             </div>
         </form>
         <br>
         <div id="result" style="display: none">
             <hr>
-            <label style="margin-left: 20px">选择要显示的属性:</label>
+            <label style="margin-left: 20px">选择显示的列:</label>
             <div id="checkbox" class="checkbox" style="margin-left: 40px">
 
-            </div>
-            <div id="toolbar">
-                    &nbsp;关键词：
             </div>
             <div class="table-responsive panel-collapse collapse in " >
                 <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
@@ -76,21 +74,25 @@
                 style="word-wrap: break-word">
                     <thead>
                         <tr>
-                            <th data-field="geneId" data-sortable="true" >Gene symbol</th>
-                            <th data-field="mean1" data-sortable="true">mean(group1)</th>
-                            <th data-field="stderr1" data-sortable="true">stderr(group1)</th>
-                            <th data-field="mean2" data-sortable="true">mean(group2)</th>
-                            <th data-field="stderr2" data-sortable="true">stderr(group2)</th>
-                            <th data-field="logFC" data-sortable="true">logFC(group2/group1)</th>
+                            <th data-field="geneId" data-sortable="true" >基因ID</th>
+                            <th data-field="mean1" data-sortable="true">均值(组1)</th>
+                            <th data-field="stderr1" data-sortable="true">标准差(组1)</th>
+                            <th data-field="mean2" data-sortable="true">均值(组2)</th>
+                            <th data-field="stderr2" data-sortable="true">标准差(组2)</th>
+                            <th data-field="logFC" data-sortable="true">logFC(组2/组1)</th>
                             <th data-field="p-value" data-sortable="true">p-value</th>
                             @*<th data-field="q-value" data-sortable="true">q-value</th>*@
                         </tr>
                     </thead>
                 </table>
             </div>
+            <br>
+            <a target="_blank" href="@routes.ChineseController.toGo()" class="btn btn-primary" style="width: 20%;">
+                GO 富集分析 </a>
+            <a target="_blank" href="@routes.ChineseController.toKegg()" class="btn btn-primary" style="width: 20%;
+                margin-left: 50px">
+                KEGG 富集分析 </a>
         </div>
-    </div>
-
 
     <script>
 
@@ -116,7 +118,7 @@
                 }
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllSampleName",
+                    url: "/SAGC/get/getAllSampleName",
                     type: "get",
                     success: function (data) {
                         $('#group1').typeahead({
@@ -140,7 +142,7 @@
                 });
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllSampleName",
+                    url: "/SAGC/get/getAllSampleName",
                     type: "get",
                     success: function (data) {
                         $('#group2').typeahead({
@@ -162,6 +164,7 @@
                         })
                     }
                 });
+
                 formValidation();
             })
 
@@ -199,51 +202,66 @@
             }
 
             function mySearch() {
-                $.ajax({
-                    url: "@routes.CheckController.checkTtest()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        var index = layer.load(1, {
-                            shade: [0.1, '#fff']
-                        });
-                        if (data.valid == "false") {
-                            layer.close(index)
-                            swal({
-                                title: "错误!",
-                                text: data.message,
-                                type: "error",
-                                confirmButtonText: "确定"
-                            })
-                        } else {
-                            $("#search").attr("disabled", true).html("分析中...")
-                            $("#result").empty().append(originalHtml);
-                            var array = ["mean(group1)", "stderr(group1)", "mean(group2)", "stderr(group2)", "logFC", "p-value"]
-                            var values = ["mean1", "stderr1", "mean2", "stderr2", "logFC", "p-value"]
-                            var html = ""
-                            $.each(array, function (n, value) {
-                                        html += "<label style='margin-right: 15px'>" +
-                                                "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
-                                                "</label>"
-                                    }
-                            );
-                            $("#checkbox").append(html)
-                            $.ajax({
-                                url: "/SAGC/analyse/result",
-                                type: "get",
-                                dataType: "json",
-                                data: $("#conditionForm").serialize(),
-                                success: function (data) {
-                                    $('#table').bootstrapTable({data: data});
-                                    $("#search").attr("disabled", false).html("运行").blur()
-                                    $("#result").show()
-                                    layer.close(index)
-                                }
+                var form = $("#conditionForm")
+                var fv = form.data("formValidation")
+                fv.validate()
+                if (fv.isValid()) {
+                    $.ajax({
+                        url: "@routes.CheckController.checkTtest()",
+                        type: "post",
+                        dataType: "json",
+                        data: $("#conditionForm").serialize(),
+                        success: function (data) {
+                            var index = layer.load(1, {
+                                shade: [0.1, '#fff']
                             });
+                            if (data.valid == "false") {
+                                layer.close(index)
+                                swal({
+                                    title: "错误!",
+                                    text: data.message,
+                                    type: "error",
+                                    confirmButtonText: "确定"
+                                })
+                            } else {
+                                $("#search").attr("disabled", true).html("分析中...")
+                                $("#result").empty().append(originalHtml);
+                                var array = ["均值(组1)", "标准差(组1)", "均值(组2)", "标准差(组2)", "logFC", "p-value"]
+                                var values = ["mean1", "stderr1", "mean2", "stderr2", "logFC", "p-value"]
+                                var html = ""
+                                $.each(array, function (n, value) {
+                                            html += "<label style='margin-right: 15px'>" +
+                                                    "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
+                                                    "</label>"
+                                        }
+                                );
+                                $("#checkbox").append(html)
+                                $.ajax({
+                                    url: "/SAGC/analyse/result",
+                                    type: "get",
+                                    dataType: "json",
+                                    data: $("#conditionForm").serialize(),
+                                    success: function (data) {
+                                        if (data.valid == "false") {
+                                            swal({
+                                                title: "错误!",
+                                                text: data.message,
+                                                type: "error",
+                                                confirmButtonText: "确定"
+                                            })
+                                            $("#result").hide()
+                                        } else {
+                                            $('#table').bootstrapTable({data: data});
+                                            $("#result").show()
+                                        }
+                                        $("#search").attr("disabled", false).html("运行").blur()
+                                        layer.close(index)
+                                    }
+                                });
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
 
             function setColumns(value) {
@@ -254,6 +272,13 @@
                     $('#table').bootstrapTable('hideColumn', value);
                 }
             }
+
+            $('#reset').click(function () {
+                $('#r').click();
+                $("#conditionForm").formValidation("revalidateField", "c");
+                $("#conditionForm").formValidation("revalidateField", "pval");
+            });
+
 
     </script>
 }

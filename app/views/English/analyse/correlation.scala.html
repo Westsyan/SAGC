@@ -1,60 +1,59 @@
-@English.search.mainWithSearch("Heatmap-SAGC") {
+@English.search.mainWithSearch("Correlation Analysis") {
 
-    <div class="container">
-        <form class="registration-form form-horizontal" id="conditionForm"
-        style="margin: 20px">
-
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4"> Correlation Heat Map</h2>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2 col-sm-offset-1">Sample Name:</label>
-                <div class="col-sm-6">
-                    <textarea class="form-control" name="sampleName" id="sampleName" rows="5"
-                    required style="border-radius: 4px;
-                        margin-top: 10px"
-                    ></textarea>
-                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eSample">
-                        Example</em></a></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-offset-1 col-sm-2">Correlation coefficient:</label>
-                <div class="col-sm-6">
-                    <select class="form-control" name="method" id="mySelect" style="border-radius: 4px;
-                        margin-top: 10px">
-                        <option>pearson</option>
-                        @* <option>kendall</option>*@
-                        <option>spearman</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 30px">
-                <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="heatmap" onclick="mySearch()">
-                        Running</button>
-                </div>
-                <div class="actions col-sm-offset-1/2 col-sm-3">
-                    <button type="reset" class="btn btn-primary" style="width: 80%;
-                        margin-left: 50px">reset</button>
-                </div>
-            </div>
-            <br>
-            <br>
-            <div id="result" style="display: none;" >
-                <div class="row">
-                    <div class="well" role="alert">
-                        <div id="charts"></div>
-                    </div>
-                </div>
-            </div>
-        </form>
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4"> Correlation Analysis</h2>
+        </div>
     </div>
+
+    <form class="registration-form form-horizontal" id="conditionForm"
+    style="margin: 20px">
+
+        <div class="form-group">
+            <label class="control-label col-sm-2 col-sm-offset-1">Sample Name:</label>
+            <div class="col-sm-6">
+                <textarea class="form-control" name="sampleName" id="sampleName" rows="5"
+                required style="border-radius: 4px;"
+                ></textarea>
+                <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eSample">
+                    Example</em></a></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-offset-1 col-sm-2">Correlation Method:</label>
+            <div class="col-sm-6">
+                <select class="form-control" name="method" id="mySelect" style="border-radius: 4px;">
+                    <option>pearson</option>
+                    @* <option>kendall</option>*@
+                    <option>spearman</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 30px">
+            <div class="actions col-sm-offset-3 col-sm-3">
+                <button type="button" class="btn btn-primary" style="width: 80%;
+                    margin-top: 5px" id="heatmap" onclick="mySearch()">
+                    Excute</button>
+            </div>
+            <div class="actions col-sm-3" style="text-align: right">
+                <button type="reset" class="btn btn-primary" style="width: 80%;
+                    margin-top: 5px">Reset</button>
+            </div>
+        </div>
+        <br>
+        <br>
+        <div id="result" style="display: none;" >
+            <div class="row">
+                <div class="well" role="alert">
+                    <div id="charts"></div>
+                </div>
+            </div>
+        </div>
+    </form>
 
     <script>
 
@@ -76,7 +75,7 @@
                 }
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllSampleName",
+                    url: "/SAGC/get/getAllSampleName",
                     type: "get",
                     success: function (data) {
                         $('#samplename').typeahead({
@@ -108,15 +107,11 @@
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
                     success: function (data) {
-                        if (data.valid == "false") {
-                            swal("Error!", data.message, "error")
-                        } else {
-                            $("#heatmap").attr("disabled", true).html("Drawing...")
-                            $("#result").empty().append(originalHtml);
-                            cheatmap("heatmap")
-                            $("#result").show()
-                            $("#heatmap").attr("disabled", false).html("Running")
-                        }
+                        $("#heatmap").attr("disabled", true).html("Drawing...")
+                        $("#result").empty().append(originalHtml);
+                        cheatmap("heatmap")
+                        $("#result").show()
+                        $("#heatmap").attr("disabled", false).html("Excute")
                     }
                 });
             }

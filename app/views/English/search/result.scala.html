@@ -1,6 +1,6 @@
 @import models.Tables.GeneinformationRow
 @(id: String, sampleName: String, geneInfo: Seq[GeneinformationRow])
-@English.search.mainWithSearch("Expression Profile-SAGCRICEDB") {
+@English.search.mainWithSearch("Expression Profile") {
     <style>
             .fixed-table-container tbody td .th-inner, .fixed-table-container thead th .th-inner {
                 padding: 8px;
@@ -27,12 +27,12 @@
     </style>
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title"><i class="fa fa-flag"></i> Gene Expression Profiles</h3>
+            <h3 class="panel-title">Gene Expression Profiles</h3>
         </div>
         <div class="panel-body">
             <ul class="list-unstyled">
 
-                <li><label class="label label-define label-primary">Gene symbol:</label>
+                <li><label class="label label-define label-primary">Gene ID:</label>
                     @for(gene <- id.split(",").map(_.trim)) {
                         <a class="gene_tag disabled btn btn-default btn-xs">@gene</a>
                     }
@@ -75,18 +75,17 @@
                     })
             </script>
             <hr>
-
             <div class="table-responsive panel-collapse collapse in " id="showtable">
-                <table class="display table table-bordered table-hover" id="table" data-pagination="true" data-search="true"
-                data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true"
-                style="table-layout: fixed;
-                    word-wrap: break-word">
+                <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+                data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-search-align="left" data-multiple-search="true"
+                data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+                style="word-wrap: break-word">
                     <thead>
                         <tr>
-                            <th data-field="geneId" data-sortable="true" title="Gene symbol">Gene symbol</th>
+                            <th data-field="geneId" data-sortable="true" title="Gene symbol">Gene ID</th>
                             <th data-field="Chromosome" data-sortable="true" title="Chromosome">Chromosome</th>
-                            <th data-field="Gene_start" data-sortable="true" title="Gene_start">Gene_start</th>
-                            <th data-field="Gene_end" data-sortable="true" title="Gene_end">Gene_end</th>
+                            <th data-field="Gene_start" data-sortable="true" title="Gene_start">Gene start</th>
+                            <th data-field="Gene_end" data-sortable="true" title="Gene_end">Gene end</th>
                             <th data-field="FUNC" data-sortable="true" title="Function">Function</th>
                         </tr>
                     </thead>

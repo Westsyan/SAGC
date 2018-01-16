@@ -26,7 +26,7 @@
 
             <div class="form-group" style="margin-top: 25px">
                 <div class="actions col-sm-offset-2 col-sm-3">
-                    <input type="button" id="search" value="search"
+                    <input type="button" id="search" value="Running"
                     class="btn btn-primary" onclick="mySearch()" style="width: 60%">
                 </div>
             </div>
@@ -112,7 +112,7 @@
                         marginRight: 280
                     },
                     title: {
-                        text: 'Principal component analysis'
+                        text: 'Expression Scatter Plot'
                     },
                     subtitle: {
                         text: 'Correlation:' + data.correlation
@@ -120,7 +120,7 @@
                     xAxis: {
                         title: {
                             enabled: true,
-                            text: 'PC1(' + data.pc1 + ")"
+                            text: 'FPKM1(' + data.pc1 + ")"
                         },
                         startOnTick: true,
                         endOnTick: true,
@@ -128,7 +128,7 @@
                     },
                     yAxis: {
                         title: {
-                            text: 'PC2(' + data.pc2 + ")"
+                            text: 'FPKM2(' + data.pc2 + ")"
                         },
                         gridLineWidth: 0
                     },

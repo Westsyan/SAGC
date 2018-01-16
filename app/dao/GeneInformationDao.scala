@@ -26,13 +26,8 @@ class GeneInformationDao @Inject()(protected val dbConfigProvider: DatabaseConfi
   }
 
   def selectByRegion(data: RegionData) : Future[Seq[Tables.GeneinformationRow]] = {
-    db.run(Geneinformation.filter(_.chromosome === data.chr).filter(_.geneStart >= data.start).
-      filter(_.geneEnd <= data.end).result)
-  }
-
-  def selectByCRegion(data: RegionData) : Future[Seq[Tables.GeneinformationRow]] = {
-    db.run(Geneinformation.filter(_.chromosome === data.chr).filter(_.geneStart >= data.start).
-      filter(_.geneEnd <= data.end).result)
+    db.run(Geneinformation.filter(_.chromosome === data.chr).filter(_.geneStart >= data.start.toLong).
+      filter(_.geneEnd <= data.end.toLong).result)
   }
 
   def selectBySRegion(data: SampleRegionData) : Future[Seq[String]] = {

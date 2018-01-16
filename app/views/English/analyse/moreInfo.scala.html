@@ -1,16 +1,34 @@
 @import models.Tables.GeneinformationRow
 @(geneInfo: GeneinformationRow, group1: String, group2: String)
-@English.search.mainWithSearch("BOXPLOT") {
+@English.search.mainWithSearch("Information") {
     <style>
             th {
                 width: 15%;
+            }
+
+            pre {
+                width: 815px;
+                border: 0px;
+                padding: 0px;
+                font-size: 16px;
+                background-color: transparent;
+                white-space: pre-wrap;
+            }
+
+            button {
+                border: 0px;
+                background-color: transparent;
+            }
+
+            i {
+                color: black;
             }
     </style>
     <div class="row">
         <div class="form-group col-sm-12">
             <h2 class="page-heading"
             style="text-align: left;
-                border-bottom: 5px solid #e9f3f4">Detail info</h2>
+                border-bottom: 5px solid #e9f3f4">Information</h2>
         </div>
     </div>
 
@@ -36,11 +54,10 @@
 
     <div class="table-responsive">
         <table class="table table-striped table-hover table-bordered" style="table-layout: fixed;
-            word-wrap: break-word"
-        >
+            word-wrap: break-word">
             <tbody>
                 <tr>
-                    <th>Gene Id</th>
+                    <th>Gene ID</th>
                     <td>@geneInfo.geneId</td>
                 </tr>
                 <tr>
@@ -68,40 +85,133 @@
                     <td>@geneInfo.func</td>
                 </tr>
                 <tr>
-                    <th>GO Planet</th>
-                    <td>@geneInfo.go</td>
+                    <th>GO</th>
+                    @if(geneInfo.go == "NA") {
+                        <td>@geneInfo.go</td>
+                    } else {
+                        <td>
+                        @for(go <- geneInfo.go.split(";").map(_.trim)) {
+                            <a target="_blank" href="http://amigo.geneontology.org/amigo/term/@go">@go</a>
+                        }
+                        </td>
+                    }
                 </tr>
                 <tr>
-                    <th>KEGG Planet</th>
-                    <td>@geneInfo.kegg</td>
+                    <th>KEGG</th>
+                    @if(geneInfo.kegg == "NA") {
+                        <td>@geneInfo.kegg</td>
+                    } else {
+                        <td><a target="_blank" href="http://www.kegg.jp/dbget-bin/www_bget?ko:@geneInfo.kegg">@geneInfo.kegg</a></td>
+                    }
                 </tr>
                 <tr>
                     <th>Interpro ID</th>
-                    <td>@geneInfo.iprId</td>
+                    @if(geneInfo.iprId == "NA") {
+                        <td>@geneInfo.iprId</td>
+                    } else {
+                        <td>
+                        @for(ipr <- geneInfo.iprId.split(",").map(_.trim)) {
+                            <a target="_blank" href="http://www.ebi.ac.uk/interpro/entry/@ipr">@ipr</a>
+                        }
+                        </td>
+                    }
                 </tr>
                 <tr>
                     <th>Interpro Description</th>
                     <td>@geneInfo.iprDescrip</td>
                 </tr>
                 <tr>
-                    <th>cDNA</th>
-                    <td>>@geneInfo.geneId<br>@geneInfo.cdna</td>
+                    <th>cDNA   <button type="button" onclick="downloadcdna()">
+                        <i class="fa fa-download"></i></button></th>
+                    <td><div style="width: 1000px;
+                        height: 150px;
+                        overflow: auto">
+                        >@geneInfo.geneId<pre id="cdna">@geneInfo.cdna</pre>
+                    </div>
+                    </td>
                 </tr>
                 <tr>
-                    <th>CDS</th>
-                    <td>>@geneInfo.geneId<br>@geneInfo.cds</td>
+                    <th>CDS   <button type="button" onclick="downloadcds()">
+                        <i class="fa fa-download"></i></button></th>
+                    <td><div style="width: 1000px;
+                        height: 150px;
+                        overflow: auto">
+                        >@geneInfo.geneId<pre id="cds">@geneInfo.cds</pre>
+                    </div>
+                    </td>
                 </tr>
                 <tr>
-                    <th>PEP</th>
-                    <td>>@geneInfo.geneId<br>@geneInfo.pep</td>
+                    <th>PEP   <button type="button" onclick="downloadpep()"><i class="fa fa-download"></i></button></th>
+                    <td><div style="width: 1000px;
+                        height: 150px;
+                        overflow: auto">
+                        >@geneInfo.geneId<pre id="pep">@geneInfo.pep</pre>
+                    </div>
+                    </td>
                 </tr>
             </tbody>
         </table>
     </div>
     <script>
+
             $(document).ready(function () {
                 boxPlot("@geneInfo.geneId", "@group1", "@group2", "circBoxPlot")
-
             })
+
+            function downloadcdna() {
+                var gene = "@geneInfo.geneId"
+                /*                    var id = obj.name
+                                    var fileName = gene +"_"+ obj.name +".fasta"*/
+                var fileName = gene + "_cdna.fasta"
+                var x = $("#cdna").text();
+                var y = "";
+                for (i = 0; i < x.length; i++) {
+                    y = y + x[i]
+                    if ((i + 1) % 60 == 0) {
+                        y = y + "\n"
+                    }
+                }
+                var content = ">" + gene + "\n" + y;
+                var blob = new Blob([content], {
+                    type: "text/plain;charset=utf-8"
+                })
+                saveAs(blob, fileName)
+            }
+
+            function downloadcds() {
+                var gene = "@geneInfo.geneId"
+                var fileName = gene + "_cds.fasta"
+                var x = $("#cds").text()
+                var y = "";
+                for (i = 0; i < x.length; i++) {
+                    y = y + x[i]
+                    if ((i + 1) % 60 == 0) {
+                        y = y + "\n"
+                    }
+                }
+                var content = ">" + gene + "\n" + y;
+                var blob = new Blob([content], {
+                    type: "text/plain;charset=utf-8"
+                })
+                saveAs(blob, fileName)
+            }
+
+            function downloadpep() {
+                var gene = "@geneInfo.geneId"
+                var fileName = gene + "_pep.fasta"
+                var x = $("#pep").text()
+                var y = "";
+                for (i = 0; i < x.length; i++) {
+                    y = y + x[i]
+                    if ((i + 1) % 60 == 0) {
+                        y = y + "\n"
+                    }
+                }
+                var content = ">" + gene + "\n" + y;
+                var blob = new Blob([content], {
+                    type: "text/plain;charset=utf-8"
+                })
+                saveAs(blob, fileName)
+            }
     </script>
 }

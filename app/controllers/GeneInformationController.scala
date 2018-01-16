@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 case class RegionData(chr: Int, start: Int, end: Int)
 
-case class SampleRegionData(chr: Int, start: Int, end: Int, sampleName: String)
+case class SampleRegionData(chr: Int, start: Long, end: Long, sampleName: String)
 
 class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDao, geneInformationDao: GeneInformationDao) extends Controller {
 
@@ -28,8 +28,8 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
   val sampleRegionForm = Form(
     mapping(
       "chr" -> number,
-      "start" -> number,
-      "end" -> number,
+      "start" -> longNumber,
+      "end" -> longNumber,
       "sampleName" -> text
     )(SampleRegionData.apply)(SampleRegionData.unapply)
   )
@@ -51,8 +51,13 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
     Json.toJson(s4)
   }
 
-  def getLongArray(y: GeneinformationRow) = {
-    val genenameStr = "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(y.geneId) + "'>" + y.geneId + "</a>"
+  def getLongArray(y: GeneinformationRow, refer: String) = {
+    var genenameStr = ""
+    if (refer.contains("chinese")) {
+      genenameStr = "<a target='_blank' href='" + routes.ChineseController.getMoreInfo(y.geneId) + "'>" + y.geneId + "</a>"
+    } else {
+      genenameStr = "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(y.geneId) + "'>" + y.geneId + "</a>"
+    }
     val cdna = ">" + y.geneId + "\n" + y.cdna
     val cds = ">" + y.geneId + "\n" + y.cds
     val pep = ">" + y.geneId + "\n" + y.pep
@@ -62,47 +67,40 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
   }
 
   def selectByGeneId(id: String): Action[AnyContent] = Action.async { implicit request =>
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
     geneInformationDao.selectById(id).map { x =>
       val array = x.map { y =>
-        getLongArray(y)
+        getLongArray(y, refer)
       }
       Ok(Json.toJson(array))
     }
   }
 
   def getMoreInfo(id: String): Action[AnyContent] = Action.async { implicit request =>
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
     val long = geneInformationDao.selectById(id)
     long.map { x =>
       val trueLong = x.head
-      if (refer.contains("chinese")) {
-        Ok(views.html.Chinese.search.moreInfo(trueLong))
-      } else {
-        Ok(views.html.English.search.moreInfo(trueLong))
-      }
+      Ok(views.html.English.search.moreInfo(trueLong))
     }
   }
 
+
   def moreInfoBoxPlot(id: String, group1: String, group2: String): Action[AnyContent] = Action.async { implicit request =>
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
     val long = geneInformationDao.selectById(id)
     long.map { x =>
       val trueLong = x.head
-      if (refer.contains("chinese")) {
-        Ok(views.html.Chinese.analyse.moreInfo(trueLong, group1, group2))
-      } else {
-        Ok(views.html.English.analyse.moreInfo(trueLong, group1, group2))
-      }
+      Ok(views.html.English.analyse.moreInfo(trueLong, group1, group2))
     }
   }
 
   def searchByRegion = Action.async { implicit request =>
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
     val data = regionForm.bindFromRequest.get
     geneInformationDao.selectByRegion(data).map { x =>
       val json = x.map { y =>
-        getLongArray(y)
+        getLongArray(y,refer)
       }
       Ok(Json.toJson(json))
     }
@@ -119,9 +117,8 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
     }
   }
 
-  def getAllChr = Action.async { implicit request =>
-    geneInformationDao.allChr.map { x =>
-      Ok(Json.toJson(x.distinct))
-    }
+  def getAllChr = Action { implicit request =>
+    val chr = Seq[Int](1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+    Ok(Json.toJson(chr))
   }
 }

@@ -1,40 +1,45 @@
-@English.search.mainWithSearch("Sequence Fetch") {
+@English.search.mainWithSearch("Multiple Sequence Fetch") {
 
-    <div class="container">
-        <form class="registration-form form-horizontal" id="conditionForm"
-        style="margin: 20px;" >
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">Multiple Sequence Fetch</h2>
+        </div>
+    </div>
 
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">Multiple Sequence Fetch</h2>
+    <form class="registration-form form-horizontal" id="conditionForm"
+    style="margin: 20px;" >
+
+        <div class="form-group" style="margin-top: 10px">
+            <label class="control-label col-sm-1 col-sm-offset-1">Region:</label>
+            <div class="col-sm-6">
+                <textarea class="form-control" name="region" id="region" rows="5"
+                style="border-radius: 4px;"></textarea>
+                <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egRegion">
+                    1:4000-6000 2:6000-10000</em></a></span>
             </div>
+        </div>
 
-            <div class="form-group" style="margin-top: 10px">
-                <label class="control-label col-sm-1 col-sm-offset-1">Region:</label>
-                <div class="col-sm-6">
-                    <textarea class="form-control" name="region" id="region" rows="5"
-                    style="border-radius: 4px;"></textarea>
-                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egRegion">
-                        1:4000-6000 2:6000-10000</em></a></span>
-                </div>
+        <div class="form-group" style="margin-top: 25px">
+            <div class="actions col-sm-offset-2 col-sm-3">
+                <input type="button" id="search" value="Execute"
+                class="btn btn-primary" onclick="mySearch()" style="width: 80%;margin-top: 5px">
             </div>
-
-            <div class="form-group" style="margin-top: 25px">
-                <div class="actions col-sm-offset-2 col-sm-3">
-                    <input type="button" id="search" value="search"
-                    class="btn btn-primary" onclick="mySearch()" style="width: 60%">
-                </div>
+            <div class="actions  col-sm-3" style="text-align: right">
+                <button type="button" class="btn btn-primary" id="reset" style="width: 80%;margin-top: 5px">
+                    Reset</button>
+                <button type="reset" style="display: none" id="r"></button>
             </div>
-        </form>
-        <br>
-        <div id="result" style="display: none">
-            <hr>
-            <h4>Sequence:</h4>
-            <div class="form-group">
-                <div class="col-sm-12">
-                    <textarea class="form-control" name="queryText" id="queryText" rows="5"></textarea>
-                </div>
+        </div>
+    </form>
+    <br>
+    <div id="result" style="display: none">
+        <hr>
+        <h4>Sequence:</h4>
+        <div class="form-group">
+            <div class="col-sm-12">
+                <textarea class="form-control" name="queryText" id="queryText" rows="5"></textarea>
             </div>
         </div>
     </div>
@@ -48,7 +53,7 @@
                 $("#egRegion").click(function () {
                     var eg = $(this).text().trim();
                     $('#region').val(eg);
-                    $("#conditionForm").formValidation("revalidateField", "start")
+                    $("#conditionForm").formValidation("revalidateField", "region")
                 });
 
                 formValidation()
@@ -63,7 +68,7 @@
                         validating: 'glyphicon glyphicon-refresh'
                     },
                     fields: {
-                        start: {
+                        region: {
                             validators: {
                                 notEmpty: {
                                     message: 'Region is required！'
@@ -101,6 +106,12 @@
                     });
                 }
             }
+
+            $('#reset').click(function () {
+                $('#r').click();
+                $("#conditionForm").formValidation("revalidateField", "region");
+            });
+
     </script>
 
 }

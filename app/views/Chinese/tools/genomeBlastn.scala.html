@@ -1,76 +1,80 @@
-@Chinese.search.mainWithSearch("Blastn Against Genome") {
-    <div class="container">
-        <form class="registration-form form-horizontal" id="conditionForm"
-        style="margin: 20px;">
+@Chinese.search.mainWithSearch("基因组序列 Blastn 比对") {
 
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">基因组 Blastn</h2>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2">输入类型:</label>
-                <div class="col-sm-3">
-                    <select class="form-control" onchange="change(this)" name="method">
-                        <option selected value="text">文本</option>
-                        <option value="file">文件</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group" id="queryContent">
-                <label class="control-label col-sm-2">文本:</label>
-                <div class="col-sm-8">
-                    <textarea class="form-control" name="query" id="query" rows="5"></textarea>
-                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egQuery">
-                        样例</em></a></span>
-                </div>
-            </div>
-
-            <div id="queryFile" style="display: none;">
-                <div class="form-group">
-                    <label class="control-label col-sm-2">fasta文件:</label>
-                    <div class="col-sm-8">
-                        <input id="input-1" type="file" class="file control-label" name="file" data-show-preview="false"
-                        data-show-upload="false">
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2">Evalue:</label>
-                <div class="col-sm-2">
-                    <input class="form-control" name="evalue" id="evalue" value="1e-5">
-                </div>
-
-                <label class="control-label col-sm-2">最大长度:</label>
-                <div class="col-sm-2">
-                    <input class="form-control" name="wordSize" id="mCharacteristic" value="28">
-                </div>
-
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2">最大序列目标:</label>
-                <div class="col-sm-2">
-                    <input class="form-control" name="maxTargetSeqs" id="mCharacteristic" value="10">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="actions col-sm-offset-2 col-sm-2">
-                    <button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
-                        运行</button>
-                </div>
-                <div class="actions  col-sm-2">
-                    <button type="reset" class="btn btn-primary" style="width: 90%;">
-                        重置</button>
-                </div>
-            </div>
-
-        </form>
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h4 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4;
+                letter-spacing: 0px"><font style="font-size: 30px">基因组序列 Blastn 比对</font></h4>
+        </div>
     </div>
+
+    <form class="registration-form form-horizontal" id="conditionForm"
+    style="margin: 20px;">
+
+        <div class="form-group">
+            <label class="control-label col-sm-2">输入类型:</label>
+            <div class="col-sm-3">
+                <select class="form-control" onchange="change(this)" name="method">
+                    <option selected value="text">文本</option>
+                    <option value="file">文件</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group" id="queryContent">
+            <label class="control-label col-sm-2">查询序列:</label>
+            <div class="col-sm-8">
+                <textarea class="form-control" name="query" id="query" rows="5"></textarea>
+                <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egQuery">
+                    样例</em></a></span>
+            </div>
+        </div>
+
+        <div id="queryFile" style="display: none;">
+            <div class="form-group">
+                <label class="control-label col-sm-2">fasta序列文件:</label>
+                <div class="col-sm-8">
+                    <input id="input-1" type="file" class="file control-label" name="file" data-show-preview="false"
+                    data-show-upload="false">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-2">Evalue:</label>
+            <div class="col-sm-2">
+                <input class="form-control" name="evalue" id="evalue" value="1e-5">
+            </div>
+
+            <label class="control-label col-sm-2">Word Size:</label>
+            <div class="col-sm-2">
+                <input class="form-control" name="wordSize" id="mCharacteristic" value="28">
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-2">Max target seqs:</label>
+            <div class="col-sm-2">
+                <input class="form-control" name="maxTargetSeqs" id="mCharacteristic" value="10">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="actions col-sm-offset-2 col-sm-3">
+                <button type="button" class="btn btn-primary" style="width: 80%;
+                margin-top: 5px" id="search" onclick="mySearch()">
+                    运行</button>
+            </div>
+            <div class="actions  col-sm-3" style="text-align: right">
+                <button type="button" class="btn btn-primary" id="reset" style="width: 80%;
+                margin-top: 5px">重置</button>
+                <button type="reset" style="display: none" id="r"></button>
+            </div>
+        </div>
+
+    </form>
     <div id="result" style="display: none">
         <hr>
         <h4 style="color: black">结果:</h4>
@@ -147,7 +151,7 @@
                         validating: 'glyphicon glyphicon-refresh'
                     },
                     fields: {
-                        queryText: {
+                        query: {
                             validators: {
                                 notEmpty: {
                                     message: 'Query text is required！'
@@ -218,6 +222,13 @@
                 showPreview: false,
             });
 
+            $('#reset').click(function () {
+                $('#r').click();
+                $("#conditionForm").formValidation("revalidateField", "query");
+                $("#conditionForm").formValidation("revalidateField", "evalue");
+                $("#conditionForm").formValidation("revalidateField", "wordSize");
+                $("#conditionForm").formValidation("revalidateField", "maxTargetSeqs");
+            });
     </script>
 
 

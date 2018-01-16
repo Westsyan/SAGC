@@ -326,7 +326,6 @@ class SaveDatabase @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDa
     Ok(Json.toJson("13"))
   }
 
-
   def saveCor1 = Action.async {
     val startTime = System.currentTimeMillis()
     println("开始得到数据：" + Utils.getTime(startTime))
@@ -350,15 +349,16 @@ class SaveDatabase @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDa
     }
   }
 
+  var pro= "0%"
+
   def saveCor3 = Action{
+    correlationDao.deleteAll
     val buffer = FileUtils.readLines(new File(Utils.path + "column.txt")).asScala
     val gene = buffer.drop(1)
-    println(1)
     val b =for(i <- 0 until gene.size)yield{
       val x = gene(i).split("\t")
       (x.head,x.drop(1).map(_.toDouble))
     }
-    println(2)
     for(i <- 0 until gene.size){
      val row =  for(j <- 0 until gene.size)yield{
         val x1 = b(i)._2
@@ -366,12 +366,17 @@ class SaveDatabase @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDa
         val c = new PearsonsCorrelation().correlation(x1, x2)
         CorrelationRow(b(i)._1,b(j)._1,c)
      }
-      val rows = row.filter(_.correlation>=0.5).filter(_.correlation<1)
-      println(i)
+      pro = (i*100/gene.size.toDouble).formatted("%.2f") + "%"
+      val rows = row.filter(_.correlation>=0.9).filter(_.correlation<1)
       correlationDao.insertAll(rows)
     }
     Ok(Json.obj("message" ->"Database update successfully"))
   }
+
+  def progress = Action {
+    Ok(Json.toJson(pro))
+  }
+
 
   def saveCorByGene(moreGene: Seq[String]) = {
     val moreValue = Await.result(mRNAProfileDao.selectByGeneId(moreGene.mkString(",")), Duration.Inf)
@@ -390,18 +395,4 @@ class SaveDatabase @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDa
     (message)
   }
 
-
-  def check = Action {
-    val gene = Await.result(geneIdDao.selectAllGeneId, Duration.Inf)
-    val sample = Await.result(mRNAProfileDao.selectAllSampleName, Duration.Inf)
-    val geneSize = Await.result(correlationDao.selectById(gene.mkString(",")), Duration.Inf)
-    val cGene = Await.result(correlationDao.selectAllGene, Duration.Inf)
-    var message = ""
-    if (gene.size != cGene.size) {
-      val moreGene = cGene.diff(gene)
-      message = saveCorByGene(moreGene)
-    }
-
-    Ok(Json.toJson(""))
-  }
 }

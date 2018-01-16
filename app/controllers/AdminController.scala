@@ -275,5 +275,6 @@ class AdminController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
       Redirect(routes.AdminController.deletemRNABefore())
     )
   }
+
 }
 

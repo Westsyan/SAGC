@@ -25,6 +25,11 @@ class ExecCommand {
     if (exitCode == 0) isSuccess = true
   }
 
+  def exe(command:String, tmpDir:String) = {
+    val exitCode = Process(command,new File(tmpDir)) ! log
+    if (exitCode == 0) isSuccess = true
+  }
+
   def getErrStr = {
     err.toString()
   }

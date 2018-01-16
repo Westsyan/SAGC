@@ -1,11 +1,15 @@
 package controllers
 
+import java.io.File
 import javax.inject.Inject
 
 import dao.{CorrelationDao, GeneInformationDao, PasswordDao}
+import org.apache.commons.io.FileUtils
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.mvc.{Action, AnyContent, Controller}
+import utils.Utils
+import scala.collection.JavaConverters._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -59,11 +63,21 @@ class ChineseController@Inject()(passwordDao: PasswordDao,geneInformationDao: Ge
   }
 
   def kegg = Action {
-    Ok(views.html.Chinese.analyse.kegg())
+    Ok(views.html.Chinese.analyse.kegg("NA"))
   }
 
   def go = Action {
-    Ok(views.html.Chinese.analyse.go())
+    Ok(views.html.Chinese.analyse.go("NA"))
+  }
+
+  def toGo = Action {
+    val buffer = FileUtils.readLines(new File(Utils.path, "getId.txt")).asScala
+    Ok(views.html.Chinese.analyse.go(buffer(0)))
+  }
+
+  def toKegg = Action {
+    val buffer = FileUtils.readLines(new File(Utils.path, "getId.txt")).asScala
+    Ok(views.html.Chinese.analyse.kegg(buffer(0)))
   }
 
   def clusterIndex = Action {
@@ -93,8 +107,8 @@ class ChineseController@Inject()(passwordDao: PasswordDao,geneInformationDao: Ge
   val sampleRegionForm = Form(
     mapping(
       "chr" -> number,
-      "start" -> number,
-      "end" -> number,
+      "start" -> longNumber,
+      "end" -> longNumber,
       "sampleName" -> text
     )(SampleRegionData.apply)(SampleRegionData.unapply)
   )
@@ -126,6 +140,8 @@ class ChineseController@Inject()(passwordDao: PasswordDao,geneInformationDao: Ge
       Ok(views.html.Chinese.search.result(idStr, sampleName,x))
     }
   }
+
+
 
   def seqIndex = Action {
     Ok(views.html.Chinese.tools.seqFetch())
@@ -159,5 +175,22 @@ class ChineseController@Inject()(passwordDao: PasswordDao,geneInformationDao: Ge
       Ok(views.html.Chinese.tools.coResult(id,rvalue,total))
     }
   }
+
+  def  getMoreInfo(id: String): Action[AnyContent] = Action.async { implicit request =>
+    val long = geneInformationDao.selectById(id)
+    long.map { x =>
+      val trueLong = x.head
+      Ok(views.html.Chinese.search.moreInfo(trueLong))
+    }
+  }
+
+  def moreInfoBoxPlot(id: String, group1: String, group2: String): Action[AnyContent] = Action.async { implicit request =>
+    val long = geneInformationDao.selectById(id)
+    long.map { x =>
+      val trueLong = x.head
+      Ok(views.html.Chinese.analyse.moreInfo(trueLong, group1, group2))
+    }
+  }
+
 
 }

@@ -1,17 +1,18 @@
-@Chinese.search.mainWithSearch("Sequence Fetch") {
+@Chinese.search.mainWithSearch("批量序列提取") {
 
-    <div class="container">
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">批量序列提取</h2>
+        </div>
+    </div>
+
         <form class="registration-form form-horizontal" id="conditionForm"
         style="margin: 20px;" >
 
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">序列组获取</h2>
-            </div>
-
             <div class="form-group" style="margin-top: 10px">
-                <label class="control-label col-sm-1 col-sm-offset-1">范围:</label>
+                <label class="control-label col-sm-1 col-sm-offset-1">区间:</label>
                 <div class="col-sm-6">
                     <textarea class="form-control" name="region" id="region" rows="5"
                     style="border-radius: 4px;"></textarea>
@@ -23,7 +24,13 @@
             <div class="form-group" style="margin-top: 25px">
                 <div class="actions col-sm-offset-2 col-sm-3">
                     <input type="button" id="search" value="运行"
-                    class="btn btn-primary" onclick="mySearch()" style="width: 60%">
+                    class="btn btn-primary" onclick="mySearch()" style="width: 80%;margin-top: 5px">
+                </div>
+                <div class="actions  col-sm-3" style="text-align: right">
+                    <button type="button" class="btn btn-primary" id="reset" style="width: 80%;
+                    margin-top: 5px">
+                        重置</button>
+                    <button type="reset" style="display: none" id="r"></button>
                 </div>
             </div>
         </form>
@@ -37,7 +44,6 @@
                 </div>
             </div>
         </div>
-    </div>
     <script>
 
             var originalHtml = ""
@@ -48,7 +54,7 @@
                 $("#egRegion").click(function () {
                     var eg = $(this).text().trim();
                     $('#region').val(eg);
-                    $("#conditionForm").formValidation("revalidateField", "start")
+                    $("#conditionForm").formValidation("revalidateField", "region")
                 });
 
                 formValidation()
@@ -63,7 +69,7 @@
                         validating: 'glyphicon glyphicon-refresh'
                     },
                     fields: {
-                        start: {
+                        region: {
                             validators: {
                                 notEmpty: {
                                     message: 'Region is required！'
@@ -101,6 +107,11 @@
                     });
                 }
             }
+
+            $('#reset').click(function () {
+                $('#r').click();
+                $("#conditionForm").formValidation("revalidateField", "region");
+            });
     </script>
 
 }

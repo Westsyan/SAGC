@@ -9,9 +9,6 @@ object Tables extends {
 trait Tables {
   val profile: slick.jdbc.JdbcProfile
   import profile.api._
-  import com.github.tototoshi.slick.MySQLJodaSupport._
-  import org.joda.time.DateTime
-  import slick.model.ForeignKeyAction
   // NOTE: GetResult mappers for plain SQL are only generated for tables where Slick knows how to map the types of all columns.
   import slick.jdbc.{GetResult => GR}
 
@@ -73,8 +70,8 @@ trait Tables {
    *  @param geneId Database column Gene_ID SqlType(VARCHAR), PrimaryKey, Length(255,true)
    *  @param geneName Database column Gene_Name SqlType(TEXT)
    *  @param chromosome Database column Chromosome SqlType(INT)
-   *  @param geneStart Database column Gene_start SqlType(INT)
-   *  @param geneEnd Database column Gene_end SqlType(INT)
+   *  @param geneStart Database column Gene_start SqlType(BIGINT)
+   *  @param geneEnd Database column Gene_end SqlType(BIGINT)
    *  @param strand Database column Strand SqlType(TEXT)
    *  @param func Database column FUNC SqlType(TEXT)
    *  @param go Database column GO SqlType(TEXT)
@@ -84,11 +81,11 @@ trait Tables {
    *  @param cdna Database column cDNA SqlType(TEXT)
    *  @param cds Database column CDS SqlType(TEXT)
    *  @param pep Database column PEP SqlType(TEXT) */
-  final case class GeneinformationRow(geneId: String, geneName: String, chromosome: Int, geneStart: Int, geneEnd: Int, strand: String, func: String, go: String, kegg: String, iprId: String, iprDescrip: String, cdna: String, cds: String, pep: String)
+  final case class GeneinformationRow(geneId: String, geneName: String, chromosome: Int, geneStart: Long, geneEnd: Long, strand: String, func: String, go: String, kegg: String, iprId: String, iprDescrip: String, cdna: String, cds: String, pep: String)
   /** GetResult implicit for fetching GeneinformationRow objects using plain SQL queries */
-  implicit def GetResultGeneinformationRow(implicit e0: GR[String], e1: GR[Int]): GR[GeneinformationRow] = GR{
+  implicit def GetResultGeneinformationRow(implicit e0: GR[String], e1: GR[Int], e2: GR[Long]): GR[GeneinformationRow] = GR{
     prs => import prs._
-    GeneinformationRow.tupled((<<[String], <<[String], <<[Int], <<[Int], <<[Int], <<[String], <<[String], <<[String], <<[String], <<[String], <<[String], <<[String], <<[String], <<[String]))
+    GeneinformationRow.tupled((<<[String], <<[String], <<[Int], <<[Long], <<[Long], <<[String], <<[String], <<[String], <<[String], <<[String], <<[String], <<[String], <<[String], <<[String]))
   }
   /** Table description of table geneinformation. Objects of this class serve as prototypes for rows in queries. */
   class Geneinformation(_tableTag: Tag) extends profile.api.Table[GeneinformationRow](_tableTag, Some("sagc"), "geneinformation") {
@@ -102,10 +99,10 @@ trait Tables {
     val geneName: Rep[String] = column[String]("Gene_Name")
     /** Database column Chromosome SqlType(INT) */
     val chromosome: Rep[Int] = column[Int]("Chromosome")
-    /** Database column Gene_start SqlType(INT) */
-    val geneStart: Rep[Int] = column[Int]("Gene_start")
-    /** Database column Gene_end SqlType(INT) */
-    val geneEnd: Rep[Int] = column[Int]("Gene_end")
+    /** Database column Gene_start SqlType(BIGINT) */
+    val geneStart: Rep[Long] = column[Long]("Gene_start")
+    /** Database column Gene_end SqlType(BIGINT) */
+    val geneEnd: Rep[Long] = column[Long]("Gene_end")
     /** Database column Strand SqlType(TEXT) */
     val strand: Rep[String] = column[String]("Strand")
     /** Database column FUNC SqlType(TEXT) */
@@ -152,7 +149,7 @@ trait Tables {
     val value: Rep[Double] = column[Double]("value")
 
     /** Primary key of Mrnaprofile (database name mrnaprofile_PK) */
-    val pk = primaryKey("mrnaprofile_PK", (geneid, samplename))
+    val pk = primaryKey("mrnaprofile_PK", (samplename, geneid))
   }
   /** Collection-like TableQuery object for table Mrnaprofile */
   lazy val Mrnaprofile = new TableQuery(tag => new Mrnaprofile(tag))

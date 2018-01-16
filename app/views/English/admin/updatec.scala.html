@@ -1,34 +1,33 @@
-@English.admin.main("") {
+@English.admin.main("Update Gene Correlation Info") {
 
-    <div class="container">
-        <form class="registration-form" id="form"
-        accept-charset="UTF-8" style="margin: 20px;"
-        enctype="multipart/form-data" >
-
-            <div class="row">
-                <div class="form-group col-sm-12">
-                    <h2 class="page-heading"
-                    style="text-align: left;
-                        border-bottom: 5px solid #e9f3f4">Update Correlation</h2>
-                </div>
-            </div>
-
-            <ul>
-                <li><div>The update time is longer！</div></li>
-                <li><div>Please confirm whether to update!</div></li>
-            </ul>
-
-            <div class="row">
-                <div class="form-group col-sm-12" style="margin-top: 20px">
-                    <div class="actions">
-                        <input type="button" id="fileSubmit" value="update database"
-                        class="btn btn-primary btn-lg" onclick="update()" style="width: 100%">
-                    </div>
-                </div>
-            </div>
-
-        </form>
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">Update Gene Correlation Info</h2>
+        </div>
     </div>
+
+    <form class="registration-form" id="form"
+    accept-charset="UTF-8" style="margin: 20px;"
+    enctype="multipart/form-data" >
+
+        <ul>
+            <li><div>
+                Note: The update requires a long time.Please don't close the page,and don't perform other operation!</div></li>
+            <li style="margin-top: 5px"><div>Suggest that,updating after samples information changed!</div></li>
+        </ul>
+
+        <div class="row">
+            <div class="form-group col-sm-12" style="margin-top: 20px">
+                <div class="actions">
+                    <input type="button" id="fileSubmit" value="update database"
+                    class="btn btn-primary btn-lg" onclick="update()" style="width: 100%">
+                </div>
+            </div>
+        </div>
+
+    </form>
     <script>
             function update() {
 
@@ -40,17 +39,32 @@
                             showConfirmButton: true,
                             confirmButtonClass: "btn-danger",
                             confirmButtonText: "Yes",
-                            closeOnConfirm: false,
+                            closeOnConfirm: true,
                             cancelButtonText: "No"
                         },
                         function () {
+                            var index = layer.msg('<div id="t"></div>', {
+                                icon: 16,
+                                shade: 0.01,
+                                time: 999999000
+                            });
+                            window.setInterval(function () {
+                                $.ajax({
+                                    url: "@routes.SaveDatabase.progress()",
+                                    type: "post",
+                                    dataType: "json",
+                                    success: function (data) {
+                                        $("#t").empty().append(data)
+                                    }
+                                });
+                            }, 1000);
                             $.ajax({
                                 url: "@routes.SaveDatabase.saveCor3()",
                                 type: "get",
                                 dataType: "json",
                                 success: function (data) {
+                                    layer.close(index)
                                     swal("Success！", data.message, "success")
-                                    setSamples()
                                 }
                             });
                         });

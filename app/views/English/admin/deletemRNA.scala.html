@@ -1,37 +1,37 @@
 @()
-@English.admin.mainWithDelete("Delete-SAGC") {
-    <div class="container">
-        <form class="registration-form" action="deletemRNABefore" id="pcaForm" accept-charset="UTF-8"
-        method="get" style="margin: 20px;">
+@English.admin.mainWithDelete("Delete Sample") {
 
-            <div class="row">
-                <div class="form-group col-sm-12">
-                    <h2 class="page-heading" style="text-align: left;
-                        border-bottom: 5px solid #e9f3f4;margin-top: 20px">
-                        Delete Sample Genotype Expression</h2>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="form-group col-sm-12">
-                    <label>Please select the sample to be deleted:</label>
-                    <div id="checkbox" class="checkbox">
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="form-group col-sm-12">
-                    <hr>
-                    <div class="actions col-sm-2" style="padding-left: 0px">
-                        <button type="button" class="btn btn-primary" id="search" style="width: 100%"
-                        onclick="deleteSamples()">Immediately delete</button>
-                    </div>
-                </div>
-            </div>
-
-        </form>
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading" style="text-align: left;
+                border-bottom: 5px solid #e9f3f4;
+                margin-top: 20px">
+                Delete Sample</h2>
+        </div>
     </div>
+
+    <form class="registration-form" action="deletemRNABefore" id="pcaForm" accept-charset="UTF-8"
+    method="get" style="margin: 20px;">
+
+        <div class="row">
+            <div class="form-group col-sm-12">
+                <label style="font-size: 16px">Sample to be deleted:</label>
+                <div id="checkbox" class="checkbox">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-sm-12">
+                <hr>
+                <div class="actions col-sm-2" style="padding-left: 0px">
+                    <button type="button" class="btn btn-primary" id="search" style="width: 100%"
+                    onclick="deleteSamples()">Delete</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
     <script>
             function deleteSamples() {
                 var array = []
@@ -53,14 +53,18 @@
                                 showConfirmButton: true,
                                 confirmButtonClass: "btn-danger",
                                 confirmButtonText: "确定",
-                                closeOnConfirm: false,
+                                closeOnConfirm: true,
                                 cancelButtonText: "取消"
                             },
                             function () {
+                                var index = layer.load(1, {
+                                    shade: [0.1, '#fff']
+                                });
                                 $.ajax({
                                     url: "deletemRNABySamplename?sampleName=" + array,
                                     type: "get",
                                     success: function () {
+                                        layer.close(index)
                                         swal("成功！", "删除数据成功！", "success")
                                         setSamples()
                                     }

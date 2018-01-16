@@ -1,34 +1,32 @@
-@Chinese.admin.main("") {
+@Chinese.admin.main("更新基因相关性信息") {
 
-    <div class="container">
-        <form class="registration-form" id="form"
-        accept-charset="UTF-8" style="margin: 20px;"
-        enctype="multipart/form-data" >
-
-            <div class="row">
-                <div class="form-group col-sm-12">
-                    <h2 class="page-heading"
-                    style="text-align: left;
-                        border-bottom: 5px solid #e9f3f4">更新相关性信息库</h2>
-                </div>
-            </div>
-
-            <ul>
-                <li><div>注意：更新时间较长！</div></li>
-                <li><div>      请不要随意更新!</div></li>
-            </ul>
-
-            <div class="row">
-                <div class="form-group col-sm-12" style="margin-top: 20px">
-                    <div class="actions">
-                        <input type="button" id="fileSubmit" value="更新数据库"
-                        class="btn btn-primary btn-lg" onclick="update()" style="width: 100%">
-                    </div>
-                </div>
-            </div>
-
-        </form>
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">更新基因相关性信息</h2>
+        </div>
     </div>
+
+    <form class="registration-form" id="form"
+    accept-charset="UTF-8" style="margin: 20px;"
+    enctype="multipart/form-data" >
+
+        <ul>
+            <li><div>注意：更新时间较长,请尽量不要关掉页面,也不要进行其他操作！</div></li>
+            <li><div>建议：数据库内样品发变化后进行更新！</div></li>
+        </ul>
+
+        <div class="row">
+            <div class="form-group col-sm-12" style="margin-top: 20px">
+                <div class="actions">
+                    <input type="button" id="fileSubmit" value="更新数据库"
+                    class="btn btn-primary btn-lg" onclick="update()" style="width: 100%">
+                </div>
+            </div>
+        </div>
+
+    </form>
     <script>
             function update() {
 
@@ -40,17 +38,32 @@
                             showConfirmButton: true,
                             confirmButtonClass: "btn-danger",
                             confirmButtonText: "确定",
-                            closeOnConfirm: false,
+                            closeOnConfirm: true,
                             cancelButtonText: "取消"
                         },
                         function () {
+                            var index = layer.msg('<div id="t"></div>', {
+                                icon: 16,
+                                shade: 0.01,
+                                time: 999999000
+                            });
+                            window.setInterval(function () {
+                                $.ajax({
+                                    url: "@routes.SaveDatabase.progress()",
+                                    type: "post",
+                                    dataType: "json",
+                                    success: function (data) {
+                                        $("#t").empty().append(data)
+                                    }
+                                });
+                            }, 1000);
                             $.ajax({
                                 url: "@routes.SaveDatabase.saveCor3()",
                                 type: "get",
                                 dataType: "json",
                                 success: function (data) {
+                                    layer.close(index)
                                     swal("Success！", data.message, "success")
-                                    setSamples()
                                 }
                             });
                         });

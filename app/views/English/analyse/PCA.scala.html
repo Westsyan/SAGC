@@ -1,48 +1,48 @@
-@English.analyse.highcharts("PCA") {
+@English.analyse.highcharts("PCA Analysis") {
 
-    <div class="container">
-        <form class="registration-form form-horizontal" id="conditionForm"
-        style="margin: 20px">
-
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4"> PCA Scatter Plot</h2>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2 col-sm-offset-1">Sample Name:</label>
-                <div class="col-sm-6">
-                    <textarea class="form-control" name="sampleName" id="sampleName" rows="5" style="border-radius: 4px;
-                        margin-top: 10px"
-                    placeholder="if not select,select all"></textarea>
-                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eSample">
-                        Example</em>
-                    </a> </span>
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 30px">
-                <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="pca" onclick="mySearch()">
-                        Running</button>
-                </div>
-                <div class="actions col-sm-offset-1/2 col-sm-3">
-                    <button type="reset" class="btn btn-primary" style="width: 80%;
-                        margin-left: 50px">reset</button>
-                </div>
-            </div>
-            <br>
-            <br>
-            <div id="result" style="display: none;" >
-                <div class="row">
-                    <div class="well" role="alert">
-                        <div id="charts"></div>
-                    </div>
-                </div>
-            </div>
-        </form>
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4"> PCA Analysis</h2>
+        </div>
     </div>
+
+    <form class="registration-form form-horizontal" id="conditionForm"
+    style="margin: 20px">
+
+        <div class="form-group">
+            <label class="control-label col-sm-2 col-sm-offset-1">Sample Name:</label>
+            <div class="col-sm-6">
+                <textarea class="form-control" name="sampleName" id="sampleName" rows="5" style="border-radius: 4px;"
+                placeholder="if not select,select all"></textarea>
+                <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eSample">
+                    Example</em>
+                </a> </span>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 30px">
+            <div class="actions col-sm-offset-3 col-sm-3">
+                <button type="button" class="btn btn-primary" style="width: 80%;
+                    margin-top: 5px" id="pca" onclick="mySearch()">
+                    Excute</button>
+            </div>
+            <div class="actions col-sm-3" style="text-align: right">
+                <button type="reset" class="btn btn-primary" style="width: 80%;
+                    margin-top: 5px">Reset</button>
+            </div>
+        </div>
+        <br>
+        <br>
+        <div id="result" style="display: none;" >
+            <div class="row">
+                <div class="well" role="alert">
+                    <div id="charts"></div>
+                </div>
+            </div>
+        </div>
+    </form>
 
     <script>
 
@@ -64,7 +64,7 @@
                 }
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllSampleName",
+                    url: "/SAGC/get/getAllSampleName",
                     type: "get",
                     success: function (data) {
                         $('#samplename').typeahead({
@@ -134,7 +134,7 @@
                         marginRight: 280
                     },
                     title: {
-                        text: 'Principal component analysis'
+                        text: 'Principal Component Analysis'
                     },
                     xAxis: {
                         title: {

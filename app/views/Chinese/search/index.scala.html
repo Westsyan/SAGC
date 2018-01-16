@@ -1,17 +1,19 @@
 @()(implicit flash: Flash)
-@Chinese.main("Search-SAGC") {
-    <div class="container">
+@Chinese.search.mainWithSearch("基于基因ID搜索") {
+
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">基于基因ID搜索</h2>
+        </div>
+    </div>
+
         <form class="registration-form form-horizontal" action="selectByPosition" method="get" id="conditionForm"
         style="margin: 20px;">
 
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">根据条件搜索</h2>
-            </div>
-
-            <div class="form-group" style="margin-top: 10px">
-                <label class="control-label col-sm-2 col-sm-offset-1">基因名:</label>
+            <div class="form-group">
+                <label class="control-label col-sm-2 col-sm-offset-1">基因ID:</label>
                 <div class="col-sm-6">
                     <textarea class="form-control" name="id" id="gene" rows="5"
                     style="border-radius: 4px;"></textarea>
@@ -32,16 +34,15 @@
 
             <div class="form-group" style="margin-top: 30px">
                 <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
+                    <button type="button" class="btn btn-primary" style="width: 80%;margin-top: 5px" id="search" onclick="mySearch()">
                         搜索</button>
                 </div>
-                <div class="actions col-sm-3">
+                <div class="actions col-sm-3" style="text-align: right">
                     <button type="reset" class="btn btn-primary" style="width: 80%;
-                        margin-left: 50px">重置</button>
+                        margin-top: 5px">重置</button>
                 </div>
             </div>
         </form>
-    </div>
     <script>
             $(function () {
                 $('#egGene').click(function () {
@@ -64,7 +65,7 @@
                 }
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllGeneId",
+                    url: "/SAGC/get/getAllGeneId",
                     type: "get",
                     success: function (data) {
                         $('#gene').typeahead({
@@ -88,7 +89,7 @@
                 });
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllSampleName",
+                    url: "/SAGC/get/getAllSampleName",
                     type: "get",
                     success: function (data) {
                         $('#sample').typeahead({

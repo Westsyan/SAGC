@@ -1,72 +1,71 @@
-@English.search.mainWithSearch("DownLoad-SAGC") {
+@English.search.mainWithSearch("Browse") {
 
-    <div class="container">
-        <form class="registration-form form-horizontal" id="conditionForm" action="getSamplename" method="get"
-        style="margin: 20px;">
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">Browse</h2>
+        </div>
 
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">Download</h2>
-            </div>
+    </div>
+    <form class="registration-form form-horizontal" id="conditionForm" action="getSamplename" method="get"
+    style="margin: 20px;">
 
-            <div class="form-group" style="margin-top: 10px">
-                <div class="col-sm-2 col-sm-offset-1" align="right">
-                    <label class="control-label">Gene Symbol:</label>
-                </div>
-                <div class="col-sm-6">
-                    <textarea class="form-control" name="id" id="gene" placeholder="If not select, select all" rows="5"
-                    style="border-radius: 4px;"></textarea>
-                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
-                        Example</em></a></span>
-                </div>
+        <div class="form-group" style="margin-top: 10px">
+            <div class="col-sm-2 col-sm-offset-1" align="right">
+                <label class="control-label">Gene ID:</label>
             </div>
+            <div class="col-sm-6">
+                <textarea class="form-control" name="id" id="gene" placeholder="If not select, select all" rows="5"
+                style="border-radius: 4px;"></textarea>
+                <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+                    Example</em></a></span>
+            </div>
+        </div>
 
-            <div class="form-group">
-                <div class="col-sm-2 col-sm-offset-1" align="right">
-                    <label class="control-label">Sample Name:</label>
-                </div>
-                <div class="col-sm-6">
-                    <textarea class="form-control" name="sampleName" id="sample" rows="5"
-                    style="border-radius: 4px;" required></textarea>
-                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egSample">
-                        Example</em></a></span>
-                </div>
+        <div class="form-group">
+            <div class="col-sm-2 col-sm-offset-1" align="right">
+                <label class="control-label">Sample Name:</label>
             </div>
+            <div class="col-sm-6">
+                <textarea class="form-control" name="sampleName" id="sample" rows="5"
+                style="border-radius: 4px;" required></textarea>
+                <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egSample">
+                    Example</em></a></span>
+            </div>
+        </div>
 
-            <div class="form-group" style="margin-top: 30px">
-                <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="search" onclick="mySearch()">
-                        Search</button>
-                </div>
-                <div class="actions col-sm-3">
-                    <button type="reset" class="btn btn-primary" style="width: 80%;
-                        margin-left: 50px">reset</button>
-                </div>
+        <div class="form-group">
+            <div class="actions col-sm-offset-3 col-sm-3">
+                <button type="button" class="btn btn-primary" style="width: 80%;margin-top: 5px" id="search" onclick="mySearch()">
+                    Browse</button>
             </div>
-        </form>
+            <div class="actions col-sm-3" style="text-align: right">
+                <button type="reset" class="btn btn-primary" style="width: 80%;
+                    margin-top: 5px">Reset</button>
+            </div>
+        </div>
+    </form>
 
-        <div id="result" style="display: none">
-            <hr>
-            <label style="margin-left: 20px">Select the sampleNames to display:</label>
-            <div id="checkbox" class="checkbox" style="margin-left: 40px">
+    <div id="result" style="display: none">
+        <hr>
+        <label>SampleNames to display:</label>
+        <div id="checkbox" class="checkbox" style="margin-left: 20px">
 
-            </div>
-            <div id="toolbar">
-                    &nbsp;Keyword：
-            </div>
-            <div class="table-responsive panel-collapse collapse in " >
-                <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
-                data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100]" data-search-align="left" data-multiple-search="true"
-                data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
-                style="word-wrap: break-word">
-                    <thead>
-                        <tr>
-                            <th data-field="geneId" data-sortable="true" id="marker" title="Gene symbol">Gene symbol</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
+        </div>
+        <div id="toolbar">
+        </div>
+        <div class="table-responsive panel-collapse collapse in " >
+            <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+            data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100]" data-search-align="left" data-multiple-search="true"
+            data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+            style="word-wrap: break-word">
+                <thead>
+                    <tr>
+                        <th data-field="geneId" data-sortable="true" id="marker" title="Gene symbol">Gene ID</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
 
@@ -95,7 +94,7 @@
                 }
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllGeneId",
+                    url: "/SAGC/get/getAllGeneId",
                     type: "get",
                     success: function (data) {
                         $('#gene').typeahead({
@@ -119,7 +118,7 @@
                 });
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllSampleName",
+                    url: "/SAGC/get/getAllSampleName",
                     type: "get",
                     success: function (data) {
                         $('#sample').typeahead({
@@ -184,7 +183,7 @@
                                 data: $("#conditionForm").serialize(),
                                 success: function (data) {
                                     $('#table').bootstrapTable({data: data.array});
-                                    $("#search").attr("disabled", false).html("Search").blur()
+                                    $("#search").attr("disabled", false).html("Browse").blur()
                                     $("#result").show()
                                     layer.close(index)
                                 }

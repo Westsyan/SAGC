@@ -29,4 +29,6 @@ class CorrelationDao @Inject()(protected val dbConfigProvider: DatabaseConfigPro
 
   def selectAllGene : Future[Seq[String]] = db.run(Correlation.map(_.gene1).distinct.result)
 
+  def deleteAll: Future[Unit] = db.run(Correlation.delete).map(_ => ())
+
 }

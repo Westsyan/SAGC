@@ -1,10 +1,10 @@
 @()(implicit flash: Flash)
-@Chinese.admin.main("login-SAGC") {
+@Chinese.admin.main("登录") {
 	<div class="container">
 		<div class="col-sm-12">
 			<section class="main-col" style="margin: 0 auto;">
 				<div class="register">
-					<h2 class="page-heading" style="font-size: 25px;">登陆账户</h2>
+					<h2 class="page-heading" style="font-size: 25px;">登录账户</h2>
 					<form id="loginForm" style="max-width: 320px;" class="registration-form" accept-charset="UTF-8" action="login">
 
 						<span class="error" style="line-height: 35px;">@flash.get("info")
@@ -14,7 +14,7 @@
 							<div class="input-group">
 								<span class="input-group-addon"><em
 								class="fa fa-user icon2x"></em></span>
-								<input id="loginEmail" name="phone" placeholder="Account" autofocus="autofocus" type="text" class="form-control" required value=""/>
+								<input id="loginEmail" name="phone" placeholder="账号" autofocus="autofocus" type="text" class="form-control" required value=""/>
 							</div>
 						</div>
 
@@ -22,7 +22,7 @@
 							<div class="input-group">
 								<span class="input-group-addon"><em
 								class="fa fa-key icon2x"></em></span>
-								<input id="loginPassword" name="password" placeholder="Password" type="password" autofocus="autofocus" class="form-control" required value="" maxlength="30"/>
+								<input id="loginPassword" name="password" placeholder="密码" type="password" autofocus="autofocus" class="form-control" required value="" maxlength="30"/>
 							</div>
 						</div>
 

@@ -1,14 +1,15 @@
-@Chinese.main("Search By Region") {
+@Chinese.main("基于染色体区间搜索") {
 
-    <div class="container">
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">基于染色体区间搜索</h2>
+        </div>
+    </div>
+
         <form class="registration-form form-horizontal" action="/SAGC/chinese/search/getSBySRegion" method="get" id="conditionForm"
-        style="margin: 20px;" >
-
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">根据范围搜索</h2>
-            </div>
+        style="margin: 20px;">
 
             <div class="form-group">
                 <label class="control-label col-sm-2">染色体:</label>
@@ -18,7 +19,7 @@
             </div>
 
             <div class="form-group">
-                <label class="control-label col-sm-2">开始:</label>
+                <label class="control-label col-sm-2">起始坐标:</label>
                 <div class="col-sm-2">
                     <input class="form-control" name="start" id="start" required="true">
                 </div>
@@ -26,7 +27,7 @@
             </div>
 
             <div class="form-group">
-                <label class="control-label col-sm-2">结束:</label>
+                <label class="control-label col-sm-2">终止坐标:</label>
                 <div class="col-sm-2">
                     <input class="form-control" name="end" id="end" required="true">
                 </div>
@@ -45,29 +46,29 @@
 
             <div class="form-group" style="margin-top: 25px">
                 <div class="actions col-sm-offset-2 col-sm-3">
-                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search">
+                    <button type="button" class="btn btn-primary" style="width: 80%;margin-top: 5px" id="search" onclick="mySearch()">
                         搜索</button>
+                </div>
+                <div class="actions col-sm-3" style="text-align: right">
+                    <button type="reset" class="btn btn-primary" style="width: 80%;
+                        margin-top: 5px">Reset</button>
                 </div>
             </div>
         </form>
-    </div>
     <script>
 
             $(function () {
                 $("#egStart").click(function () {
                     var eg = $(this).text().trim();
                     $('#start').val(eg);
-                    $("#conditionForm").formValidation("revalidateField", "start")
                 });
                 $("#egEnd").click(function () {
                     var eg = $(this).text().trim();
                     $('#end').val(eg);
-                    $("#conditionForm").formValidation("revalidateField", "end")
                 });
                 $('#egSample').click(function () {
                     var eg = "A001,A003,A039,A065,A078,A091,B001,B002,B003,B036";
                     $('#sample').val(eg);
-                    $("#conditionForm").formValidation("revalidateField", "sampleName")
                 });
                 function extractor(query) {
                     var result = /([^,]+)$/.exec(query);
@@ -77,7 +78,7 @@
                 }
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllSampleName",
+                    url: "/SAGC/get/getAllSampleName",
                     type: "get",
                     success: function (data) {
                         $('#sample').typeahead({
@@ -111,63 +112,27 @@
                         );
                     }
                 });
-                formValidation();
             })
 
-            function formValidation() {
-                $('#conditionForm').formValidation({
-                    framework: 'bootstrap',
-                    icon: {
-                        valid: 'glyphicon glyphicon-ok',
-                        invalid: 'glyphicon glyphicon-remove',
-                        validating: 'glyphicon glyphicon-refresh'
-                    },
-                    fields: {
-                        start: {
-                            validators: {
-                                notEmpty: {
-                                    message: '开始不能为空！'
-                                },
-                                integer: {
-                                    message: '开始值必须为整数！'
-                                },
-                                stringLength: {
-                                    max: 9,
-                                    message:"数字太大!"
-                                },
-                            }
-                        },
-                        end: {
-                            validators: {
-                                notEmpty: {
-                                    message: '结束不能为空！'
-                                },
-                                integer: {
-                                    message: '结束必须为整数！'
-                                },
-                                between: {
-                                    min: 'start',
-                                    max: 99999999999,
-                                    message: "结束值必须比开始值大！"
-                                },
-                                stringLength: {
-                                    max: 9,
-                                    message:"数字太大!"
-                                },
-                            }
-                        },
-                        sampleName: {
-                            validators: {
-                                notEmpty: {
-                                    message: '不能为空!'
-                                },
-                                remote: {
-                                    type: 'POST',
-                                    url: '/SAGC/check/checkSamplename',
-                                    delay: 2000
-                                },
-                            }
-                        },
+            function mySearch() {
+                $("#search").attr("disabled", true).html("搜索中...");
+                $.ajax({
+                    url: "@routes.CheckController.checkRegion()",
+                    type: "post",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        if (data.valid == "false") {
+                            swal({
+                                title: "错误!",
+                                text: data.message,
+                                type: "error",
+                                confirmButtonText: "确定"
+                            })
+                            $("#search").attr("disabled", false).html("搜索");
+                        } else {
+                            $("#conditionForm").submit()
+                        }
                     }
                 });
             }

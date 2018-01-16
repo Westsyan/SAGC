@@ -1,43 +1,59 @@
 @()
-<div class="page-header                                                                      ">
+<div class="page-header">
+    <div class="banner">
+        <div class="logo">
+            <a href="@routes.IndexController.toIndex()"><img src="/assets/images/SAGC.png" style="width: 160px;
+                height: 120px"></a>
+            <h1><span>SAGC</span><font style="font-size: 28px"> &nbsp;Rice Gene Expression Database</font></h1>
+        </div>
+    </div>
 
-	<div class="banner">
-		<div class="logo">
-			<a href="@routes.IndexController.toIndex()"><img src="/assets/images/rice.png"></a>
-			<h1><span>SAGC</span><font style="font-size: 28px"> &nbsp;Rice Gene Expression Database</font></h1>
-		</div>
-	</div>
+    <nav class="navbar navbar-default">
+            <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="@routes.AdminController.toIndex()"><span class="glyphicon glyphicon-home"></span>
+                    Home</a></li>
 
-	<nav class="navbar navbar-default">
-			<!-- Brand and toggle get grouped for better mobile display -->
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
-				<span class="sr-only">Toggle navigation</span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-		</div>
-		<div class="collapse navbar-collapse" id="navbar-collapse">
-			<ul class="nav navbar-nav">
-				<li><a href="@routes.AdminController.toIndex()"><span class="glyphicon glyphicon-home"></span> Home</a></li>
-
-				<li class="dropdown">
-					<a href="#">mRNA <span class="fa fa-caret-down"></span></a>
-					<ul class="dropdown-menu">
-						<li><a href="@routes.AdminController.addmRNABefore()">Add mRNA info</a></li>
-						<li><a href="@routes.AdminController.deletemRNABefore()">Delete Genotype</a></li>
-						<li><a href="@routes.AdminController.updateCorrelation()">Update Correlation</a></li>
-					</ul>
-				</li>
-				<li><a href="@routes.AdminController.changePasswordBefore()"><span class="fa fa-key"></span> Change password</a></li>
-				<li><a href="@routes.AdminController.loginBefore()"><span class="fa fa-user"></span> Login</a></li>
-				<li><a href="@routes.AdminController.logout()"><span class="fa fa-user-times"></span> Logout</a></li>
-			</ul>
-			<ul class="nav navbar-nav navbar-right">
-				<li><a href="@routes.ChineseController.backgroundIndex()"><span class="fa fa-wordpress"></span> Chinese</a></li>
-			</ul>
-		</div>
-	</nav>
+                <li class="dropdown">
+                    <a href="#">Operation <span class="fa fa-caret-down"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="@routes.AdminController.addmRNABefore()">Add Sample</a></li>
+                        <li><a href="@routes.AdminController.deletemRNABefore()">Delete Sample</a></li>
+                        <li><a href="@routes.AdminController.updateCorrelation()">Update Gene Correlation Info</a></li>
+                    </ul>
+                </li>
+                <li><a href="@routes.AdminController.changePasswordBefore()"><span class="fa fa-key"></span>
+                    Change password</a></li>
+                <li><a href="@routes.AdminController.loginBefore()"><span class="fa fa-user"></span> Login</a></li>
+                <li><a href="@routes.AdminController.logout()"><span class="fa fa-user-times"></span> Logout</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li style="color: white">
+                    <a><button type="button" onclick="toOther()" style="background-color: transparent;
+                        border: transparent"><span class="fa fa-wordpress"></span>中文</button>
+                    </a></li>
+            </ul>
+        </div>
+    </nav>
 </div>
+<script>
 
+        function toOther() {
+            var path = window.location.pathname
+            var parameter = window.location.search
+            var path1 = path.split("/")
+            var path2 = "/SAGC/chinese/" + path1[2] + "/" + path1[3] + parameter
+            window.location.href = path2
+        }
+
+
+</script>

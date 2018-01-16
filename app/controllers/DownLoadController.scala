@@ -28,23 +28,30 @@ class DownLoadController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDa
   }
 
   def selectAllgene(id: String, sampleName: String): Action[AnyContent] = Action.async { implicit request =>
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
     if (id.isEmpty) {
       mRNAProfileDao.selectAllBySampleName(sampleName).map { info =>
-        val array = getArrayByGenotypes(info)
+        val array = getArrayByGenotypes(info, refer)
         Ok(Json.obj("array" -> array))
       }
     } else {
       mRNAProfileDao.selectByPosition(id, sampleName) map { info =>
-        val array = getArrayByGenotypes(info)
+        val array = getArrayByGenotypes(info, refer)
         Ok(Json.obj("array" -> array))
       }
     }
   }
 
-  def getArrayByGenotypes(x: Seq[MrnaprofileRow]) = {
+  def getArrayByGenotypes(x: Seq[MrnaprofileRow], refer: String) = {
     x.groupBy(_.geneid).map {
       case (geneid, sample) =>
-        val genenameStr = "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(geneid) + "'>" + geneid + "</a>"
+        var genenameStr = ""
+        if (refer.contains("chinese")) {
+          genenameStr = "<a target='_blank' href='" + routes.ChineseController.getMoreInfo(geneid) + "'>" + geneid + "</a>"
+        } else {
+          genenameStr = "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(geneid) + "'>" + geneid + "</a>"
+        }
         val map1 = Map("geneId" -> genenameStr)
         val map2 = sample.map(y => y.samplename -> y.value.toString).toMap
         val map = map1 ++ map2
@@ -63,7 +70,6 @@ class DownLoadController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDa
     val b = buffer.head
     Ok(Json.toJson(b))
   }
-
 
   def getTime = {
     val now: Date = new Date()

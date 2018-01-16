@@ -1,21 +1,21 @@
-@Chinese.search.mainWithSearch("Heatmap-SAGC") {
+@Chinese.search.mainWithSearch("相关性分析") {
 
-    <div class="container">
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4"> 相关性分析</h2>
+        </div>
+    </div>
+
         <form class="registration-form form-horizontal" id="conditionForm"
         style="margin: 20px">
-
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4"> 相关性热图</h2>
-            </div>
 
             <div class="form-group">
                 <label class="control-label col-sm-2 col-sm-offset-1">样品名:</label>
                 <div class="col-sm-6">
                     <textarea class="form-control" name="sampleName" id="sampleName" rows="5"
-                    required style="border-radius: 4px;
-                        margin-top: 10px"
+                    required style="border-radius: 4px;"
                     ></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="eSample">
                         样例</em></a></span>
@@ -23,10 +23,9 @@
             </div>
 
             <div class="form-group">
-                <label class="control-label col-sm-offset-1 col-sm-2">相关性系数:</label>
+                <label class="control-label col-sm-offset-1 col-sm-2">相关性方法:</label>
                 <div class="col-sm-6">
-                    <select class="form-control" name="method" id="mySelect" style="border-radius: 4px;
-                        margin-top: 10px">
+                    <select class="form-control" name="method" id="mySelect" style="border-radius: 4px;">
                         <option>pearson</option>
                         @* <option>kendall</option>*@
                         <option>spearman</option>
@@ -36,12 +35,12 @@
 
             <div class="form-group" style="margin-top: 30px">
                 <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="button" class="btn btn-primary" style="width: 80%;" id="heatmap" onclick="mySearch()">
+                    <button type="button" class="btn btn-primary" style="width: 80%;margin-top: 5px" id="heatmap" onclick="mySearch()">
                         运行</button>
                 </div>
-                <div class="actions col-sm-offset-1/2 col-sm-3">
+                <div class="actions col-sm-3" style="text-align: right">
                     <button type="reset" class="btn btn-primary" style="width: 80%;
-                        margin-left: 50px">重置</button>
+                        margin-top: 5px">重置</button>
                 </div>
             </div>
             <br>
@@ -54,7 +53,6 @@
                 </div>
             </div>
         </form>
-    </div>
 
     <script>
 
@@ -76,7 +74,7 @@
                 }
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllSampleName",
+                    url: "/SAGC/get/getAllSampleName",
                     type: "get",
                     success: function (data) {
                         $('#samplename').typeahead({
@@ -118,7 +116,7 @@
                         } else {
                             $("#heatmap").attr("disabled", true).html("画图中...")
                             $("#result").empty().append(originalHtml);
-                            cheatmap("heatmap")
+                            cheatmapCh("heatmap")
                             $("#result").show()
                             $("#heatmap").attr("disabled", false).html("运行")
                         }

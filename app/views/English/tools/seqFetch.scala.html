@@ -1,53 +1,58 @@
 @English.search.mainWithSearch("Sequence Fetch") {
 
-    <div class="container">
-        <form class="registration-form form-horizontal" id="conditionForm"
-        style="margin: 20px;" >
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">Sequence Fetch</h2>
+        </div>
+    </div>
 
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">Sequence Fetch</h2>
-            </div>
+    <form class="registration-form form-horizontal" id="conditionForm"
+    style="margin: 20px;" >
 
-            <div class="form-group">
-                <label class="control-label col-sm-2">Chromosome:</label>
-                <div class="col-sm-2">
-                    <select name="chr" id="chr" class="checkbox form-control chr"></select>
-                </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">Chromosome:</label>
+            <div class="col-sm-2">
+                <select name="chr" id="chr" class="checkbox form-control chr"></select>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label class="control-label col-sm-2">Start:</label>
-                <div class="col-sm-2">
-                    <input class="form-control" name="start" id="start">
-                </div>
-                <label class="control-label">e.g., <a href="#"><em id="egStart">15</em></a></label>
+        <div class="form-group">
+            <label class="control-label col-sm-2">Start:</label>
+            <div class="col-sm-2">
+                <input class="form-control" name="start" id="start">
             </div>
+            <label class="control-label">e.g., <a href="#"><em id="egStart">15</em></a></label>
+        </div>
 
-            <div class="form-group">
-                <label class="control-label col-sm-2">End:</label>
-                <div class="col-sm-2">
-                    <input class="form-control" name="end" id="end">
-                </div>
-                <label class="control-label">e.g., <a href="#"><em id="egEnd">600000</em></a></label>
+        <div class="form-group">
+            <label class="control-label col-sm-2">End:</label>
+            <div class="col-sm-2">
+                <input class="form-control" name="end" id="end">
             </div>
+            <label class="control-label">e.g., <a href="#"><em id="egEnd">600000</em></a></label>
+        </div>
 
-            <div class="form-group" style="margin-top: 25px">
-                <div class="actions col-sm-offset-2 col-sm-3">
-                    <input type="button" id="search" value="search"
-                    class="btn btn-primary" onclick="mySearch()" style="width: 60%">
-                </div>
+        <div class="form-group" style="margin-top: 25px">
+            <div class="actions col-sm-offset-2 col-sm-2">
+                <input type="button" id="search" value="Execute"
+                class="btn btn-primary" onclick="mySearch()" style="width: 60%;margin-top: 5px">
             </div>
-        </form>
-        <br>
-        <div id="result" style="display: none">
-            <hr>
-            <h4>Sequence:</h4>
-            <div class="form-group">
-                <div class="col-sm-12">
-                    <textarea class="form-control" name="queryText" id="queryText" rows="5"></textarea>
-                </div>
+            <div class="actions col-sm-2">
+                <button type="button" class="btn btn-primary" id="reset" style="width: 60%;margin-top: 5px">
+                    Reset</button>
+                <button type="reset" style="display: none" id="r"></button>
+            </div>
+        </div>
+    </form>
+    <br>
+    <div id="result" style="display: none">
+        <hr>
+        <h4>Sequence:</h4>
+        <div class="form-group">
+            <div class="col-sm-12">
+                <textarea class="form-control" name="queryText" id="queryText" rows="5"></textarea>
             </div>
         </div>
     </div>
@@ -102,8 +107,8 @@
                                     message: 'Start must be integer！'
                                 },
                                 stringLength: {
-                                  max: 9,
-                                  message:"The number is to big!"
+                                    max: 9,
+                                    message: "The number is to big!"
                                 },
                             }
                         },
@@ -122,7 +127,7 @@
                                 },
                                 stringLength: {
                                     max: 9,
-                                    message:"The number is to big!"
+                                    message: "The number is to big!"
                                 },
                             }
                         },
@@ -157,6 +162,13 @@
                     });
                 }
             }
+
+            $('#reset').click(function () {
+                $('#r').click();
+                $("#conditionForm").formValidation("revalidateField", "end");
+                $("#conditionForm").formValidation("revalidateField", "start");
+            });
+
     </script>
 
 }

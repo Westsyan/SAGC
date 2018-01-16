@@ -1,27 +1,34 @@
-@Chinese.search.mainWithSearch("SAGC-KEGG") {
+@(getId : String)
+@Chinese.search.mainWithSearch("KEGG 富集分析") {
 
-    <div class="container">
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">KEGG 富集分析</h2>
+        </div>
+    </div>
+
         <form class="registration-form form-horizontal" id="conditionForm"
         style="margin: 20px">
 
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">水稻 KEGG 富集分析</h2>
-            </div>
-
             <div class="form-group" style="margin-top: 10px">
-                <label class="control-label col-sm-2 col-sm-offset-1">基因名:</label>
+                <label class="control-label col-sm-2 col-sm-offset-1">基因ID:</label>
                 <div class="col-sm-6">
-                    <textarea class="form-control" name="id" id="gene" rows="5"
-                    style="border-radius: 4px;"></textarea>
+                    @if(getId == "NA") {
+                        <textarea class="form-control" name="id" id="gene" rows="5"
+                        style="border-radius: 4px;"></textarea>
+                    }else{
+                        <textarea class="form-control" name="id" id="gene" rows="5"
+                        style="border-radius: 4px;" >@getId</textarea>
+                    }
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
                         样例</em></a></span>
                 </div>
             </div>
 
             <div class="form-group" style="margin-top: 15px">
-                <label class="control-label col-sm-2 col-sm-offset-1">请选择统计检验方式:</label>
+                <label class="control-label col-sm-2 col-sm-offset-1">检验方法:</label>
                 <div class="col-sm-6">
                     <select class="form-control" name="m" style="border-radius: 4px;">
                         <option value="b">binomial test</option>
@@ -32,7 +39,7 @@
             </div>
 
             <div class="form-group" style="margin-top: 15px">
-                <label class="control-label col-sm-2 col-sm-offset-1">请选择错误发现率(FDR)修正方式</label>
+                <label class="control-label col-sm-2 col-sm-offset-1">p-value校正方法:</label>
                 <div class="col-sm-6">
                     <select class="form-control" name="n" id="n" style="border-radius: 4px;">
                         <option value="BH" selected="selected">Benjamini and Hochberg</option>
@@ -42,8 +49,8 @@
                 </div>
             </div>
 
-            <div class="form-group" style="margin-top: 15px">
-                <label class="control-label col-sm-2 col-sm-offset-1">设置阈值（小于这个值的项将不会进行统计检验）:</label>
+            <div class="form-group" style="margin-top: 15px;display: none">
+                <label class="control-label col-sm-2 col-sm-offset-1">阈值（小于这个值的项将不会进行统计检验）:</label>
                 <div class="col-sm-6">
                     <input class="form-control" type="text" value="5"
                     style="border-radius: 4px"
@@ -52,7 +59,7 @@
             </div>
 
             <div class="form-group" style="margin-top: 15px">
-                <label class="control-label col-sm-2 col-sm-offset-1">设置p-value过滤值（小于这个值的项将不会被输出）:</label>
+                <label class="control-label col-sm-2 col-sm-offset-1">p-value阈值:</label>
                 <div class="col-sm-6">
                     <input class="form-control" type="text" value="0.05" name="pval"
                     id="pValueOffset"
@@ -61,26 +68,24 @@
                 </div>
             </div>
 
-            <div class="form-group" style="margin-top: 25px">
+            <div class="form-group">
                 <div class="actions col-sm-offset-3 col-sm-3">
                     <input type="button" id="analyse" value="运行"
-                    class="btn btn-primary" onclick="update()" style="width: 80%">
+                    class="btn btn-primary" onclick="update()" style="width: 80%;margin-top: 5px">
                 </div>
-                <div class="actions col-sm-offset-1/2 col-sm-3">
-                    <button type="reset" class="btn btn-primary" style="width: 80%;
-                        margin-left: 50px">重置</button>
+                <div class="actions col-sm-3" style="text-align: right">
+                    <button type="button" class="btn btn-primary" id="reset" style="width: 80%;
+                        margin-top: 5px">重置</button>
+                    <button type="reset" style="display: none" id="r"></button>
                 </div>
             </div>
         </form>
         <br>
         <div id="result" style="display: none">
             <hr>
-            <label style="margin-left: 20px">选择要显示的属性:</label>
+            <label style="margin-left: 20px">选择显示的列:</label>
             <div id="checkbox" class="checkbox" style="margin-left: 40px">
 
-            </div>
-            <div id="toolbar">
-                    &nbsp;关键词：
             </div>
             <div class="table-responsive panel-collapse collapse in " >
                 <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
@@ -104,7 +109,6 @@
                 </table>
             </div>
         </div>
-    </div>
 
     <script>
 
@@ -128,7 +132,7 @@
                 }
 
                 $.ajax({
-                    url: "/SAGC/admin/getAllGeneId",
+                    url: "/SAGC/get/getAllGeneId",
                     type: "get",
                     success: function (data) {
                         $('#gene').typeahead({
@@ -189,56 +193,71 @@
 
 
             function update() {
-                $.ajax({
-                    url: "@routes.CheckController.checkGeneId()",
-                    type: "post",
-                    dataType: "json",
-                    data: $("#conditionForm").serialize(),
-                    success: function (data) {
-                        var index = layer.load(1, {
-                            shade: [0.1, '#fff']
-                        });
-                        if (data.valid == "false") {
-                            layer.close(index)
-                            swal({
-                                title: "错误!",
-                                text: data.message,
-                                type: "error",
-                                confirmButtonText: "确定"
-                            })
-                        } else {
-                            $("#analyse").attr("disabled", true).html("Analyse...")
-                            $("#result").empty().append(originalHtml);
-                            var array = ["Database", "ID", "Input number", "Background number", "P-Value", "Corrected P-Value", "Input", "Hyperlink"]
-                            var values = ["database", "id", "input_num", "back_num", "p-value", "correct_pval", "input", "hyperlink"]
-                            var html = ""
-                            $.each(array, function (n, value) {
-                                        html += "<label style='margin-right: 15px'>" +
-                                                "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
-                                                "</label>"
-                                    }
-                            );
-                            $("#checkbox").append(html)
-                            $.ajax({
-                                url: "@routes.AnalyseController.keggResult()",
-                                type: "post",
-                                dataType: "json",
-                                data: $("#conditionForm").serialize(),
-                                success: function (data) {
-                                    $('#table').bootstrapTable({data: data});
-                                    $("#analyse").attr("disabled", false).html("To Analyse").blur()
-                                    var hiddenArray = ["correct_pval", "input"]
-                                    $.each(hiddenArray, function (n, value) {
-                                        $('#table').bootstrapTable('hideColumn', value);
-                                        $("input:checkbox[value=" + value + "]").attr("checked", false)
-                                    });
-                                    $("#result").show()
-                                    layer.close(index)
-                                }
+                var form = $("#conditionForm")
+                var fv = form.data("formValidation")
+                fv.validate()
+                if (fv.isValid()) {
+                    $.ajax({
+                        url: "@routes.CheckController.checkGeneId()",
+                        type: "post",
+                        dataType: "json",
+                        data: $("#conditionForm").serialize(),
+                        success: function (data) {
+                            var index = layer.load(1, {
+                                shade: [0.1, '#fff']
                             });
+                            if (data.valid == "false") {
+                                layer.close(index)
+                                swal({
+                                    title: "错误!",
+                                    text: data.message,
+                                    type: "error",
+                                    confirmButtonText: "确定"
+                                })
+                            } else {
+                                $("#analyse").attr("disabled", true).html("Analyse...")
+                                $("#result").empty().append(originalHtml);
+                                var array = ["Database", "ID", "Input number", "Background number", "P-Value", "Corrected P-Value", "Input", "Hyperlink"]
+                                var values = ["database", "id", "input_num", "back_num", "p-value", "correct_pval", "input", "hyperlink"]
+                                var html = ""
+                                $.each(array, function (n, value) {
+                                            html += "<label style='margin-right: 15px'>" +
+                                                    "<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
+                                                    "</label>"
+                                        }
+                                );
+                                $("#checkbox").append(html)
+                                $.ajax({
+                                    url: "@routes.AnalyseController.keggResult()",
+                                    type: "post",
+                                    dataType: "json",
+                                    data: $("#conditionForm").serialize(),
+                                    success: function (data) {
+                                        if (data.valid == "false") {
+                                            swal({
+                                                title: "错误!",
+                                                text: data.message,
+                                                type: "error",
+                                                confirmButtonText: "确定"
+                                            })
+                                            $("#result").hide()
+                                        } else {
+                                            $('#table').bootstrapTable({data: data});
+                                            var hiddenArray = ["database", "input"]
+                                            $.each(hiddenArray, function (n, value) {
+                                                $('#table').bootstrapTable('hideColumn', value);
+                                                $("input:checkbox[value=" + value + "]").attr("checked", false)
+                                            });
+                                            $("#result").show()
+                                        }
+                                        $("#analyse").attr("disabled", false).html("运行").blur()
+                                        layer.close(index)
+                                    }
+                                });
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
 
             function setColumns(value) {
@@ -250,6 +269,11 @@
                 }
             }
 
+            $('#reset').click(function () {
+                $('#r').click();
+                $("#conditionForm").formValidation("revalidateField", "c");
+                $("#conditionForm").formValidation("revalidateField", "pval");
+            });
     </script>
 
 }

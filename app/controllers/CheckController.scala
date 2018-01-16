@@ -149,11 +149,11 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     if (refer.contains("chinese")) {
       val result = checkChId(id)
       valid = result._1
-      message = "基因名: " + result._2
+      message = "基因ID: " + result._2
     } else {
       val result = checkId(id)
       valid = result._1
-      message = "The Gene Symbol : " + result._2
+      message = "The Gene ID : " + result._2
     }
     println(valid)
     val json = Json.obj("valid" -> valid, "message" -> message)
@@ -175,6 +175,8 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     val gro2 = data.group2
     var valid = "true"
     var message = ""
+    val g1 = gro1.split(",").map(_.trim).size
+    val g2 = gro2.split(",").map(_.trim).size
     val header = request.headers.toMap
     val refer = header.filter(_._1 == "Referer").map(_._2).head.head
     if (refer.contains("chinese")) {
@@ -186,6 +188,9 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
       } else if (r2._1 == "false") {
         valid = r2._1
         message = "样品组2: " + r2._2
+      }else if(g1<2 || g2 < 2){
+        valid = "false"
+        message = "样品数必须大于两个"
       }
     } else {
       val r1 = checkSample(gro1)
@@ -196,6 +201,9 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
       } else if (r2._1 == "false") {
         valid = r2._1
         message = "The Gourp2:" + r2._2
+      }else if(g1<2 || g2 < 2){
+        valid ="false"
+        message = "The sample number must be greater than 2"
       }
     }
     val json = Json.obj("valid" -> valid, "message" -> message)
@@ -224,7 +232,7 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
       val sample = checkChSample(sampleName)
       if (gene._1 == "false") {
         valid = gene._1
-        message = "基因名: " + gene._2
+        message = "基因ID: " + gene._2
       } else if (sample._1 == "false") {
         valid = sample._1
         message = "样品名: " + sample._2
@@ -234,7 +242,7 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
       val sample = checkSample(sampleName)
       if (gene._1 == "false") {
         valid = gene._1
-        message = "The Gene Symbol:" + gene._2
+        message = "The Gene ID: " + gene._2
       } else if (sample._1 == "false") {
         valid = sample._1
         message = "The Sample Name: " + sample._2
@@ -242,46 +250,6 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     }
     val json = Json.obj("valid" -> valid, "message" -> message)
     Ok(json)
-  }
-
-  case class coData(id: String, rvalue: String)
-
-  val coForm = Form(
-    mapping(
-      "id" -> text,
-      "rvalue" -> text
-    )(coData.apply)(coData.unapply)
-  )
-
-  def checkCo = Action{ implicit request=>
-    val data = coForm.bindFromRequest.get
-    val id = data.id
-    val rvalue = data.rvalue
-    var valid = "true"
-    var message = ""
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
-    if (refer.contains("chinese")) {
-      val result = checkChId(id)
-      if (result._1 == "false") {
-        valid = result._1
-        message = "基因名: " + result._2
-      }else if(rvalue.toDouble > 1 || rvalue.toDouble <0){
-        valid = "false"
-        message = "r-value 必须在0到1之间"
-      }
-    } else {
-      val result = checkId(id)
-      if (result._1 == "false") {
-        valid = result._1
-        message = "Gene Symbol: " + result._2
-      }else if(rvalue.toDouble > 1 || rvalue.toDouble <0){
-        valid = "false"
-        message = "The r-value must be between 0 and 1！"
-      }
-    }
-    val json = Json.obj("valid" -> valid, "message" -> message)
-    Ok(Json.toJson(json))
   }
 
   case class downData(id: String, sampleName: String)
@@ -297,28 +265,142 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     val data = downloadForm.bindFromRequest.get
     val id = data.id
     val sampleName = data.sampleName
-    if (id.isEmpty) {
-      val result = checkSample(sampleName)
-      val message = "The Sample Name: " + result._2
-      val json = Json.obj("valids" -> result._1, "messages" -> message)
-      Ok(json)
-    } else {
-      val gene = checkId(id)
-      val sample = checkSample(sampleName)
-      var valid = "true"
-      var message = ""
-      if (gene._1 == "false") {
-        valid = gene._1
-        message = "The Gene Symbol: " + gene._2
-      } else if (sample._1 == "false") {
-        valid = sample._1
-        message = "The Sample Name: " + sample._2
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    var valid = "true"
+    var message = ""
+    if(refer.contains("chinese")){
+      if (id.isEmpty) {
+        val result = checkChSample(sampleName)
+        message = "样品名: " + result._2
+        valid = result._1
+      } else {
+        val gene = checkChId(id)
+        val sample = checkChSample(sampleName)
+        if (gene._1 == "false") {
+          valid = gene._1
+          message = "基因ID: " + gene._2
+        } else if (sample._1 == "false") {
+          valid = sample._1
+          message = "样品名: " + sample._2
+        }
       }
+    }else {
+      if (id.isEmpty) {
+        val result = checkSample(sampleName)
+        message = "The Sample Name: " + result._2
+        valid = result._1
+      } else {
+        val gene = checkId(id)
+        val sample = checkSample(sampleName)
+        if (gene._1 == "false") {
+          valid = gene._1
+          message = "The Gene ID: " + gene._2
+        } else if (sample._1 == "false") {
+          valid = sample._1
+          message = "The Sample Name: " + sample._2
+        }
+      }
+    }
       val json = Json.obj("valids" -> valid, "messages" -> message)
       Ok(json)
-
-
-    }
   }
 
+  val regionForm = Form(
+    mapping(
+      "chr" -> number,
+      "start" -> longNumber,
+      "end" -> longNumber,
+      "sampleName" -> text
+    )(SampleRegionData.apply)(SampleRegionData.unapply)
+  )
+
+  def checkRegion = Action { implicit request =>
+    var message1 = ""
+    var message2 = ""
+    var valid = "true"
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    try {
+      val data = regionForm.bindFromRequest.get
+      val start = data.start
+      val end = data.end
+      val sample = data.sampleName
+      if (end < start) {
+        valid = "false"
+        message1 = "起始坐标必须比终止坐标小!"
+        message2 = "Start must be smaller than end!"
+      } else if (start < 0 || end > 42689080) {
+        valid = "false"
+        message1 = "起始坐标和终止坐标必须大于0小于42689080!"
+        message2 = "The start and end must be greater than 0 and less than 42689080!"
+      } else if (refer.contains("chinese")) {
+        val result = checkChSample(sample)
+        valid = result._1
+        message1 = "样品名: " + result._2
+      } else {
+        val result = checkSample(sample)
+        valid = result._1
+        message2 = "The Sample Name: " + result._2
+      }
+    }
+    catch {
+      case x: NoSuchElementException =>
+        valid = "false"
+        message1 = "错误,起始坐标和终止坐标需要输入整数！"
+        message2 = "The start and end must be an integer!"
+    }
+    referResult(refer,valid,message1,message2)
+  }
+
+  case class coData(id:String,rvalue:String)
+
+  val coForm = Form(
+    mapping(
+      "id" -> text,
+      "rvalue" -> text
+    )(coData.apply)(coData.unapply)
+  )
+
+  def checkCo = Action{ implicit request=>
+    var valid = "true"
+    var message1 = ""
+    var message2 = ""
+    val header = request.headers.toMap
+    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    try{
+      val data = coForm.bindFromRequest.get
+      val geneId = data.id
+      val rvalue = data.rvalue.toDouble
+      if(rvalue > 1 || rvalue <0.9){
+        valid = "false"
+        message1 = "r-value必须为0.9到1的正数"
+        message2 = "r-value should be a positive number of 0.9 to 1"
+      }else if (refer.contains("chinese")) {
+        val result = checkChId(geneId)
+        valid = result._1
+        message1 = "基因ID: " + result._2
+      } else {
+        val result = checkId(geneId)
+        valid = result._1
+        message2 = "The Gene ID: " + result._2
+      }
+    }catch{
+      case x : NumberFormatException =>
+        valid = "false"
+        message1 = "r-value必须为0到1的正数"
+        message2 = "r-value must be a positive number of 0 to 1"
+    }
+    referResult(refer,valid,message1,message2)
+  }
+
+  def referResult(refer:String,valid:String,message1:String,message2:String) ={
+    if (refer.contains("chinese")) {
+      val json = Json.obj("valid" -> valid, "message" -> message1)
+      Ok(Json.toJson(json))
+    } else {
+      val json = Json.obj("valid" -> valid, "message" -> message2)
+      Ok(Json.toJson(json))
+    }
+  }
 }

@@ -1,5 +1,5 @@
 @(id: String, rvalue: String, total: String)
-@Chinese.search.mainWithSearch("Expression Profile-SAGCRICEDB") {
+@Chinese.search.mainWithSearch("基因相关性信息") {
     <style>
             .fixed-table-container tbody td .th-inner, .fixed-table-container thead th .th-inner {
                 padding: 8px;
@@ -26,7 +26,7 @@
     </style>
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title"><i class="fa fa-flag"></i> 基因表达量信息</h3>
+            <h3 class="panel-title">基因相关性信息</h3>
         </div>
         <div class="panel-body">
             <ul class="list-unstyled">
@@ -35,7 +35,7 @@
                     <a class="gene_tag disabled btn btn-default btn-xs">@total</a>
                 </li>
                 <br>
-                <li><label class="label label-define label-primary">基因名:</label>
+                <li><label class="label label-define label-primary">基因ID:</label>
                     @for(geneid <- id.split(",").map(_.trim)) {
                         <a class="gene_tag disabled btn btn-default btn-xs">@geneid</a>
                     }
@@ -50,15 +50,15 @@
             <hr>
 
             <div class="table-responsive panel-collapse collapse in ">
-                <table class="display table table-bordered table-hover" id="table" data-pagination="true" data-search="true"
-                data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true"
-                style="table-layout: fixed;
-                    word-wrap: break-word">
+                <table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+                data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-search-align="left" data-multiple-search="true"
+                data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+                style="word-wrap: break-word">
                     <thead>
                         <tr>
                             <th data-field="gene1" data-sortable="true">基因一</th>
                             <th data-field="gene2" data-sortable="true">基因二</th>
-                            <th data-field="correlation" data-sortable="true">皮尔森相关性系数</th>
+                            <th data-field="correlation" data-sortable="true">相关性系数</th>
                         </tr>
                     </thead>
                 </table>

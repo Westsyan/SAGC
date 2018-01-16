@@ -1,45 +1,46 @@
-@English.search.mainWithSearch("Culstering Analyse") {
+@English.search.mainWithSearch("Co Expression Network") {
 
-    <div class="container">
-        <form class="registration-form form-horizontal" id="conditionForm" action="coResult" method="get"
-        style="margin: 20px">
-
-            <div class="form-group col-sm-12">
-                <h2 class="page-heading"
-                style="text-align: left;
-                    border-bottom: 5px solid #e9f3f4">Co  Expression</h2>
-            </div>
-
-            <div class="form-group" style="margin-top: 10px">
-                <label class="control-label col-sm-2 col-sm-offset-1">Gene Symbol:</label>
-                <div class="col-sm-6">
-                    <textarea class="form-control" name="id" id="gene" rows="5"
-                    style="border-radius: 4px;"></textarea>
-                    <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
-                        Example</em></a></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2 col-sm-offset-1">Pearson's r-value:</label>
-                <div class="col-sm-2">
-                    <input class="form-control" name="rvalue" id="rvalue" value="0.92">
-                </div>
-            </div>
-
-
-            <div class="form-group" style="margin-top: 30px">
-                <div class="actions col-sm-offset-3 col-sm-3">
-                    <button type="submit" class="btn btn-primary" style="width: 80%;" id="search">
-                        Running</button>
-                </div>
-                <div class="actions col-sm-offset-1/2 col-sm-3">
-                    <button type="reset" class="btn btn-primary" style="width: 80%;
-                        margin-left: 50px">reset</button>
-                </div>
-            </div>
-        </form>
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">Co Expression Network</h2>
+        </div>
     </div>
+
+    <form class="registration-form form-horizontal" id="conditionForm" action="coResult" method="get"
+    style="margin: 20px">
+
+        <div class="form-group" style="margin-top: 10px">
+            <label class="control-label col-sm-2 col-sm-offset-1">Gene ID:</label>
+            <div class="col-sm-6">
+                <textarea class="form-control" name="id" id="gene" rows="5"
+                style="border-radius: 4px;"></textarea>
+                <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+                    Example</em></a></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-2 col-sm-offset-1">r-value cuttoff:<br>(min:0.9)</label>
+            <div class="col-sm-2">
+                <input class="form-control" name="rvalue" id="rvalue" value="0.92">
+            </div>
+        </div>
+
+
+        <div class="form-group" style="margin-top: 30px">
+            <div class="actions col-sm-offset-3 col-sm-3">
+                <button type="button" class="btn btn-primary" style="width: 80%;
+                    margin-top: 5px" id="search" onclick="mySearch()">
+                    Excute</button>
+            </div>
+            <div class="actions col-sm-3" style="text-align: right">
+                <button type="reset" class="btn btn-primary" style="width: 80%;
+                    margin-top: 5px">Reset</button>
+            </div>
+        </div>
+    </form>
 
     <script>
             $(function () {
@@ -47,16 +48,17 @@
                     //输入的文本去掉两边的空格
                     var eg = "OS01G0100100,OS01G0100500";
                     $('#gene').val(eg);
-                    $("#conditionForm").formValidation("revalidateField", "id")
                 });
+
                 function extractor(query) {
                     var result = /([^,]+)$/.exec(query);
                     if (result && result[1])
                         return result[1].trim();
                     return '';
                 }
+
                 $.ajax({
-                    url: "/SAGC/admin/getAllGeneId",
+                    url: "/SAGC/get/getAllGeneId",
                     type: "get",
                     success: function (data) {
                         $('#gene').typeahead({
@@ -78,46 +80,26 @@
                         })
                     }
                 });
-                formValidation();
             })
-            function formValidation() {
-                $('#conditionForm').formValidation({
-                    framework: 'bootstrap',
-                    icon: {
-                        valid: 'glyphicon glyphicon-ok',
-                        invalid: 'glyphicon glyphicon-remove',
-                        validating: 'glyphicon glyphicon-refresh'
-                    },
-                    fields: {
-                        id: {
-                            validators: {
-                                notEmpty: {
-                                    message: 'This is not be empty!'
-                                },
-                                remote: {
-                                    type: 'POST',
-                                    url: '/SAGC/check/checkGeneId',
-                                    delay: 2000
-                                },
-                            }
-                        },
-                        rvalue: {
-                            validators: {
-                                notEmpty: {
-                                    message: 'This is not be empty!'
-                                },
-                                number:{
-                                    message: 'Must be a number!'
-                                },
-                                between: {
-                                    min: '0',
-                                    max: '1',
-                                    message: "The r-value not be in range！"
-                                },
-                            }
-                        },
+
+            function mySearch() {
+                $("#search").attr("disabled", true).html("Running...");
+                $.ajax({
+                    url: "@routes.CheckController.checkCo()",
+                    type: "post",
+                    dataType: "json",
+                    data: $("#conditionForm").serialize(),
+                    success: function (data) {
+                        if (data.valid == "false") {
+                            swal("Error!", data.message, "error");
+                            $("#search").attr("disabled", false).html("Excute");
+                        } else {
+                            $("#conditionForm").submit()
+                        }
                     }
                 });
             }
+
+
     </script>
 }

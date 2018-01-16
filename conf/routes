@@ -3,126 +3,138 @@
 # ~~~~
 
 # Home page
-GET         /                                               controllers.IndexController.toIndex
-GET         /SAGC/search/toIndex                            controllers.SearchController.toIndex
-GET         /SAGC/search/linear                             controllers.SearchController.linear(id:String,sampleName:String)
-GET         /SAGC/search/selectByPosition                   controllers.SearchController.selectByPosition(id:String,sampleName:String)
-GET         /SAGC/search/heatmap                            controllers.SearchController.heatmap(id:String,sampleName:String)
+GET         /SAGC/main/home                                   controllers.IndexController.toIndex
+GET         /SAGC/search/searchByPosition                     controllers.SearchController.toIndex
+GET         /SAGC/search/linear                               controllers.SearchController.linear(id:String,sampleName:String)
+GET         /SAGC/search/selectByPosition                     controllers.SearchController.selectByPosition(id:String,sampleName:String)
+GET         /SAGC/search/heatmap                              controllers.SearchController.heatmap(id:String,sampleName:String)
 
-GET         /SAGC/search/searchByRegion                     controllers.GeneInformationController.regionIndex
-POST        /SAGC/search/searchbr                           controllers.GeneInformationController.searchByRegion
-GET         /SAGC/search/geneInfo                           controllers.GeneInformationController.selectByGeneId(id:String)
-GET         /SAGC/search/getMoreInfo                        controllers.GeneInformationController.getMoreInfo(id:String)
-POST        /SAGC/search/getAllChr                          controllers.GeneInformationController.getAllChr
-GET         /SAGC/search/searchBySRegion                    controllers.GeneInformationController.searchBySRegion
-GET         /SAGC/search/getSBySRegion                      controllers.GeneInformationController.getSBySRegion
+GET         /SAGC/search/searchByRegion                       controllers.GeneInformationController.regionIndex
+POST        /SAGC/search/searchbr                             controllers.GeneInformationController.searchByRegion
+GET         /SAGC/search/geneInfo                             controllers.GeneInformationController.selectByGeneId(id:String)
+GET         /SAGC/search/getMoreInfo                          controllers.GeneInformationController.getMoreInfo(id:String)
+POST        /SAGC/search/getAllChr                            controllers.GeneInformationController.getAllChr
+GET         /SAGC/search/searchBySRegion                      controllers.GeneInformationController.searchBySRegion
+GET         /SAGC/search/getSBySRegion                        controllers.GeneInformationController.getSBySRegion
 
-GET         /SAGC/download/toIndex                          controllers.DownLoadController.toIndex
-GET         /SAGC/download/getSamplename                    controllers.DownLoadController.getName(sampleName:String)
-GET         /SAGC/download/allGene                          controllers.DownLoadController.selectAllgene(id:String,sampleName:String)
+GET         /SAGC/download/toIndex                            controllers.DownLoadController.toIndex
+GET         /SAGC/download/getSamplename                      controllers.DownLoadController.getName(sampleName:String)
+GET         /SAGC/download/allGene                            controllers.DownLoadController.selectAllgene(id:String,sampleName:String)
 
-GET         /SAGC/admin/toIndex                             controllers.AdminController.toIndex
-GET         /SAGC/admin/loginBefore                         controllers.AdminController.loginBefore()
-GET         /SAGC/admin/login                               controllers.AdminController.login(phone:String,password:String)
-GET         /SAGC/admin/logout                              controllers.AdminController.logout
-GET         /SAGC/admin/changePasswordBefore                controllers.AdminController.changePasswordBefore()
-POST        /SAGC/admin/changePassword                      controllers.AdminController.changePassword
-GET         /SAGC/admin/addmRNABefore                       controllers.AdminController.addmRNABefore
-POST        /SAGC/admin/addmRNA                             controllers.AdminController.addmRNA
-GET         /SAGC/admin/deletemRNABefore                    controllers.AdminController.deletemRNABefore
-GET         /SAGC/admin/deletemRNABySamplename              controllers.AdminController.deletemRNABySamplename(sampleName:String)
-GET         /SAGC/admin/getAllSampleName                    controllers.AdminController.getAllSampleName
-POST        /SAGC/admin/getAllSample                        controllers.AdminController.getAllSample
-GET         /SAGC/admin/getAllGeneId                        controllers.AdminController.getAllGeneId
-GET         /SAGC/admin/updateCorrelation                   controllers.AdminController.updateCorrelation
+GET         /SAGC/admin/toIndex                               controllers.AdminController.toIndex
+GET         /SAGC/admin/loginBefore                           controllers.AdminController.loginBefore()
+GET         /SAGC/admin/login                                 controllers.AdminController.login(phone:String,password:String)
+GET         /SAGC/admin/logout                                controllers.AdminController.logout
+GET         /SAGC/admin/changePasswordBefore                  controllers.AdminController.changePasswordBefore()
+POST        /SAGC/admin/changePassword                        controllers.AdminController.changePassword
+GET         /SAGC/admin/addmRNABefore                         controllers.AdminController.addmRNABefore
+POST        /SAGC/admin/addmRNA                               controllers.AdminController.addmRNA
+GET         /SAGC/admin/deletemRNABefore                      controllers.AdminController.deletemRNABefore
+GET         /SAGC/admin/deletemRNABySamplename                controllers.AdminController.deletemRNABySamplename(sampleName:String)
+GET         /SAGC/admin/updateCorrelation                     controllers.AdminController.updateCorrelation
 
 
-GET         /SAGC/analyse/Ttest                             controllers.AnalyseController.tTest
-GET         /SAGC/analyse/cHeatmap                          controllers.AnalyseController.cHeatmap
-GET         /SAGC/analyse/result                            controllers.AnalyseController.selectAllgene(group1:String,group2:String,c:String,pval:String)
-GET         /SAGC/analyse/heatmap                           controllers.AnalyseController.CorrelationHeatmap(sampleName:String,method:String)
-GET         /SAGC/analyse/kegg                              controllers.AnalyseController.kegg
-POST        /SAGC/analyse/keggEnrichment                    controllers.AnalyseController.keggResult
-GET         /SAGC/analyse/go                                controllers.AnalyseController.go
-POST        /SAGC/analyse/goEnrichment                      controllers.AnalyseController.goResult
-GET         /SAGC/analyse/boxMoreInfo                       controllers.GeneInformationController.moreInfoBoxPlot(id:String,group1:String,group2:String)
-GET         /SAGC/analyse/circBoxPlot                       controllers.SearchController.circBoxPlot(id:String,group1:String,group2:String)
-GET         /SAGC/analyse/clusterIndex                      controllers.AnalyseController.clusterIndex
-GET         /SAGC/analyse/clusterResult                     controllers.AnalyseController.clusterRun(sampleName : String)
-GET         /SAGC/analyse/scatterplot                       controllers.AnalyseController.scatterPlot(sample1:String,sample2:String)
-GET         /SAGC/analyse/scatterIndex                      controllers.AnalyseController.scatterIndex
-GET         /SAGC/analyse/PCAIndex                          controllers.AnalyseController.PCAIndex
-GET         /SAGC/analyse/PCA                               controllers.AnalyseController.PCA(sampleName:String)
+GET         /SAGC/get/getAllSampleName                        controllers.AdminController.getAllSampleName
+POST        /SAGC/get/getAllSample                            controllers.AdminController.getAllSample
+GET         /SAGC/get/getAllGeneId                            controllers.AdminController.getAllGeneId
 
-GET         /SAGC/tools/seqIndex                            controllers.ToolsController.seqIndex
-POST        /SAGC/tools/seqFetch                            controllers.ToolsController.seqFetch
-GET         /SAGC/tools/regionIndex                         controllers.ToolsController.regionIndex
-POST        /SAGC/tools/seqRegion                           controllers.ToolsController.seqRegion
-GET         /SAGC/tools/geneBlastnIndex                     controllers.ToolsController.geneBlastn
-POST        /SAGC/tools/geneBlastnResult                    controllers.ToolsController.geneBlastnRun
-GET         /SAGC/tools/genomeBlastnIndex                   controllers.ToolsController.genomeBlastn
-POST        /SAGC/tools/genomeBlastnResult                  controllers.ToolsController.genomeBlastnRun
-GET         /SAGC/tools/coIndex                             controllers.ToolsController.coIndex
-GET         /SAGC/tools/coResult                            controllers.ToolsController.coResult(id:String,rvalue:String)
-POST        /SAGC/tools/correlation                         controllers.ToolsController.networkResult(id:String,rvalue:String)
-POST        /SAGC/tools/correlationInfo                     controllers.ToolsController.correlationInfo(id:String,rvalue:String)
 
-POST        /SAGC/check/checkGeneId                         controllers.CheckController.checkGeneId
-GET         /SAGC/check/checkPCA                            controllers.CheckController.checkPCA(sampleName:String)
-POST        /SAGC/check/checkSamplename                     controllers.CheckController.checkSamplename
-POST        /SAGC/check/checkSearchPostion                  controllers.CheckController.checkSearchPostion
-POST        /SAGC/check/checkDownload                       controllers.CheckController.checkDownload
-POST        /SAGC/check/checkTtest                          controllers.CheckController.checkTtest
-POST        /SAGC/check/checkCo                             controllers.CheckController.checkCo
+GET         /SAGC/analyse/Ttest                               controllers.AnalyseController.tTest
+GET         /SAGC/analyse/cHeatmap                            controllers.AnalyseController.cHeatmap
+GET         /SAGC/analyse/result                              controllers.AnalyseController.selectAllgene(group1:String,group2:String,c:String,pval:String)
+GET         /SAGC/analyse/heatmap                             controllers.AnalyseController.CorrelationHeatmap(sampleName:String,method:String)
+GET         /SAGC/analyse/kegg                                controllers.AnalyseController.kegg
+POST        /SAGC/analyse/keggEnrichment                      controllers.AnalyseController.keggResult
+GET         /SAGC/analyse/go                                  controllers.AnalyseController.go
+GET         /SAGC/analyse/toGo                                controllers.AnalyseController.toGo
+GET         /SAGC/analyse/toKegg                              controllers.AnalyseController.toKegg
+POST        /SAGC/analyse/goEnrichment                        controllers.AnalyseController.goResult
+GET         /SAGC/analyse/boxMoreInfo                         controllers.GeneInformationController.moreInfoBoxPlot(id:String,group1:String,group2:String)
+GET         /SAGC/analyse/circBoxPlot                         controllers.SearchController.circBoxPlot(id:String,group1:String,group2:String)
+GET         /SAGC/analyse/clusterIndex                        controllers.AnalyseController.clusterIndex
+GET         /SAGC/analyse/clusterResult                       controllers.AnalyseController.clusterRun(sampleName : String)
+GET         /SAGC/analyse/scatterplot                         controllers.AnalyseController.scatterPlot(sample1:String,sample2:String)
+GET         /SAGC/analyse/scatterIndex                        controllers.AnalyseController.scatterIndex
+GET         /SAGC/analyse/PCAIndex                            controllers.AnalyseController.PCAIndex
+GET         /SAGC/analyse/PCA                                 controllers.AnalyseController.PCA(sampleName:String)
+
+GET         /SAGC/tools/seqIndex                              controllers.ToolsController.seqIndex
+POST        /SAGC/tools/seqFetch                              controllers.ToolsController.seqFetch
+GET         /SAGC/tools/regionIndex                           controllers.ToolsController.regionIndex
+POST        /SAGC/tools/seqRegion                             controllers.ToolsController.seqRegion
+GET         /SAGC/tools/geneBlastnIndex                       controllers.ToolsController.geneBlastn
+POST        /SAGC/tools/geneBlastnResult                      controllers.ToolsController.geneBlastnRun
+GET         /SAGC/tools/genomeBlastnIndex                     controllers.ToolsController.genomeBlastn
+POST        /SAGC/tools/genomeBlastnResult                    controllers.ToolsController.genomeBlastnRun
+GET         /SAGC/tools/coIndex                               controllers.ToolsController.coIndex
+GET         /SAGC/tools/coResult                              controllers.ToolsController.coResult(id:String,rvalue:String)
+POST        /SAGC/tools/correlation                           controllers.ToolsController.networkResult(id:String,rvalue:String)
+POST        /SAGC/tools/correlationInfo                       controllers.ToolsController.correlationInfo(id:String,rvalue:String)
+
+POST        /SAGC/check/checkGeneId                           controllers.CheckController.checkGeneId
+GET         /SAGC/check/checkPCA                              controllers.CheckController.checkPCA(sampleName:String)
+POST        /SAGC/check/checkSamplename                       controllers.CheckController.checkSamplename
+POST        /SAGC/check/checkSearchPostion                    controllers.CheckController.checkSearchPostion
+POST        /SAGC/check/checkDownload                         controllers.CheckController.checkDownload
+POST        /SAGC/check/checkTtest                            controllers.CheckController.checkTtest
+POST        /SAGC/check/checkCo                               controllers.CheckController.checkCo
+POST        /SAGC/check/checkRegion                           controllers.CheckController.checkRegion
 
 
 #GET         /SAGC/save/information/save             controllers.SaveDatabase.saveMRNAProfile
-GET         /SAGC/save/information/correlation              controllers.SaveDatabase.saveCor3
+GET         /SAGC/save/information/correlation                controllers.SaveDatabase.saveCor3
 
-GET         /SAGC/chinese/main                              controllers.ChineseController.mainIndex
+GET         /SAGC/chinese/main/home                           controllers.ChineseController.mainIndex
 
-GET         /SAGC/chinese/admin/toIndex                     controllers.ChineseController.backgroundIndex
-GET         /SAGC/chinese/admin/addmRNAbefore               controllers.ChineseController.addmRNABefore
-GET         /SAGC/chinese/admin/changePasswordBefore        controllers.ChineseController.changePasswordBefore
-GET         /SAGC/chinese/admin/loginBefore                 controllers.ChineseController.loginBefore
-GET         /SAGC/chinese/admin/login                       controllers.ChineseController.login(phone:String,password:String)
-GET         /SAGC/chinese/admin/loginout                    controllers.ChineseController.logout
-GET         /SAGC/chinese/admin/deletemRNABefore            controllers.ChineseController.deletemRNABefore
-GET         /SAGC/chinese/admin/updateCorrelation           controllers.ChineseController.updateCorrelation
+GET         /SAGC/chinese/admin/toIndex                       controllers.ChineseController.backgroundIndex
+GET         /SAGC/chinese/admin/addmRNABefore                 controllers.ChineseController.addmRNABefore
+GET         /SAGC/chinese/admin/changePasswordBefore          controllers.ChineseController.changePasswordBefore
+GET         /SAGC/chinese/admin/loginBefore                   controllers.ChineseController.loginBefore
+GET         /SAGC/chinese/admin/login                         controllers.ChineseController.login(phone:String,password:String)
+GET         /SAGC/chinese/admin/loginout                      controllers.ChineseController.logout
+GET         /SAGC/chinese/admin/deletemRNABefore              controllers.ChineseController.deletemRNABefore
+GET         /SAGC/chinese/admin/updateCorrelation             controllers.ChineseController.updateCorrelation
+GET         /SAGC/chinese/admin/deletemRNABySamplename        controllers.AdminController.deletemRNABySamplename(sampleName:String)
+POST        /SAGC/progress                                    controllers.SaveDatabase.progress
 
-GET         /SAGC/chinese/analyse/Ttest                     controllers.ChineseController.tTest
-GET         /SAGC/chinese/analyse/go                        controllers.ChineseController.go
-GET         /SAGC/chinese/analyse/kegg                      controllers.ChineseController.kegg
-GET         /SAGC/chinese/analyse/cHeatmap                  controllers.ChineseController.cHeatmap
-GET         /SAGC/chinese/analyse/clusterIndex              controllers.ChineseController.clusterIndex
-GET         /SAGC/chinese/analyse/scatterIndex              controllers.ChineseController.scatterIndex
-GET         /SAGC/chinese/analyse/PCAIndex                  controllers.ChineseController.PCAIndex
+GET         /SAGC/chinese/analyse/Ttest                       controllers.ChineseController.tTest
+GET         /SAGC/chinese/analyse/go                          controllers.ChineseController.go
+GET         /SAGC/chinese/analyse/kegg                        controllers.ChineseController.kegg
+GET         /SAGC/chinese/analyse/cHeatmap                    controllers.ChineseController.cHeatmap
+GET         /SAGC/chinese/analyse/clusterIndex                controllers.ChineseController.clusterIndex
+GET         /SAGC/chinese/analyse/scatterIndex                controllers.ChineseController.scatterIndex
+GET         /SAGC/chinese/analyse/PCAIndex                    controllers.ChineseController.PCAIndex
+GET         /SAGC/chinese/analyse/toGo                        controllers.ChineseController.toGo
+GET         /SAGC/chinese/analyse/toKegg                      controllers.ChineseController.toKegg
+GET         /SAGC/chinese/analyse/boxMoreInfo                 controllers.ChineseController.moreInfoBoxPlot(id:String,group1:String,group2:String)
 
-GET         /SAGC/chinese/download/toIndex                  controllers.ChineseController.downloadIndex
+GET         /SAGC/chinese/download/toIndex                    controllers.ChineseController.downloadIndex
 
-GET         /SAGC/chinese/tools/geneBlastnIndex             controllers.ChineseController.geneBlastn
-GET         /SAGC/chinese/tools/genomeBlastnIndex           controllers.ChineseController.genomeBlastn
-GET         /SAGC/chinese/tools/seqIndex                    controllers.ChineseController.seqIndex
-GET         /SAGC/chinese/tools/regionIndex                 controllers.ChineseController.regionIndex
-GET         /SAGC/chinese/tools/coIndex                     controllers.ChineseController.coIndex
-GET         /SAGC/chinese/tools/coResult                    controllers.ChineseController.coResult(id:String,rvalue:String)
-
-
-GET         /SAGC/chinese/search/searchBySRegion            controllers.ChineseController.searchBySRegion
-GET         /SAGC/chinese/search/getSBySRegion              controllers.ChineseController.getSBySRegion
-GET         /SAGC/chinese/search/searchByPosition           controllers.ChineseController.searchByPostion
-GET         /SAGC/chinese/search/searchByRegion             controllers.ChineseController.searchByRegion
-GET         /SAGC/chinese/search/selectByPosition           controllers.ChineseController.selectByPosition(id:String,sampleName:String)
+GET         /SAGC/chinese/tools/geneBlastnIndex               controllers.ChineseController.geneBlastn
+GET         /SAGC/chinese/tools/genomeBlastnIndex             controllers.ChineseController.genomeBlastn
+GET         /SAGC/chinese/tools/seqIndex                      controllers.ChineseController.seqIndex
+GET         /SAGC/chinese/tools/regionIndex                   controllers.ChineseController.regionIndex
+GET         /SAGC/chinese/tools/coIndex                       controllers.ChineseController.coIndex
+GET         /SAGC/chinese/tools/coResult                      controllers.ChineseController.coResult(id:String,rvalue:String)
 
 
+GET         /SAGC/chinese/search/searchBySRegion              controllers.ChineseController.searchBySRegion
+GET         /SAGC/chinese/search/getSBySRegion                controllers.ChineseController.getSBySRegion
+GET         /SAGC/chinese/search/searchByPosition             controllers.ChineseController.searchByPostion
+GET         /SAGC/chinese/search/searchByRegion               controllers.ChineseController.searchByRegion
+GET         /SAGC/chinese/search/selectByPosition             controllers.ChineseController.selectByPosition(id:String,sampleName:String)
+GET         /SAGC/chinese/search/getMoreInfo                  controllers.ChineseController.getMoreInfo(id:String)
+GET         /SAGC/chinese/analyse/circBoxPlot                 controllers.SearchController.circBoxPlot(id:String,group1:String,group2:String)
 
 
 
 
 
 
-GET         /SAGC/t                                         controllers.DownLoadController.tIndex
-POST        /SAGC/test                                      controllers.DownLoadController.Test
+
+
+GET         /SAGC/t                                           controllers.DownLoadController.tIndex
+POST        /SAGC/test                                        controllers.DownLoadController.Test
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                                   controllers.Assets.at(path="/public", file)
+GET         /assets/*file                                     controllers.Assets.at(path="/public", file)
