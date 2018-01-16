@@ -1,0 +1,48 @@
+@English.search.mainWithSearch("Download") {
+
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <h2 class="page-heading"
+            style="text-align: left;
+                border-bottom: 5px solid #e9f3f4">Download</h2>
+        </div>
+    </div>
+
+    <div class="panel-body" style="margin-left: 50px">
+        <h4>Download Expression profiles</h4>
+        <ul id="geneUrl">
+        </ul>
+
+        <h4>Download annotation profiles</h4>
+        <ul id="annoUrl">
+        </ul>
+
+        <h4>Download sequence profiles</h4>
+        <ul id="seqUrl">
+        </ul>
+    </div>
+    <script>
+            $(document).ready(function () {
+                var geneArray = [ "gene.fpkm.mat"]
+                var annoArray = ["ref_gene.func","ref_gene.Go","ref_gene.pathway","ref_genome",
+                                   "rice_anno" ]
+                var seqArray = ["cds.all", "cdna.all", "pep.all"]
+
+                $.each(geneArray, function (i, v) {
+                    var html = "<li><a href = 'download?file=" + v + ".txt' >" + v + "</a></li>";
+                    $("#geneUrl").append(html)
+                })
+
+                $.each(annoArray, function (i, v) {
+                    var html = "<li><a href = 'download?file=" + v + ".txt' >" + v + "</a></li>";
+                    $("#annoUrl").append(html)
+                })
+
+                $.each(seqArray, function (i, v) {
+                    var html = "<li><a href = 'download?file=" + v + ".fa' >" + v + "</a></li>";
+                    $("#seqUrl").append(html)
+                })
+            })
+
+    </script>
+}

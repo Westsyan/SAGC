@@ -1,4 +1,14 @@
 @Chinese.search.mainWithSearch("批量序列提取") {
+    <style>
+            pre {
+                width: 815px;
+                border: 0px;
+                padding: 0px;
+                font-size: 16px;
+                background-color: transparent;
+                white-space: pre-wrap;
+            }
+    </style>
 
     <div class="row">
         <div class="form-group col-sm-12">
@@ -40,7 +50,9 @@
             <h4>序列:</h4>
             <div class="form-group">
                 <div class="col-sm-12">
-                    <textarea class="form-control" name="queryText" id="queryText" rows="5"></textarea>
+                    <div class="form-control" name="queryText" id="queryText"style="width: 1000px;
+                        height: 150px;
+                        overflow: auto"></div>
                 </div>
             </div>
         </div>
@@ -99,7 +111,8 @@
                                 swal("Error", data.message, "error")
                                 $("#result").hide()
                             } else {
-                                $("#queryText").val(data)
+                                var html = "<pre>" + data + "</pre>"
+                                $("#queryText").append(html)
                                 $("#result").show()
                             }
                             layer.close(index)

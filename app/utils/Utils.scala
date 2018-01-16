@@ -3,6 +3,7 @@ package utils
 import java.io.File
 
 import org.apache.commons.io.FileUtils
+import play.api.mvc.{AnyContent, Request}
 
 /**
   * Created by yz on 2017/6/16.
@@ -65,6 +66,11 @@ object Utils {
         return false
     }
     true
+  }
+
+  def refer(request:Request[AnyContent]):String = {
+    val header = request.headers.toMap
+    header.filter(_._1 == "Referer").map(_._2).head.head
   }
 
   val windowsPath = "E:\\\\perl\\\\"

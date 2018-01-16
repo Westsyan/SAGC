@@ -17,7 +17,9 @@ POST        /SAGC/search/getAllChr                            controllers.GeneIn
 GET         /SAGC/search/searchBySRegion                      controllers.GeneInformationController.searchBySRegion
 GET         /SAGC/search/getSBySRegion                        controllers.GeneInformationController.getSBySRegion
 
-GET         /SAGC/download/toIndex                            controllers.DownLoadController.toIndex
+GET         /SAGC/download/browse                             controllers.DownLoadController.toIndex
+GET         /SAGC/download/download                           controllers.DownLoadController.download(file:String)
+GET         /SAGC/download/downloadIndex                      controllers.DownLoadController.downloadIndex
 GET         /SAGC/download/getSamplename                      controllers.DownLoadController.getName(sampleName:String)
 GET         /SAGC/download/allGene                            controllers.DownLoadController.selectAllgene(id:String,sampleName:String)
 
@@ -75,7 +77,6 @@ POST        /SAGC/check/checkGeneId                           controllers.CheckC
 GET         /SAGC/check/checkPCA                              controllers.CheckController.checkPCA(sampleName:String)
 POST        /SAGC/check/checkSamplename                       controllers.CheckController.checkSamplename
 POST        /SAGC/check/checkSearchPostion                    controllers.CheckController.checkSearchPostion
-POST        /SAGC/check/checkDownload                         controllers.CheckController.checkDownload
 POST        /SAGC/check/checkTtest                            controllers.CheckController.checkTtest
 POST        /SAGC/check/checkCo                               controllers.CheckController.checkCo
 POST        /SAGC/check/checkRegion                           controllers.CheckController.checkRegion
@@ -108,7 +109,9 @@ GET         /SAGC/chinese/analyse/toGo                        controllers.Chines
 GET         /SAGC/chinese/analyse/toKegg                      controllers.ChineseController.toKegg
 GET         /SAGC/chinese/analyse/boxMoreInfo                 controllers.ChineseController.moreInfoBoxPlot(id:String,group1:String,group2:String)
 
-GET         /SAGC/chinese/download/toIndex                    controllers.ChineseController.downloadIndex
+GET         /SAGC/chinese/download/browse                     controllers.ChineseController.browse
+GET         /SAGC/chinese/download/downloadIndex              controllers.ChineseController.downloadIndex
+GET         /SAGC/chinese/download/download                   controllers.DownLoadController.download(file:String)
 
 GET         /SAGC/chinese/tools/geneBlastnIndex               controllers.ChineseController.geneBlastn
 GET         /SAGC/chinese/tools/genomeBlastnIndex             controllers.ChineseController.genomeBlastn

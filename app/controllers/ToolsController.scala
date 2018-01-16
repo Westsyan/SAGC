@@ -69,7 +69,7 @@ class ToolsController @Inject()(correlationDao: CorrelationDao) extends Controll
     val tmpDir = Files.createTempDirectory("tmpDir").toString
     val outFile = new File(tmpDir, "data.txt")
     val execCommand = new ExecCommand
-    // val command = Utils.path + "samtools-0.1.19/samtools.exe faidx "+  Utils.path +"data.fa "  + data.chr + ":" + data.start + "-" + data.end
+   //  val command = Utils.path + "samtools-0.1.19/samtools.exe faidx "+  Utils.path +"data.fa "  + data.chr + ":" + data.start + "-" + data.end
     val command = "samtools faidx " + Utils.path + "data.fa " + data.chr + ":" + data.start + "-" + data.end
     execCommand.exec(command, outFile)
     if (execCommand.isSuccess) {
@@ -114,9 +114,8 @@ class ToolsController @Inject()(correlationDao: CorrelationDao) extends Controll
     val outXml = new File(tmpDir, "out.xml")
     val outHtml = new File(tmpDir, "out.html")
     val execCommand = new ExecCommand
-    val command1 = Utils.path + "ncbi-blast-2.6.0+/bin/blastn -query " +
-      seqFile.getAbsolutePath + " -db " + Utils.path + "cds.fa " +
-      "-outfmt 5 -evalue " + data.evalue + " -max_target_seqs " + data.maxTargetSeqs +
+    val command1 = Utils.path + "ncbi-blast-2.6.0+/bin/blastn -query " + seqFile.getAbsolutePath + " -db " +
+      Utils.path + "cds.fa " + "-outfmt 5 -evalue " + data.evalue + " -max_target_seqs " + data.maxTargetSeqs +
       " -word_size " + data.wordSize + " -out " + outXml.getAbsolutePath
     val command2 = "python " + Utils.path + "blast2html-82b8c9722996/blast2html.py -i " + outXml.getAbsolutePath + " -o " + outHtml.getAbsolutePath
     execCommand.exec(command1, command2)
@@ -144,9 +143,8 @@ class ToolsController @Inject()(correlationDao: CorrelationDao) extends Controll
     val outXml = new File(tmpDir, "out.xml")
     val outHtml = new File(tmpDir, "out.html")
     val execCommand = new ExecCommand
-    val command1 = Utils.path + "ncbi-blast-2.6.0+/bin/blastn -query " +
-      seqFile.getAbsolutePath + " -db " + Utils.path + "data.fa " +
-      "-outfmt 5 -evalue " + data.evalue + " -max_target_seqs " + data.maxTargetSeqs +
+    val command1 = Utils.path + "ncbi-blast-2.6.0+/bin/blastn -query " + seqFile.getAbsolutePath + " -db " +
+      Utils.path + "data.fa " + "-outfmt 5 -evalue " + data.evalue + " -max_target_seqs " + data.maxTargetSeqs +
       " -word_size " + data.wordSize + " -out " + outXml.getAbsolutePath
     val command2 = "python " + Utils.path + "blast2html-82b8c9722996/blast2html.py -i " + outXml.getAbsolutePath + " -o " + outHtml.getAbsolutePath
     execCommand.exec(command1, command2)
@@ -166,31 +164,27 @@ class ToolsController @Inject()(correlationDao: CorrelationDao) extends Controll
 
   def coResult(id: String, rvalue: String): Action[AnyContent] = Action.async { implicit request =>
     correlationDao.selectByGeneid(id).map { x =>
-      var total = ""
       val size = x.filter(_.correlation >= rvalue.toDouble).distinct.size
-      if (size > 0) {
-        total = size.toString
-      } else {
-        total = "no matched results!"
+      val total = size match {
+        case i if i > 0 => size.toString
+        case _ => "no matched results!"
       }
       Ok(views.html.English.tools.coResult(id, rvalue, total))
     }
   }
 
   def correlationInfo(id: String, rvalue: String): Action[AnyContent] = Action.async { implicit request =>
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    val refer = Utils.refer(request)
     correlationDao.selectByGeneid(id).map { x =>
       val total = x.filter(_.correlation >= rvalue.toDouble).distinct
       val json = total.map { y =>
-        var gene1 = ""
-        var gene2 = ""
-        if (refer.contains("chinese")) {
-          gene1 = "<a target='_blank' href='" + routes.ChineseController.getMoreInfo(y.gene1) + "'>" + y.gene1 + "</a>"
-          gene2 = "<a target='_blank' href='" + routes.ChineseController.getMoreInfo(y.gene2) + "'>" + y.gene2 + "</a>"
-        } else {
-          gene1 = "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(y.gene1) + "'>" + y.gene1 + "</a>"
-          gene2 = "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(y.gene2) + "'>" + y.gene2 + "</a>"
+        val gene1 = refer match {
+          case i if i.contains("chinese") => "<a target='_blank' href='" + routes.ChineseController.getMoreInfo(y.gene1) + "'>" + y.gene1 + "</a>"
+          case _ => "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(y.gene1) + "'>" + y.gene1 + "</a>"
+        }
+        val gene2 = refer match {
+          case i if i.contains("chinese") => "<a target='_blank' href='" + routes.ChineseController.getMoreInfo(y.gene2) + "'>" + y.gene2 + "</a>"
+          case _ => "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(y.gene2) + "'>" + y.gene2 + "</a>"
         }
         Json.obj("gene1" -> gene1, "gene2" -> gene2, "correlation" -> y.correlation)
       }

@@ -89,11 +89,9 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
         allArray2 += array2
         val mean1 = g1(i)._2.toDouble
         val mean2 = g2(i)._2.toDouble
-        var logFC = ""
-        if (mean2 != 0.0) {
-          logFC = log2(mean2 / mean1).formatted("%.2f")
-        } else {
-          logFC = "NA"
+        val logFC = mean2 match {
+          case 0.0 => "NA"
+          case _ => log2(mean2 / mean1).formatted("%.2f")
         }
         (g1(i)._1, mean1, g1(i)._3, mean2, g2(i)._3, logFC)
       }
@@ -101,30 +99,26 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
     val execCommand = new ExecCommand
     val command = getPQValues(allArray1, allArray2, path)
     execCommand.exec(command)
-    if(execCommand.isSuccess) {
+    if (execCommand.isSuccess) {
       val pQLines = Source.fromFile(tmpDir + "/tmp.txt").getLines().map(_.split("\t").toBuffer).toBuffer
       val json2 = pQLines.map { x =>
-        var pvalue = ""
-        if (x(0) != "NA") {
-          pvalue = x(0).toDouble.formatted("%.4f")
-        } else {
-          pvalue = x(0)
+        val pvalue = x(0) match {
+          case "NA" => x(0)
+          case _ => x(0).toDouble.formatted("%.4f")
         }
         pvalue
       }.toArray
       val json = json1.zip(json2).map(x => (x._1, x._2))
+      //根据p-value排序
       val json3 = json.sortBy(_._2).map { x =>
         ("geneId" -> x._1._1, "mean1" -> x._1._2, "stderr1" -> x._1._3, "mean2" -> x._1._4, "stderr2" -> x._1._5, "logFC" -> x._1._6, "p-value" -> x._2)
       }
       val json4 = json3.filter(_._2._2.toDouble != 0).filter(_._6._2 != "NA").filter(_._6._2.toDouble.abs >= c.toDouble).filter(_._7._2 != "NA").filter(_._7._2.toDouble <= pval.toDouble)
-      val header = request.headers.toMap
-      val refer = header.filter(_._1 == "Referer").map(_._2).head.head
       val jsons = json4.map { x =>
-        var genenameStr = ""
-        if (refer.contains("chinese")) {
-          genenameStr = "<a target='_blank' href='" + routes.ChineseController.moreInfoBoxPlot(x._1._2, group1, group2) + "'>" + x._1._2 + "</a>"
-        } else {
-          genenameStr = "<a target='_blank' href='" + routes.GeneInformationController.moreInfoBoxPlot(x._1._2, group1, group2) + "'>" + x._1._2 + "</a>"
+        val refer = Utils.refer(request)
+        val genenameStr = refer match {
+          case i if i.contains ("chinese") => "<a target='_blank' href='" + routes.ChineseController.moreInfoBoxPlot (x._1._2, group1, group2) + "'>" + x._1._2 + "</a>"
+          case _ =>"<a target='_blank' href='" + routes.GeneInformationController.moreInfoBoxPlot (x._1._2, group1, group2) + "'>" + x._1._2 + "</a>"
         }
         Json.obj(x._1._1 -> genenameStr, x._2._1 -> x._2._2, x._3._1 -> x._3._2, x._4._1 -> x._4._2, x._5._1 -> x._5._2, x._6._1 -> x._6._2, x._7._1 -> x._7._2)
       }
@@ -133,7 +127,7 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
       FileUtils.writeStringToFile(new File(Utils.path, "getId.txt"), getId)
       Utils.deleteDirectory(tmpDir)
       Ok(Json.toJson(jsons))
-    }else{
+    } else {
       Utils.deleteDirectory(tmpDir)
       Ok(Json.obj("valid" -> "false", "message" -> execCommand.getErrStr))
     }
@@ -190,15 +184,10 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
   def keggResult = Action { implicit request =>
     val data = keggForm.bindFromRequest.get
     val Id = data.id
-    val c = data.c
-    val m = data.m
-    val n = data.n
-    val pval = data.pval
     val population = Utils.path + "all_gene.txt"
     val association = Utils.path + "ref_gene.pathway.txt"
     val geneId = Id.split(",").map(_.trim).distinct.toBuffer
     val tmpDir = Files.createTempDirectory("tmpDir").toString
-    //在临时的文件存放点钟建立一个新的文件
     val studies = new File(tmpDir, "tmp.txt")
     FileUtils.writeLines(studies, geneId.asJava)
     val study = studies.getAbsolutePath
@@ -208,7 +197,7 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
     //QVALUE在unix转译文本后可以使用
     val execCommand = new ExecCommand
     val command = "perl " + Utils.path + "identify.pl -study=" + study + " -population=" + population + " -association=" + association +
-      " -m=" + m + " -n=" + n + " -o=" + o + " -c=" + c + " -maxp=" + pval
+      " -m=" + data.m + " -n=" + data.n + " -o=" + o + " -c=" + data.c + " -maxp=" + data.pval
     execCommand.exe(command, tmpDir)
     if (execCommand.isSuccess) {
       val keggInfo = FileUtils.readLines(output).asScala
@@ -216,7 +205,6 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
       val json = buffer.map { x =>
         val all = x.split("\t")
         val l = all.size
-        /*   val keggLink = "<a target-'_blank' href='http://www.kegg.jp/dbget-bin/www_bget?ko:"+ all(2) + "'>" + all(2) + "</a>"*/
         val hyper = "<a target='_blank' href='" + all(8) + "'>linked</a><a style='display: none'>: " + all(8) + "</a>"
         Json.obj("term" -> all.head, "database" -> all(1), "id" -> all(2), "input_num" -> all(3), "back_num" -> all(4),
           "p-value" -> all(5), "correct_pval" -> all(6), "input" -> all(7), "hyperlink" -> hyper)
@@ -230,14 +218,10 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
   }
 
   def goResult = Action { implicit request =>
-    val startTime = System.currentTimeMillis()
     val data = goForm.bindFromRequest.get
-    val alpha = data.alpha
-    val pval = data.pval
     val Id = data.id
     val geneId = Id.split(",").map(_.trim).distinct.toBuffer
     val tmpDir = Files.createTempDirectory("tmpDir").toString
-    //在临时的文件存放点钟建立一个新的文件
     val studies = new File(tmpDir, "tmp.txt")
     FileUtils.writeLines(studies, geneId.asJava)
     val study = studies.getAbsolutePath
@@ -246,9 +230,9 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
     val o = new File(tmpDir, "GO_enrichment.txt")
     val output = o.getAbsolutePath
     val execCommand = new ExecCommand
-    val command = "python " + Utils.path + "goatools-0.5.7/scripts/find_enrichment.py --alpha=" + alpha + " --pval=" + pval +
-      " --output " + output + " " + study + " " + population + " " + association
-    execCommand.exe(command,tmpDir)
+    val command = "python " + Utils.path + "goatools-0.5.7/scripts/find_enrichment.py --alpha=" + data.alpha + " --pval=" +
+      data.pval + " --output " + output + " " + study + " " + population + " " + association
+    execCommand.exe(command, tmpDir)
     if (execCommand.isSuccess) {
       val goInfo = FileUtils.readLines(o).asScala
       val buffer = goInfo.drop(1)
@@ -288,7 +272,7 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
     val execCommand = new ExecCommand
     val command = correlationMethod(sampleName, method, path)
     execCommand.exec(command)
-    if(execCommand.isSuccess) {
+    if (execCommand.isSuccess) {
       val correlation = Source.fromFile(tmpDir + "/out_matrix.txt").getLines().map(_.split("\t").toBuffer).toBuffer
       val xAxis = correlation.head
       val yAxis = correlation.drop(1).map(_.head)
@@ -302,7 +286,7 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
       val jsons = Array(Json.obj("expression" -> expressions, "treatment" -> xAxis, "gt" -> yAxis, "max" -> max, "min" -> min))
       Utils.deleteDirectory(tmpDir)
       Ok(Json.toJson(jsons))
-    }else{
+    } else {
       Utils.deleteDirectory(tmpDir)
       Ok(Json.obj("valid" -> "false", "message" -> execCommand.getErrStr))
     }
@@ -340,15 +324,15 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
       val execCommand = new ExecCommand
       val command1 = rCluster(tmpDir, output)
       val command2 = pyCluster(output, sampleName, height)
-      execCommand.exec(command1,command2)
-      if(execCommand.isSuccess) {
+      execCommand.exec(command1, command2)
+      if (execCommand.isSuccess) {
         val div = FileUtils.readLines(new File(tmpDir, "div.txt")).asScala.mkString
         val div1 = div.replaceAll(" \"text\": null,", "")
         val div2 = div1.replaceAll("\"hoverinfo\": \"text\",", "")
         val json = Json.obj("div" -> div2)
         Utils.deleteDirectory(tmpDir)
         Ok(Json.toJson(json))
-      }else{
+      } else {
         Utils.deleteDirectory(tmpDir)
         Ok(Json.obj("valid" -> "false", "message" -> execCommand.getErrStr))
       }
@@ -439,14 +423,14 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
       val execCommand = new ExecCommand
       val command = correlationMethod(sampleName, "pearson", path)
       execCommand.exec(command)
-      if(execCommand.isSuccess) {
+      if (execCommand.isSuccess) {
         val correlation = Source.fromFile(tmpDir + "/out_matrix.txt").getLines().map(_.split("\t").toBuffer).toBuffer
         val value = correlation(1)(2)
         val long = getArray1(x)
         val json = Json.obj("series" -> long, "pc1" -> sample1, "pc2" -> sample2, "length" -> long.size, "correlation" -> value)
         Utils.deleteDirectory(tmpDir)
         Ok(json)
-      }else{
+      } else {
         Utils.deleteDirectory(tmpDir)
         Ok(Json.obj("valid" -> "false", "message" -> execCommand.getErrStr))
       }
@@ -458,15 +442,14 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
   }
 
   def PCA(sampleName: String): Action[AnyContent] = Action { implicit request =>
-    var buffer = mutable.Buffer[String]()
     val tmpDir = Files.createTempDirectory("tmpDir").toString
     val path = tmpDir.replaceAll("\\\\", "/")
-    if (sampleName.isEmpty) {
-      buffer = FileUtils.readLines(new File(Utils.path, "pca.txt")).asScala
-    } else {
-      getExpressionFile(sampleName, tmpDir)
-      pcaR(path)
-      buffer = FileUtils.readLines(new File(tmpDir, "pca.txt")).asScala
+    val buffer = sampleName match {
+      case i if i.isEmpty => FileUtils.readLines(new File(Utils.path, "pca.txt")).asScala
+      case _ =>
+        getExpressionFile(sampleName, tmpDir)
+        pcaR(path)
+        FileUtils.readLines(new File(tmpDir, "pca.txt")).asScala
     }
     val value = buffer.drop(1).map(_.split("\t"))
     val pca = value.map { x => (x(0), x.drop(1)) }
@@ -478,9 +461,7 @@ class AnalyseController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProf
     }
     val b = FileUtils.readLines(new File(tmpDir, "cov.txt")).asScala
     val pc = b.map(_.split("\t"))
-    val pc1 = pc(1)(1)
-    val pc2 = pc(2)(2)
-    Ok(Json.obj("series" -> buf, "pc1" -> pc1, "pc2" -> pc2))
+    Ok(Json.obj("series" -> buf, "pc1" -> pc(1)(1), "pc2" -> pc(2)(2)))
   }
 
   def getExpressionFile(sampleName: String, tmpDir: String) = {

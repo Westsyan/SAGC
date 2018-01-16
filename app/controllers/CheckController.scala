@@ -7,6 +7,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
+import utils.Utils
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -85,8 +86,7 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     if (sampleName.isEmpty) {
       Ok(Json.obj("valid" -> "true"))
     } else {
-      val header = request.headers.toMap
-      val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+      val refer = Utils.refer(request)
       var valid = "true"
       var message = ""
       if (refer.contains("chinese")) {
@@ -114,8 +114,7 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
   def checkSamplename = Action { implicit request =>
     val data = sampleForm.bindFromRequest.get
     val sampleName = data.sampleName
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    val refer = Utils.refer(request)
     var valid = "true"
     var message = ""
     if (refer.contains("chinese")) {
@@ -142,8 +141,7 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
   def checkGeneId = Action { implicit request =>
     val data = geneIdForm.bindFromRequest.get
     val id = data.id
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    val refer = Utils.refer(request)
     var valid = "true"
     var message = ""
     if (refer.contains("chinese")) {
@@ -155,7 +153,6 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
       valid = result._1
       message = "The Gene ID : " + result._2
     }
-    println(valid)
     val json = Json.obj("valid" -> valid, "message" -> message)
     Ok(Json.toJson(json))
   }
@@ -177,8 +174,7 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     var message = ""
     val g1 = gro1.split(",").map(_.trim).size
     val g2 = gro2.split(",").map(_.trim).size
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    val refer = Utils.refer(request)
     if (refer.contains("chinese")) {
       val r1 = checkChSample(gro1)
       val r2 = checkChSample(gro2)
@@ -225,8 +221,7 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     val sampleName = data.sampleName
     var valid = "true"
     var message = ""
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    val refer = Utils.refer(request)
     if (refer.contains("chinese")) {
       val gene = checkChId(id)
       val sample = checkChSample(sampleName)
@@ -252,60 +247,6 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     Ok(json)
   }
 
-  case class downData(id: String, sampleName: String)
-
-  val downloadForm = Form(
-    mapping(
-      "id" -> text,
-      "sampleName" -> text
-    )(downData.apply)(downData.unapply)
-  )
-
-  def checkDownload = Action { implicit request =>
-    val data = downloadForm.bindFromRequest.get
-    val id = data.id
-    val sampleName = data.sampleName
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
-    var valid = "true"
-    var message = ""
-    if(refer.contains("chinese")){
-      if (id.isEmpty) {
-        val result = checkChSample(sampleName)
-        message = "样品名: " + result._2
-        valid = result._1
-      } else {
-        val gene = checkChId(id)
-        val sample = checkChSample(sampleName)
-        if (gene._1 == "false") {
-          valid = gene._1
-          message = "基因ID: " + gene._2
-        } else if (sample._1 == "false") {
-          valid = sample._1
-          message = "样品名: " + sample._2
-        }
-      }
-    }else {
-      if (id.isEmpty) {
-        val result = checkSample(sampleName)
-        message = "The Sample Name: " + result._2
-        valid = result._1
-      } else {
-        val gene = checkId(id)
-        val sample = checkSample(sampleName)
-        if (gene._1 == "false") {
-          valid = gene._1
-          message = "The Gene ID: " + gene._2
-        } else if (sample._1 == "false") {
-          valid = sample._1
-          message = "The Sample Name: " + sample._2
-        }
-      }
-    }
-      val json = Json.obj("valids" -> valid, "messages" -> message)
-      Ok(json)
-  }
-
   val regionForm = Form(
     mapping(
       "chr" -> number,
@@ -319,8 +260,7 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     var message1 = ""
     var message2 = ""
     var valid = "true"
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    val refer = Utils.refer(request)
     try {
       val data = regionForm.bindFromRequest.get
       val start = data.start
@@ -366,8 +306,7 @@ class CheckController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, 
     var valid = "true"
     var message1 = ""
     var message2 = ""
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    val refer = Utils.refer(request)
     try{
       val data = coForm.bindFromRequest.get
       val geneId = data.id

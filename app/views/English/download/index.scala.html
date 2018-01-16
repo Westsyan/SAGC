@@ -16,8 +16,8 @@
                 <label class="control-label">Gene ID:</label>
             </div>
             <div class="col-sm-6">
-                <textarea class="form-control" name="id" id="gene" placeholder="If not select, select all" rows="5"
-                style="border-radius: 4px;"></textarea>
+                <textarea class="form-control" name="id" id="gene" rows="5"
+                style="border-radius: 4px;" required></textarea>
                 <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
                     Example</em></a></span>
             </div>
@@ -145,7 +145,7 @@
 
             function mySearch() {
                 $.ajax({
-                    url: "@routes.CheckController.checkDownload()",
+                    url: "@routes.CheckController.checkSearchPostion()",
                     type: "post",
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
@@ -153,9 +153,9 @@
                         var index = layer.load(1, {
                             shade: [0.1, '#fff']
                         });
-                        if (data.valids == "false") {
+                        if (data.valid == "false") {
                             layer.close(index)
-                            swal("Error!", data.messages, "error")
+                            swal("Error!", data.message, "error")
                         } else {
                             $("#search").attr("disabled", true).html("Search...")
                             $.ajax({

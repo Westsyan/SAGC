@@ -52,11 +52,10 @@ class GeneInformationController @Inject()(geneIdDao: GeneIdDao, mRNAProfileDao: 
   }
 
   def getLongArray(y: GeneinformationRow, refer: String) = {
-    var genenameStr = ""
-    if (refer.contains("chinese")) {
-      genenameStr = "<a target='_blank' href='" + routes.ChineseController.getMoreInfo(y.geneId) + "'>" + y.geneId + "</a>"
+    val genenameStr = if (refer.contains("chinese")) {
+      "<a target='_blank' href='" + routes.ChineseController.getMoreInfo(y.geneId) + "'>" + y.geneId + "</a>"
     } else {
-      genenameStr = "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(y.geneId) + "'>" + y.geneId + "</a>"
+      "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(y.geneId) + "'>" + y.geneId + "</a>"
     }
     val cdna = ">" + y.geneId + "\n" + y.cdna
     val cds = ">" + y.geneId + "\n" + y.cds

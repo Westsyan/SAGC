@@ -62,8 +62,14 @@
                         <li><a href="@routes.ToolsController.coIndex()">Co Expression Network</a></li>
                     </ul>
                 </li>
-                <li><a href="@routes.DownLoadController.toIndex()"><span class="glyphicon glyphicon-download"></span>
-                    Browse</a></li>
+                <li class="dropdown">
+                    <a href="#"><span class="glyphicon glyphicon-book"></span>
+                        Browse <span class="fa fa-caret-down"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="@routes.DownLoadController.toIndex()">Browse</a></li>
+                        <li><a href="@routes.DownLoadController.downloadIndex()">Download</a></li>
+                    </ul>
+                </li>
                 <li>
                     <a href="@routes.AdminController.toIndex()"><span class="fa fa-user"></span> Admin</a>
                 </li>

@@ -16,8 +16,8 @@
                     <label class="control-label">基因ID:</label>
                 </div>
                 <div class="col-sm-6">
-                    <textarea class="form-control" name="id" id="gene" placeholder="如果不填写，则选择全部" rows="5"
-                    style="border-radius: 4px;"></textarea>
+                    <textarea class="form-control" name="id" id="gene"  rows="5"
+                    style="border-radius: 4px;" required></textarea>
                     <span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
                         样例</em></a></span>
                 </div>
@@ -143,7 +143,7 @@
 
             function mySearch() {
                 $.ajax({
-                    url: "@routes.CheckController.checkDownload()",
+                    url: "@routes.CheckController.checkSearchPostion()",
                     type: "post",
                     dataType: "json",
                     data: $("#conditionForm").serialize(),
@@ -151,11 +151,11 @@
                         var index = layer.load(1, {
                             shade: [0.1, '#fff']
                         });
-                        if (data.valids == "false") {
+                        if (data.valid == "false") {
                             layer.close(index)
                             swal({
                                 title: "错误!",
-                                text: data.messages,
+                                text: data.message,
                                 type: "error",
                                 confirmButtonText: "确定"
                             })

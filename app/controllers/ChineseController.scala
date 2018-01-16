@@ -92,8 +92,12 @@ class ChineseController@Inject()(passwordDao: PasswordDao,geneInformationDao: Ge
     Ok(views.html.Chinese.analyse.PCA())
   }
 
-  def downloadIndex = Action {
+  def browse = Action {
     Ok(views.html.Chinese.download.index())
+  }
+
+  def downloadIndex = Action{
+    Ok(views.html.Chinese.download.download())
   }
 
   def searchByRegion = Action {
@@ -141,8 +145,6 @@ class ChineseController@Inject()(passwordDao: PasswordDao,geneInformationDao: Ge
     }
   }
 
-
-
   def seqIndex = Action {
     Ok(views.html.Chinese.tools.seqFetch())
   }
@@ -165,12 +167,10 @@ class ChineseController@Inject()(passwordDao: PasswordDao,geneInformationDao: Ge
 
   def coResult(id:String,rvalue:String):Action[AnyContent] = Action.async { implicit request=>
     correlationDao.selectByGeneid(id).map{x=>
-      var total = ""
       val size = x.filter(_.correlation >= rvalue.toDouble).distinct.size
-      if(size>0){
-        total = size.toString
-      }else{
-        total = "没有结果!"
+      val total = size match {
+        case i if i >0 => size.toString
+        case _ => "没有结果！"
       }
       Ok(views.html.Chinese.tools.coResult(id,rvalue,total))
     }

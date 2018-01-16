@@ -12,8 +12,8 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, Controller}
 import utils.Utils
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class DownLoadController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDao, mRNAProfileDao: MRNAProfileDao, geneInformationDao: GeneInformationDao) extends Controller {
@@ -22,14 +22,17 @@ class DownLoadController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDa
     Ok(views.html.English.download.index())
   }
 
+  def downloadIndex = Action{
+    Ok(views.html.English.download.download())
+  }
+
   def getName(sampleName: String): Action[AnyContent] = Action { implicit request =>
     val sam = sampleName.split(",").distinct.toSeq
     Ok(Json.toJson(sam))
   }
 
   def selectAllgene(id: String, sampleName: String): Action[AnyContent] = Action.async { implicit request =>
-    val header = request.headers.toMap
-    val refer = header.filter(_._1 == "Referer").map(_._2).head.head
+    val refer = Utils.refer(request)
     if (id.isEmpty) {
       mRNAProfileDao.selectAllBySampleName(sampleName).map { info =>
         val array = getArrayByGenotypes(info, refer)
@@ -46,17 +49,25 @@ class DownLoadController @Inject()(passwordDao: PasswordDao, geneIdDao: GeneIdDa
   def getArrayByGenotypes(x: Seq[MrnaprofileRow], refer: String) = {
     x.groupBy(_.geneid).map {
       case (geneid, sample) =>
-        var genenameStr = ""
-        if (refer.contains("chinese")) {
-          genenameStr = "<a target='_blank' href='" + routes.ChineseController.getMoreInfo(geneid) + "'>" + geneid + "</a>"
+        val genenameStr = if (refer.contains("chinese")) {
+          "<a target='_blank' href='" + routes.ChineseController.getMoreInfo(geneid) + "'>" + geneid + "</a>"
         } else {
-          genenameStr = "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(geneid) + "'>" + geneid + "</a>"
+          "<a target='_blank' href='" + routes.GeneInformationController.getMoreInfo(geneid) + "'>" + geneid + "</a>"
         }
         val map1 = Map("geneId" -> genenameStr)
         val map2 = sample.map(y => y.samplename -> y.value.toString).toMap
         val map = map1 ++ map2
         map
     }
+  }
+
+  def download(fileName: String) = Action { implicit request =>
+    val file = new File(Utils.path, fileName)
+    Ok.sendFile(file).withHeaders(
+      CACHE_CONTROL -> "max-age=3600",
+      CONTENT_DISPOSITION -> ("attachment; filename=" + file.getName),
+      CONTENT_TYPE -> "application/x-download"
+    )
   }
 
 
